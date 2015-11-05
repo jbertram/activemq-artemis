@@ -102,66 +102,80 @@ public class ArtemisTest {
    public void testSimpleRun() throws Exception {
       String queues = "q1,t2";
       String topics = "t1,t2";
-      Run.setEmbedded(true);
-      Artemis.main("create", temporaryFolder.getRoot().getAbsolutePath(), "--force", "--silent", "--no-web", "--queues", queues, "--topics", topics, "--no-autotune");
-      System.setProperty("artemis.instance", temporaryFolder.getRoot().getAbsolutePath());
-      // Some exceptions may happen on the initialization, but they should be ok on start the basic core protocol
-      Artemis.internalExecute("run");
 
-      try (ServerLocator locator = ServerLocatorImpl.newLocator("tcp://localhost:61616");
-           ClientSessionFactory factory = locator.createSessionFactory();
-           ClientSession coreSession = factory.createSession()) {
-         for (String str : queues.split(",")) {
-            ClientSession.QueueQuery queryResult = coreSession.queueQuery(SimpleString.toSimpleString("jms.queue." + str));
-            Assert.assertTrue("Couldn't find queue " + str, queryResult.isExists());
+      // This is usually set when run from the command line via artemis.profile
+      String original = System.getProperty("java.security.auth.login.config");
+      System.setProperty("java.security.auth.login.config", temporaryFolder.getRoot().getAbsolutePath() + "/etc/login.config");
+
+      try {
+         Run.setEmbedded(true);
+         Artemis.main("create", temporaryFolder.getRoot().getAbsolutePath(), "--force", "--silent", "--no-web", "--queues", queues, "--topics", topics, "--no-autotune");
+         System.setProperty("artemis.instance", temporaryFolder.getRoot().getAbsolutePath());
+         // Some exceptions may happen on the initialization, but they should be ok on start the basic core protocol
+         Artemis.internalExecute("run");
+
+         try (ServerLocator locator = ServerLocatorImpl.newLocator("tcp://localhost:61616");
+              ClientSessionFactory factory = locator.createSessionFactory();
+              ClientSession coreSession = factory.createSession()) {
+            for (String str : queues.split(",")) {
+               ClientSession.QueueQuery queryResult = coreSession.queueQuery(SimpleString.toSimpleString("jms.queue." + str));
+               Assert.assertTrue("Couldn't find queue " + str, queryResult.isExists());
+            }
+            for (String str : topics.split(",")) {
+               ClientSession.QueueQuery queryResult = coreSession.queueQuery(SimpleString.toSimpleString("jms.topic." + str));
+               Assert.assertTrue("Couldn't find topic " + str, queryResult.isExists());
+            }
          }
-         for (String str : topics.split(",")) {
-            ClientSession.QueueQuery queryResult = coreSession.queueQuery(SimpleString.toSimpleString("jms.topic." + str));
-            Assert.assertTrue("Couldn't find topic " + str, queryResult.isExists());
-         }
-      }
 
-      Assert.assertEquals(Integer.valueOf(100), Artemis.internalExecute("producer", "--message-count", "100", "--verbose"));
-      Assert.assertEquals(Integer.valueOf(100), Artemis.internalExecute("consumer", "--verbose", "--break-on-null", "--receive-timeout", "100"));
+         Assert.assertEquals(Integer.valueOf(100), Artemis.internalExecute("producer", "--message-count", "100", "--verbose", "--user", "admin", "--password", "admin"));
+         Assert.assertEquals(Integer.valueOf(100), Artemis.internalExecute("consumer", "--verbose", "--break-on-null", "--receive-timeout", "100", "--user", "admin", "--password", "admin"));
 
-      ActiveMQConnectionFactory cf = new ActiveMQConnectionFactory("tcp://localhost:61616");
-      Connection connection = cf.createConnection();
-      Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
-      MessageProducer producer = session.createProducer(ActiveMQDestination.createDestination("queue://TEST", ActiveMQDestination.QUEUE_TYPE));
+         ActiveMQConnectionFactory cf = new ActiveMQConnectionFactory("tcp://localhost:61616");
+         Connection connection = cf.createConnection("admin", "admin");
+         Session session = connection.createSession(true, Session.SESSION_TRANSACTED);
+         MessageProducer producer = session.createProducer(ActiveMQDestination.createDestination("queue://TEST", ActiveMQDestination.QUEUE_TYPE));
 
-      TextMessage message = session.createTextMessage("Banana");
-      message.setStringProperty("fruit", "banana");
-      producer.send(message);
-
-      for (int i = 0; i < 100; i++) {
-         message = session.createTextMessage("orange");
-         message.setStringProperty("fruit", "orange");
+         TextMessage message = session.createTextMessage("Banana");
+         message.setStringProperty("fruit", "banana");
          producer.send(message);
+
+         for (int i = 0; i < 100; i++) {
+            message = session.createTextMessage("orange");
+            message.setStringProperty("fruit", "orange");
+            producer.send(message);
+         }
+         session.commit();
+
+         connection.close();
+         cf.close();
+
+         Assert.assertEquals(Integer.valueOf(1), Artemis.internalExecute("browser", "--txt-size", "50", "--verbose", "--filter", "fruit='banana'", "--user", "admin", "--password", "admin"));
+
+         Assert.assertEquals(Integer.valueOf(100), Artemis.internalExecute("browser", "--txt-size", "50", "--verbose", "--filter", "fruit='orange'", "--user", "admin", "--password", "admin"));
+
+         Assert.assertEquals(Integer.valueOf(101), Artemis.internalExecute("browser", "--txt-size", "50", "--verbose", "--user", "admin", "--password", "admin"));
+
+         // should only receive 10 messages on browse as I'm setting messageCount=10
+         Assert.assertEquals(Integer.valueOf(10), Artemis.internalExecute("browser", "--txt-size", "50", "--verbose", "--message-count", "10", "--user", "admin", "--password", "admin"));
+
+         // Nothing was consumed until here as it was only browsing, check it's receiving again
+         Assert.assertEquals(Integer.valueOf(1), Artemis.internalExecute("consumer", "--txt-size", "50", "--verbose", "--break-on-null", "--receive-timeout", "100", "--filter", "fruit='banana'", "--user", "admin", "--password", "admin"));
+
+         // Checking it was acked before
+         Assert.assertEquals(Integer.valueOf(100), Artemis.internalExecute("consumer", "--txt-size", "50", "--verbose", "--break-on-null", "--receive-timeout", "100", "--user", "admin", "--password", "admin"));
+
+         Artemis.internalExecute("stop");
+         Assert.assertTrue(Run.latchRunning.await(5, TimeUnit.SECONDS));
+         Assert.assertEquals(0, LibaioContext.getTotalMaxIO());
       }
-      session.commit();
-
-      connection.close();
-      cf.close();
-
-      Assert.assertEquals(Integer.valueOf(1), Artemis.internalExecute("browser", "--txt-size", "50", "--verbose", "--filter", "fruit='banana'"));
-
-      Assert.assertEquals(Integer.valueOf(100), Artemis.internalExecute("browser", "--txt-size", "50", "--verbose", "--filter", "fruit='orange'"));
-
-      Assert.assertEquals(Integer.valueOf(101), Artemis.internalExecute("browser", "--txt-size", "50", "--verbose"));
-
-      // should only receive 10 messages on browse as I'm setting messageCount=10
-      Assert.assertEquals(Integer.valueOf(10), Artemis.internalExecute("browser", "--txt-size", "50", "--verbose", "--message-count", "10"));
-
-      // Nothing was consumed until here as it was only browsing, check it's receiving again
-      Assert.assertEquals(Integer.valueOf(1), Artemis.internalExecute("consumer", "--txt-size", "50", "--verbose", "--break-on-null", "--receive-timeout", "100", "--filter", "fruit='banana'"));
-
-      // Checking it was acked before
-      Assert.assertEquals(Integer.valueOf(100), Artemis.internalExecute("consumer", "--txt-size", "50", "--verbose", "--break-on-null", "--receive-timeout", "100"));
-
-      Artemis.internalExecute("stop");
-      Assert.assertTrue(Run.latchRunning.await(5, TimeUnit.SECONDS));
-      Assert.assertEquals(0, LibaioContext.getTotalMaxIO());
-
+      finally {
+         if (original == null) {
+            System.clearProperty("java.security.auth.login.config");
+         }
+         else {
+            System.setProperty("java.security.auth.login.config", original);
+         }
+      }
    }
 
    private void testCli(String... args) {
