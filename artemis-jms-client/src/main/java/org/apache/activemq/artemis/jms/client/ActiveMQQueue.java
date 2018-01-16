@@ -41,6 +41,10 @@ public class ActiveMQQueue extends ActiveMQDestination implements Queue {
       super(address, TYPE.QUEUE, null);
    }
 
+   public ActiveMQQueue(final String address, final String name) {
+      super(address, name, TYPE.QUEUE, null);
+   }
+
    public ActiveMQQueue(final String address, boolean temporary) {
       super(address, temporary ? TYPE.TEMP_QUEUE : TYPE.QUEUE, null);
    }

@@ -1101,8 +1101,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback 
          AddressSettings as = server.getAddressSettingsRepository().getMatch(queueName);
          server.createQueue(SimpleString.toSimpleString(queueName), RoutingType.ANYCAST, SimpleString.toSimpleString(queueName), SimpleString.toSimpleString(coreFilterString), null, durable, false, true, false, false, as.getDefaultMaxConsumers(), as.isDefaultPurgeOnNoConsumers(), as.isAutoCreateAddresses());
 
-         // FIXME create the JMS queue with the logical name jmsQueueName and keeps queueName for its *core* queue name
-         queues.put(queueName, ActiveMQDestination.createQueue(queueName));
+         // create the JMS queue with the logical name jmsQueueName and keeps queueName for its *core* queue name
+         queues.put(queueName, ActiveMQDestination.createQueue(queueName, jmsQueueName));
 
          this.recoverregistryBindings(queueName, PersistedType.Queue);
 
@@ -1129,8 +1129,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback 
       if (topics.get(address) != null) {
          return false;
       } else {
-         // FIXME create the JMS topic with topicName as the logical name of the topic *and* address as its address
-         ActiveMQTopic activeMQTopic = ActiveMQDestination.createTopic(topicName);
+         // Create the JMS topic with topicName as the logical name of the topic *and* address as its address
+         ActiveMQTopic activeMQTopic = ActiveMQDestination.createTopic(address, topicName);
          server.addOrUpdateAddressInfo(new AddressInfo(SimpleString.toSimpleString(activeMQTopic.getAddress()), RoutingType.MULTICAST));
 
          topics.put(topicName, activeMQTopic);
