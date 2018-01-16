@@ -231,6 +231,11 @@ public class ActiveMQDestination extends JNDIStorable implements Destination, Se
     */
    private SimpleString simpleAddress;
 
+   /**
+    * The "JMS" name of the destination. Useful for backwards compatibility.
+    */
+   private String name;
+
    private final boolean temporary;
 
    private final boolean queue;
@@ -244,21 +249,29 @@ public class ActiveMQDestination extends JNDIStorable implements Destination, Se
    protected ActiveMQDestination(final String address,
                                  final TYPE type,
                                  final ActiveMQSession session) {
-      this.simpleAddress = SimpleString.toSimpleString(address);
-
-      this.thetype = type;
-
-      this.session = session;
-
-      this.temporary = TYPE.isTemporary(type);
-
-      this.queue = TYPE.isQueue(type);
+      this(SimpleString.toSimpleString(address), type, session);
    }
 
    protected ActiveMQDestination(final SimpleString address,
                                  final TYPE type,
                                  final ActiveMQSession session) {
+      this(address, address.toString(), type, session);
+   }
+
+   protected ActiveMQDestination(final String address,
+                                 final String name,
+                                 final TYPE type,
+                                 final ActiveMQSession session) {
+      this(SimpleString.toSimpleString(address), name, type, session);
+   }
+
+   protected ActiveMQDestination(final SimpleString address,
+                                 final String name,
+                                 final TYPE type,
+                                 final ActiveMQSession session) {
       this.simpleAddress = address;
+
+      this.name = name;
 
       this.thetype = type;
 
@@ -309,7 +322,7 @@ public class ActiveMQDestination extends JNDIStorable implements Destination, Se
    }
 
    public String getName() {
-      return simpleAddress.toString();
+      return name;
    }
 
    public boolean isTemporary() {
