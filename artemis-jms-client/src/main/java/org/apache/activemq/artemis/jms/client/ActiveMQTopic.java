@@ -45,7 +45,7 @@ public class ActiveMQTopic extends ActiveMQDestination implements Topic {
    }
 
    public ActiveMQTopic(final String address, boolean temporary) {
-      super(address, TYPE.TOPIC, null);
+      this(address, temporary, null);
    }
 
    /**
