@@ -759,7 +759,8 @@ public class ActiveMQSession implements QueueSession, TopicSession {
                                                   final String subscriptionName,
                                                   String selectorString,
                                                   final boolean noLocal,
-                                                  ConsumerDurability durability) throws JMSException {
+                                                  ConsumerDurability durability,
+                                                  boolean coreCompatible) throws JMSException {
       try {
          selectorString = "".equals(selectorString) ? null : selectorString;
 
