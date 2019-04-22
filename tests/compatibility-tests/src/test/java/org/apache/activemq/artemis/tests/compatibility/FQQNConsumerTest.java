@@ -48,6 +48,7 @@ public class FQQNConsumerTest extends ServerBase {
       list.add(new Object[] {TWO_SEVEN_ZERO, SNAPSHOT, SNAPSHOT});
       list.add(new Object[] {TWO_SEVEN_ZERO, TWO_SEVEN_ZERO, SNAPSHOT});
       list.add(new Object[] {TWO_SEVEN_ZERO, SNAPSHOT, TWO_SEVEN_ZERO});
+      list.add(new Object[] {TWO_SEVEN_ZERO, TWO_SEVEN_ZERO, TWO_SEVEN_ZERO});
 
       return list;
    }
