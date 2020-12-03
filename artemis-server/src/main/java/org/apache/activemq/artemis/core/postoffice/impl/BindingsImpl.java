@@ -486,7 +486,7 @@ public final class BindingsImpl implements Bindings {
          routingNamePositions.put(routingName, pos);
       }
 
-      if ((messageLoadBalancingType.equals(MessageLoadBalancingType.OFF) || messageLoadBalancingType.equals(MessageLoadBalancingType.REDISTRIBUTION_ONLY)) && theBinding instanceof RemoteQueueBinding) {
+      if (messageLoadBalancingType.equals(MessageLoadBalancingType.OFF) && theBinding instanceof RemoteQueueBinding) {
          if (exclusivelyRemote(bindings)) {
             theBinding = null;
          } else {
