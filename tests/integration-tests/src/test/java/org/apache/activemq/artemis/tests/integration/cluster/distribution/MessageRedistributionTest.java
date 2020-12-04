@@ -1274,6 +1274,56 @@ public class MessageRedistributionTest extends ClusterTestBase {
       session1.close();
    }
 
+   @Test
+   public void testMulitcastAddressMultiQueuesRoutingMultiNode() throws Exception {
+
+      String address = "test.address";
+      String queueNamePrefix = "test.queue";
+      String clusterAddress = "test";
+
+      setupClusterConnection("cluster0", clusterAddress, messageLoadBalancingType, 1, isNetty(), 0, 1, 2);
+      setupClusterConnection("cluster1", clusterAddress, messageLoadBalancingType, 1, isNetty(), 1, 0, 2);
+      setupClusterConnection("cluster2", clusterAddress, messageLoadBalancingType, 1, isNetty(), 2, 0, 1);
+
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
+      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
+
+      startServers(0, 1, 2);
+
+      for (int i = 0; i < 3; i++) {
+         createAddressInfo(i, address, RoutingType.MULTICAST, -1, false);
+         setupSessionFactory(i, isNetty());
+         createQueue(i, address, queueNamePrefix + i, null, false);
+         addConsumer(i, i, queueNamePrefix + i, null);
+      }
+
+      for (int i = 0; i < 3; i++) {
+         waitForBindings(i, address, 1, 1, true);
+         waitForBindings(i, address, 2, 2, false);
+      }
+
+      final int noMessages = 30;
+      send(0, address, noMessages, true, null, null);
+
+      for (int s = 0; s < 3; s++) {
+         final Queue queue = servers[s].locateQueue(new SimpleString(queueNamePrefix + s));
+         Wait.waitFor(new Wait.Condition() {
+            @Override
+            public boolean isSatisfied() throws Exception {
+               return queue.getMessageCount() == noMessages;
+            }
+         });
+      }
+
+      // Each consumer should receive noMessages
+      for (int i = 0; i < noMessages; i++) {
+         for (int c = 0; c < 3; c++) {
+            assertNotNull(consumers[c].consumer.receive(1000));
+         }
+      }
+   }
+
    protected void setupCluster(final MessageLoadBalancingType messageLoadBalancingType) throws Exception {
       setupClusterConnection("cluster0", "queues", messageLoadBalancingType, 1, isNetty(), 0, 1, 2);
 
