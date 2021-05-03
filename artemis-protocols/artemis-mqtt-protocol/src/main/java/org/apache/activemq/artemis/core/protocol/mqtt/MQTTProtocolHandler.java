@@ -28,6 +28,7 @@ import io.netty.handler.codec.mqtt.MqttFixedHeader;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader;
 import io.netty.handler.codec.mqtt.MqttMessageType;
+import io.netty.handler.codec.mqtt.MqttProperties;
 import io.netty.handler.codec.mqtt.MqttPubAckMessage;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttPublishVariableHeader;
@@ -37,11 +38,17 @@ import io.netty.handler.codec.mqtt.MqttSubAckPayload;
 import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
 import io.netty.handler.codec.mqtt.MqttUnsubAckMessage;
 import io.netty.handler.codec.mqtt.MqttUnsubscribeMessage;
+import io.netty.handler.codec.mqtt.MqttVersion;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.logs.AuditLogger;
 import org.apache.activemq.artemis.spi.core.protocol.ConnectionEntry;
 import org.apache.activemq.artemis.utils.actors.Actor;
+
+/**
+ * MQTT-3.1.2-1 - implemented by Netty
+ * MQTT-3.1.2-3 - implemented by Netty
+ */
 
 /**
  * This class is responsible for receiving and sending MQTT packets, delegating behaviour to one of the
@@ -176,10 +183,30 @@ public class MQTTProtocolHandler extends ChannelInboundHandlerAdapter {
     * @param connect
     */
    void handleConnect(MqttConnectMessage connect) throws Exception {
+      /* [MQTT-3.1.2-2] Reject unsupported clients. */
+      int packetVersion = connect.variableHeader().version();
+      if (packetVersion != MqttVersion.MQTT_3_1.protocolLevel() &&
+         packetVersion != MqttVersion.MQTT_3_1_1.protocolLevel() &&
+         packetVersion != MqttVersion.MQTT_5.protocolLevel()) {
+
+         // TODO The return code is different here for 3.1.1 vs 5, but since the broker supports *both* which one should be chosen? Perhaps an acceptor property?
+         // See http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718030
+         sendConnack(MqttConnectReturnCode.CONNECTION_REFUSED_UNACCEPTABLE_PROTOCOL_VERSION); // for 3.1.1
+
+         // See https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901037
+         // session.getProtocolHandler().sendConnack(MqttConnectReturnCode.CONNECTION_REFUSED_UNSUPPORTED_PROTOCOL_VERSION); // for 5
+
+         disconnect(true);
+         return;
+      }
+
       connectionEntry.ttl = connect.variableHeader().keepAliveTimeSeconds() * 1500L;
 
-      String clientId = connect.payload().clientIdentifier();
-      session.getConnectionManager().connect(clientId, connect.payload().userName(), connect.payload().passwordInBytes(), connect.variableHeader().isWillFlag(), connect.payload().willMessageInBytes(), connect.payload().willTopic(), connect.variableHeader().isWillRetain(), connect.variableHeader().willQos(), connect.variableHeader().isCleanSession());
+      if (packetVersion == MqttVersion.MQTT_5.protocolLevel()) {
+         session.getConnectionManager().connect5(connect);
+      } else {
+         session.getConnectionManager().connect(connect.payload().clientIdentifier(), connect.payload().userName(), connect.payload().passwordInBytes(), connect.variableHeader().isWillFlag(), connect.payload().willMessageInBytes(), connect.payload().willTopic(), connect.variableHeader().isWillRetain(), connect.variableHeader().willQos(), connect.variableHeader().isCleanSession());
+      }
    }
 
    void disconnect(boolean error) {
@@ -187,8 +214,16 @@ public class MQTTProtocolHandler extends ChannelInboundHandlerAdapter {
    }
 
    void sendConnack(MqttConnectReturnCode returnCode) {
+      sendConnack(returnCode, false, null);
+   }
+
+   void sendConnack(MqttConnectReturnCode returnCode, boolean sessionPresent, MqttProperties properties) {
       MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.CONNACK, false, MqttQoS.AT_MOST_ONCE, false, 0);
-      MqttConnAckVariableHeader varHeader = new MqttConnAckVariableHeader(returnCode, true);
+      // [MQTT-3.2.2-6] If a Server sends a CONNACK packet containing a non-zero Reason Code it MUST set Session Present to 0.
+      if (returnCode.byteValue() != (byte) 0x00) {
+         sessionPresent = false;
+      }
+      MqttConnAckVariableHeader varHeader = new MqttConnAckVariableHeader(returnCode, sessionPresent, properties);
       MqttConnAckMessage message = new MqttConnAckMessage(fixedHeader, varHeader);
       sendToClient(message);
    }
@@ -270,7 +305,7 @@ public class MQTTProtocolHandler extends ChannelInboundHandlerAdapter {
       if (this.protocolManager.invokeOutgoing(message, connection) != null) {
          return;
       }
-      MQTTUtil.logMessage(session.getSessionState(), message, false);
+      MQTTUtil.logMessage(session.getState(), message, false);
       ctx.writeAndFlush(message, ctx.voidPromise());
    }
 

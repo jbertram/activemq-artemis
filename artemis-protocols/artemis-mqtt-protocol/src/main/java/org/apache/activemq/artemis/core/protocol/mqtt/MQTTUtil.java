@@ -18,6 +18,7 @@
 package org.apache.activemq.artemis.core.protocol.mqtt;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.MqttConnAckVariableHeader;
@@ -27,6 +28,7 @@ import io.netty.handler.codec.mqtt.MqttConnectVariableHeader;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader;
 import io.netty.handler.codec.mqtt.MqttMessageType;
+import io.netty.handler.codec.mqtt.MqttProperties;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttPublishVariableHeader;
 import io.netty.handler.codec.mqtt.MqttSubAckMessage;
@@ -142,9 +144,9 @@ public class MQTTUtil {
    }
 
    public static void logMessage(MQTTSessionState state, MqttMessage message, boolean inbound) {
-      if (logger.isTraceEnabled()) {
-         traceMessage(state, message, inbound);
-      }
+//      if (logger.isTraceEnabled()) {
+      traceMessage(state, message, inbound);
+//      }
    }
 
    public static void traceMessage(MQTTSessionState state, MqttMessage message, boolean inbound) {
@@ -220,7 +222,29 @@ public class MQTTUtil {
                break;
          }
 
-         logger.trace(log.toString());
+         logger.info(log.toString());
       }
+   }
+
+   /*
+    * From section 3.1.2.11.2:
+    *
+    * If the Session Expiry Interval is 0xFFFFFFFF (UINT_MAX), the Session does not expire.
+    */
+   public static final long FOUR_BYTE_INT_MAX = Long.decode("0xFFFFFFFF");
+
+   public static long getSessionExpiryInterval(MqttConnectMessage connect) {
+      /*
+       * 3.1.2.11.2
+       * "It is a Protocol Error to include the Session Expiry Interval more than once."
+       * "If the Session Expiry Interval is absent the value 0 is used. If it is set to 0, or is absent, the Session ends when the Network Connection is closed."
+       * "If the Session Expiry Interval is 0xFFFFFFFF (UINT_MAX), the Session does not expire."
+       */
+      List<? extends MqttProperties.MqttProperty> o = connect.variableHeader().properties().getProperties(MqttProperties.MqttPropertyType.SESSION_EXPIRY_INTERVAL.value());
+      if (o.size() == 0) {
+         return 0;
+      }
+
+      return (int) o.get(0).value();
    }
 }

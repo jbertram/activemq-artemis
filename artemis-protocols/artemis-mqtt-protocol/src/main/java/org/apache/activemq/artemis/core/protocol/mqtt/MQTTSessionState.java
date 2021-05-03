@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.MqttTopicSubscription;
 import org.apache.activemq.artemis.api.core.Pair;
 import org.apache.activemq.artemis.core.config.WildcardConfiguration;
@@ -33,6 +34,8 @@ import org.apache.activemq.artemis.core.config.WildcardConfiguration;
 public class MQTTSessionState {
 
    public static final MQTTSessionState DEFAULT = new MQTTSessionState(null);
+
+   private MQTTSession session;
 
    private String clientId;
 
@@ -49,8 +52,37 @@ public class MQTTSessionState {
 
    private final OutboundStore outboundStore = new OutboundStore();
 
+   private long disconnectedTime = 0;
+
+   // TODO assign a configurable default to implement https://issues.redhat.com/browse/ENTMQBR-4653 (even for 3.x sessions)
+   private long sessionExpiryInterval;
+
+   private boolean isWill = false;
+
+   private ByteBuf willMessage;
+
+   private String willTopic;
+
+   private int willQoSLevel;
+
+   private boolean willRetain;
+
+   private long willDelayInterval = 0;
+
+   private boolean willSent = false;
+
+   private boolean failed = false;
+
    public MQTTSessionState(String clientId) {
       this.clientId = clientId;
+   }
+
+   public MQTTSession getSession() {
+      return session;
+   }
+
+   public void setSession(MQTTSession session) {
+      this.session = session;
    }
 
    public synchronized void clear() {
@@ -69,7 +101,7 @@ public class MQTTSessionState {
       return pubRec;
    }
 
-   boolean getAttached() {
+   boolean isAttached() {
       return attached;
    }
 
@@ -118,6 +150,86 @@ public class MQTTSessionState {
 
    void setClientId(String clientId) {
       this.clientId = clientId;
+   }
+
+   long getDisconnectedTime() {
+      return disconnectedTime;
+   }
+
+   void setDisconnectedTime(long disconnectedTime) {
+      this.disconnectedTime = disconnectedTime;
+   }
+
+   long getSessionExpiryInterval() {
+      return sessionExpiryInterval;
+   }
+
+   void setSessionExpiryInterval(long sessionExpiryInterval) {
+      this.sessionExpiryInterval = sessionExpiryInterval;
+   }
+
+   public boolean isWill() {
+      return isWill;
+   }
+
+   public void setWill(boolean will) {
+      isWill = will;
+   }
+
+   public ByteBuf getWillMessage() {
+      return willMessage;
+   }
+
+   public void setWillMessage(ByteBuf willMessage) {
+      this.willMessage = willMessage;
+   }
+
+   public String getWillTopic() {
+      return willTopic;
+   }
+
+   public void setWillTopic(String willTopic) {
+      this.willTopic = willTopic;
+   }
+
+   public int getWillQoSLevel() {
+      return willQoSLevel;
+   }
+
+   public void setWillQoSLevel(int willQoSLevel) {
+      this.willQoSLevel = willQoSLevel;
+   }
+
+   public boolean isWillRetain() {
+      return willRetain;
+   }
+
+   public void setWillRetain(boolean willRetain) {
+      this.willRetain = willRetain;
+   }
+
+   public long getWillDelayInterval() {
+      return willDelayInterval;
+   }
+
+   public void setWillDelayInterval(long willDelayInterval) {
+      this.willDelayInterval = willDelayInterval;
+   }
+
+   public boolean isWillSent() {
+      return willSent;
+   }
+
+   public void setWillSent(boolean willSent) {
+      this.willSent = willSent;
+   }
+
+   public boolean isFailed() {
+      return failed;
+   }
+
+   public void setFailed(boolean failed) {
+      this.failed = failed;
    }
 
    void removeMessageRef(Integer mqttId) {
@@ -195,5 +307,10 @@ public class MQTTSessionState {
             ids.set(0);
          }
       }
+   }
+
+   @Override
+   public String toString() {
+      return "MQTTSessionState{" + "session=" + session + ", clientId='" + clientId + '\'' + ", subscriptions=" + subscriptions + ", messageRefStore=" + messageRefStore + ", addressMessageMap=" + addressMessageMap + ", pubRec=" + pubRec + ", attached=" + attached + ", outboundStore=" + outboundStore + ", disconnectedTime=" + disconnectedTime + ", sessionExpiryInterval=" + sessionExpiryInterval + ", isWill=" + isWill + ", willMessage=" + willMessage + ", willTopic='" + willTopic + '\'' + ", willQoSLevel=" + willQoSLevel + ", willRetain=" + willRetain + ", willDelayInterval=" + willDelayInterval + ", failed=" + failed + '}';
    }
 }

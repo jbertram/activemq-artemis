@@ -71,7 +71,7 @@ public class MQTTSubscriptionManager {
    }
 
    synchronized void start() throws Exception {
-      for (MqttTopicSubscription subscription : session.getSessionState().getSubscriptions()) {
+      for (MqttTopicSubscription subscription : session.getState().getSubscriptions()) {
          String coreAddress = MQTTUtil.convertMQTTAddressFilterToCore(subscription.topicName(), session.getWildcardConfiguration());
          Queue q = createQueueForSubscription(coreAddress, subscription.qualityOfService().value());
          createConsumerForSubscriptionQueue(q, subscription.topicName(), subscription.qualityOfService().value());
@@ -165,13 +165,13 @@ public class MQTTSubscriptionManager {
 
    private void addSubscription(MqttTopicSubscription subscription) throws Exception {
       String topicName = CompositeAddress.extractAddressName(subscription.topicName());
-      MqttTopicSubscription s = session.getSessionState().getSubscription(topicName);
+      MqttTopicSubscription s = session.getState().getSubscription(topicName);
 
       int qos = subscription.qualityOfService().value();
 
       String coreAddress = MQTTUtil.convertMQTTAddressFilterToCore(topicName, session.getWildcardConfiguration());
 
-      session.getSessionState().addSubscription(subscription, session.getWildcardConfiguration());
+      session.getState().addSubscription(subscription, session.getWildcardConfiguration());
 
       Queue q = createQueueForSubscription(coreAddress, qos);
 
@@ -184,7 +184,7 @@ public class MQTTSubscriptionManager {
    }
 
    void removeSubscriptions(List<String> topics) throws Exception {
-      synchronized (session.getSessionState()) {
+      synchronized (session.getState()) {
          for (String topic : topics) {
             removeSubscription(topic);
          }
@@ -194,7 +194,7 @@ public class MQTTSubscriptionManager {
    private void removeSubscription(String address) throws Exception {
       String internalAddress = MQTTUtil.convertMQTTAddressFilterToCore(address, session.getWildcardConfiguration());
       SimpleString internalQueueName = getQueueNameForTopic(internalAddress);
-      session.getSessionState().removeSubscription(address);
+      session.getState().removeSubscription(address);
 
       SimpleString sAddress = SimpleString.toSimpleString(internalAddress);
       AddressInfo addressInfo = session.getServerSession().getAddress(sAddress);
@@ -223,7 +223,7 @@ public class MQTTSubscriptionManager {
    }
 
    private SimpleString getQueueNameForTopic(String topic) {
-      return new SimpleString(session.getSessionState().getClientId() + "." + topic);
+      return new SimpleString(session.getState().getClientId() + "." + topic);
    }
 
    /**
@@ -234,7 +234,7 @@ public class MQTTSubscriptionManager {
     * @throws Exception
     */
    int[] addSubscriptions(List<MqttTopicSubscription> subscriptions) throws Exception {
-      synchronized (session.getSessionState()) {
+      synchronized (session.getState()) {
          int[] qos = new int[subscriptions.size()];
 
          for (int i = 0; i < subscriptions.size(); i++) {
@@ -250,7 +250,7 @@ public class MQTTSubscriptionManager {
    }
 
    void clean() throws Exception {
-      for (MqttTopicSubscription mqttTopicSubscription : session.getSessionState().getSubscriptions()) {
+      for (MqttTopicSubscription mqttTopicSubscription : session.getState().getSubscriptions()) {
          removeSubscription(mqttTopicSubscription.topicName());
       }
    }

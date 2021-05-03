@@ -572,7 +572,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       }
 
       protected void throwUndefinedEscape(byte b) throws ActiveMQStompException {
-         ActiveMQStompException error = BUNDLE.undefinedEscapeSequence(new String(new char[]{ESC_CHAR, (char) b})).setHandler(handler);
+         ActiveMQStompException error = BUNDLE.undefinedEscapeSequence(new String(new char[]{ESC_CHAR, (char) b}), headerName, command).setHandler(handler);
          error.setCode(ActiveMQStompException.UNDEFINED_ESCAPE);
          throw error;
       }

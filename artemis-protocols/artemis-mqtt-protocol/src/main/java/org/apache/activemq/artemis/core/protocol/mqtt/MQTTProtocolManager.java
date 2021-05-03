@@ -61,12 +61,15 @@ public class MQTTProtocolManager extends AbstractProtocolManager<MqttMessage, MQ
    //TODO Read in a list of existing client IDs from stored Sessions.
    private final Map<String, MQTTConnection> connectedClients;
    private final Map<String, MQTTSessionState> sessionStates;
+   private final MQTTProtocolManagerFactory factory;
 
-   MQTTProtocolManager(ActiveMQServer server,
+   MQTTProtocolManager(MQTTProtocolManagerFactory factory,
+                       ActiveMQServer server,
                        Map<String, MQTTConnection> connectedClients,
                        Map<String, MQTTSessionState> sessionStates,
                        List<BaseInterceptor> incomingInterceptors,
                        List<BaseInterceptor> outgoingInterceptors) {
+      this.factory = factory;
       this.server = server;
       this.connectedClients = connectedClients;
       this.sessionStates = sessionStates;
@@ -110,7 +113,7 @@ public class MQTTProtocolManager extends AbstractProtocolManager<MqttMessage, MQ
 
    @Override
    public ProtocolManagerFactory getFactory() {
-      return new MQTTProtocolManagerFactory();
+      return factory;
    }
 
    @Override
@@ -162,39 +165,67 @@ public class MQTTProtocolManager extends AbstractProtocolManager<MqttMessage, MQ
    }
 
    /**
-    * The protocol handler passes us an 8 byte long array from the transport.  We sniff these first 8 bytes to see
-    * if they match the first 8 bytes from MQTT Connect packet.  In many other protocols the protocol name is the first
-    * thing sent on the wire.  However, in MQTT the protocol name doesn't come until later on in the CONNECT packet.
-    *
-    * In order to fully identify MQTT protocol via protocol name, we need up to 12 bytes.  However, we can use other
-    * information from the connect packet to infer that the MQTT protocol is being used.  This is enough to identify MQTT
-    * and add the Netty codec in the pipeline.  The Netty codec takes care of things from here.
-    *
-    * MQTT CONNECT PACKET: See MQTT 3.1.1 Spec for more info.
-    *
-    * Byte 1: Fixed Header Packet Type.  0b0001000 (16) = MQTT Connect
-    * Byte 2-[N]: Remaining length of the Connect Packet (encoded with 1-4 bytes).
-    *
-    * The next set of bytes represents the UTF8 encoded string MQTT (MQTT 3.1.1) or MQIsdp (MQTT 3.1)
-    * Byte N: UTF8 MSB must be 0
-    * Byte N+1: UTF8 LSB must be (4(MQTT) or 6(MQIsdp))
-    * Byte N+1: M (first char from the protocol name).
-    *
-    * Max no bytes used in the sequence = 8.
+    * Relevant portions of the specs we support:
+    * MQTT 3.1 - https://public.dhe.ibm.com/software/dw/webservices/ws-mqtt/mqtt-v3r1.html#connect
+    * MQTT 3.1.1 - http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718028
+    * MQTT 5 - https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901033
     */
    @Override
    public boolean isProtocol(byte[] array) {
       ByteBuf buf = Unpooled.wrappedBuffer(array);
 
-      if (!(buf.readByte() == 16 && validateRemainingLength(buf) && buf.readByte() == (byte) 0)) return false;
+      // Parse "fixed header"
+      if (!(readByte(buf) == 16 && validateRemainingLength(buf) && readByte(buf) == (byte) 0)) {
+         return false;
+      }
+
+      // Start parsing the Protocol Name
+      byte b = readByte(buf); // LSB
+
+      // MQTT 3.1.1 & 5
+      if (b == 4 &&
+         (readByte(buf) != 77 || // M
+         readByte(buf) != 81 ||  // Q
+         readByte(buf) != 84 ||  // T
+         readByte(buf) != 84)) { // T
+         return false;
+      }
+
+      // MQTT 3.1
+      if (b == 6 &&
+         (readByte(buf) != 77 ||  // M
+         readByte(buf) != 81 ||   // Q
+         readByte(buf) != 73 ||   // I
+         readByte(buf) != 115 ||  // s
+         readByte(buf) != 100 ||  // d
+         readByte(buf) != 112)) { // p
+         return false;
+      }
+
+      // Protocol Version
+      b = readByte(buf);
+      if (b != 3 && b != 4 && b != 5) {
+         return false;
+      }
+
+      // Connect Flags
+      readByte(buf);
+
+      return true;
+   }
+
+   byte readByte(ByteBuf buf) {
       byte b = buf.readByte();
-      return ((b == 4 || b == 6) && (buf.readByte() == 77));
+      if (log.isTraceEnabled()) {
+         log.trace(String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0'));
+      }
+      return b;
    }
 
    private boolean validateRemainingLength(ByteBuf buffer) {
       byte msb = (byte) 0b10000000;
       for (byte i = 0; i < 4; i++) {
-         if ((buffer.readByte() & msb) != msb)
+         if ((readByte(buffer) & msb) != msb)
             return true;
       }
       return false;
@@ -247,6 +278,9 @@ public class MQTTProtocolManager extends AbstractProtocolManager<MqttMessage, MQ
    }
 
    public MQTTSessionState removeSessionState(String clientId) {
+      if (clientId == null) {
+         return null;
+      }
       return sessionStates.remove(clientId);
    }
 

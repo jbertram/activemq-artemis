@@ -138,6 +138,7 @@
       <surefire.version>2.22.2</surefire.version>
       <version.jaxb.runtime>2.3.3</version.jaxb.runtime>
       <paho.client.mqttv3.version>1.2.5</paho.client.mqttv3.version>
+      <paho.client.mqttv5.version>1.2.5</paho.client.mqttv5.version>
       <!-- for JakrtaEE -->
       <version.batavia>1.0.5.Final</version.batavia>
 
@@ -280,10 +281,15 @@
          </dependency>
 
          <!-- ### For MQTT Tests && Examples -->
-	 <dependency>
-           <groupId>org.eclipse.paho</groupId>
-           <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-           <version>${paho.client.mqttv3.version}</version>
+         <dependency>
+            <groupId>org.eclipse.paho</groupId>
+            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+            <version>${paho.client.mqttv3.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.eclipse.paho</groupId>
+            <artifactId>org.eclipse.paho.mqttv5.client</artifactId>
+            <version>${paho.client.mqttv5.version}</version>
          </dependency>
          <dependency>
             <groupId>org.fusesource.mqtt-client</groupId>
@@ -945,7 +951,7 @@
                       <configuration>
                           <compilerArgs>
                               <arg>-Xdiags:verbose</arg>
-                              <arg>--add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED</arg>
+                              <!--arg>- -add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED</arg-->
                               <arg>-XDcompilePolicy=simple</arg>
                               <arg>-Xplugin:ErrorProne -Xep:MissingOverride:ERROR -Xep:NonAtomicVolatileUpdate:ERROR -Xep:SynchronizeOnNonFinalField:ERROR -Xep:StaticQualifiedUsingExpression:ERROR -Xep:WaitNotInLoop:ERROR -XepExcludedPaths:.*/generated-sources/.*</arg>
                           </compilerArgs>

@@ -17,11 +17,16 @@
 
 package org.apache.activemq.artemis.core.protocol.mqtt;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.activemq.artemis.api.core.BaseInterceptor;
+import org.apache.activemq.artemis.core.server.ActiveMQComponent;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.spi.core.protocol.AbstractProtocolManagerFactory;
 import org.apache.activemq.artemis.spi.core.protocol.ProtocolManager;
@@ -47,7 +52,7 @@ public class MQTTProtocolManagerFactory extends AbstractProtocolManagerFactory<M
                                                 List<BaseInterceptor> incomingInterceptors,
                                                 List<BaseInterceptor> outgoingInterceptors) throws Exception {
       BeanSupport.stripPasswords(parameters);
-      return BeanSupport.setData(new MQTTProtocolManager(server, connectedClients, sessionStates, incomingInterceptors, outgoingInterceptors), parameters);
+      return BeanSupport.setData(new MQTTProtocolManager(this, server, connectedClients, sessionStates, incomingInterceptors, outgoingInterceptors), parameters);
    }
 
    @Override
@@ -63,5 +68,59 @@ public class MQTTProtocolManagerFactory extends AbstractProtocolManagerFactory<M
    @Override
    public String getModuleName() {
       return MODULE_NAME;
+   }
+
+   @Override
+   public void loadProtocolServices(ActiveMQServer server, List<ActiveMQComponent> services) {
+      services.add(new MQTTPeriodicTasks(server.getScheduledPool()));
+   }
+
+   public class MQTTPeriodicTasks implements ActiveMQComponent {
+      ScheduledExecutorService pool;
+      Runnable runnable;
+
+      public MQTTPeriodicTasks(ScheduledExecutorService pool) {
+         this.pool = pool;
+      }
+
+      @Override
+      public void start() throws Exception {
+         runnable = () -> {
+            List<String> toRemove = new ArrayList();
+            for (Map.Entry<String, MQTTSessionState> entry : sessionStates.entrySet()) {
+               MQTTSessionState state = entry.getValue();
+               MQTTLogger.LOGGER.info("Inspecting session: " + state);
+               if (!state.isAttached() && state.getSessionExpiryInterval() > 0 && state.getDisconnectedTime() + (state.getSessionExpiryInterval() * 1000) < System.currentTimeMillis()) {
+                  toRemove.add(entry.getKey());
+               }
+               if (!state.isAttached() && state.isFailed() && !state.isWillSent() && state.getWillDelayInterval() > 0 && state.getDisconnectedTime() + (state.getWillDelayInterval() * 1000) < System.currentTimeMillis()) {
+                  state.getSession().sendWillMessage();
+               }
+            }
+
+            for (String key : toRemove) {
+               System.out.println("Removing state for session: " + key);
+               // TODO might have a race condition here with clients reconnecting
+               MQTTSessionState state = sessionStates.remove(key);
+               if (state != null && !state.isAttached() && state.isFailed() && !state.isWillSent()) {
+                  state.getSession().sendWillMessage();
+               }
+            }
+         };
+         // TODO make this configurable
+         pool.scheduleAtFixedRate(runnable, 0, 100, TimeUnit.MILLISECONDS);
+      }
+
+      @Override
+      public void stop() throws Exception {
+         if (pool instanceof ThreadPoolExecutor) {
+            ((ThreadPoolExecutor)pool).remove(runnable);
+         }
+      }
+
+      @Override
+      public boolean isStarted() {
+         return false;
+      }
    }
 }

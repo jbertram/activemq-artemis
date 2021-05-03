@@ -19,10 +19,13 @@ package org.apache.activemq.artemis.core.protocol.mqtt;
 
 import java.util.UUID;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.handler.codec.mqtt.MqttConnectMessage;
 import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
+import io.netty.handler.codec.mqtt.MqttProperties;
+import io.netty.handler.codec.mqtt.MqttVersion;
 import io.netty.util.CharsetUtil;
+import org.apache.activemq.artemis.api.core.Pair;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.ServerSession;
@@ -38,16 +41,6 @@ public class MQTTConnectionManager {
    private MQTTSession session;
 
    private MQTTLogger log = MQTTLogger.LOGGER;
-
-   private boolean isWill = false;
-
-   private ByteBuf willMessage;
-
-   private String willTopic;
-
-   private int willQoSLevel;
-
-   private boolean willRetain;
 
    public MQTTConnectionManager(MQTTSession session) {
       this.session = session;
@@ -67,7 +60,7 @@ public class MQTTConnectionManager {
                 boolean willRetain,
                 int willQosLevel,
                 boolean cleanSession) throws Exception {
-      String clientId = validateClientId(cId, cleanSession);
+      String clientId = validateClientId(cId, cleanSession).getA();
       if (clientId == null) {
          session.getProtocolHandler().sendConnack(MqttConnectReturnCode.CONNECTION_REFUSED_IDENTIFIER_REJECTED);
          session.getProtocolHandler().disconnect(true);
@@ -95,16 +88,88 @@ public class MQTTConnectionManager {
          }
 
          if (will) {
-            isWill = true;
-            this.willMessage = ByteBufAllocator.DEFAULT.buffer(willMessage.length);
-            this.willMessage.writeBytes(willMessage);
-            this.willQoSLevel = willQosLevel;
-            this.willRetain = willRetain;
-            this.willTopic = willTopic;
+            session.getState().setWill(true);
+            session.getState().setWillMessage(ByteBufAllocator.DEFAULT.buffer(willMessage.length).writeBytes(willMessage));
+            session.getState().setWillQoSLevel(willQosLevel);
+            session.getState().setWillRetain(willRetain);
+            session.getState().setWillTopic(willTopic);
          }
 
          session.getConnection().setConnected(true);
          session.getProtocolHandler().sendConnack(MqttConnectReturnCode.CONNECTION_ACCEPTED);
+         // ensure we don't publish before the CONNACK
+         session.start();
+      }
+   }
+
+   /**
+    * Handles the connect packet.  See spec for details on each of parameters.
+    */
+   void connect5(MqttConnectMessage connect) throws Exception {
+      if (connect.variableHeader().version() == MqttVersion.MQTT_5.protocolLevel()) {
+         session.set5(true);
+      }
+
+      // the codec uses "CleanSession" for both 3.1.1 clean session and 5 clean start
+      boolean cleanStart = connect.variableHeader().isCleanSession();
+      Pair<String, Boolean> validationResult = validateClientId(connect.payload().clientIdentifier(), cleanStart);
+      if (validationResult == null) {
+         session.getProtocolHandler().sendConnack(session.is5() ? MqttConnectReturnCode.CONNECTION_REFUSED_CLIENT_IDENTIFIER_NOT_VALID : MqttConnectReturnCode.CONNECTION_REFUSED_IDENTIFIER_REJECTED);
+         session.getProtocolHandler().disconnect(true);
+         return;
+      }
+      String clientId = validationResult.getA();
+      boolean assignedClientId = validationResult.getB();
+
+      boolean sessionPresent = session.getProtocolManager().getSessionStates().containsKey(clientId);
+      MQTTSessionState sessionState = getSessionState(clientId);
+      // TODO shorten or eliminate this synchronized block (inspect others as well)
+      synchronized (sessionState) {
+         session.setSessionState(sessionState);
+         sessionState.setFailed(false);
+         // the session expiry interval should be 0 on 3.x connect packets
+         sessionState.setSessionExpiryInterval(MQTTUtil.getSessionExpiryInterval(connect));
+         byte[] passwordInBytes = connect.payload().passwordInBytes();
+         String password = passwordInBytes == null ? null : new String(passwordInBytes, CharsetUtil.UTF_8);
+         session.getConnection().setClientID(clientId);
+         String username = connect.payload().userName();
+         ServerSessionImpl serverSession = createServerSession(username, password);
+         serverSession.start();
+         ServerSessionImpl internalServerSession = createServerSession(username, password);
+         internalServerSession.disableSecurity();
+         internalServerSession.start();
+         session.setServerSession(serverSession, internalServerSession);
+
+         if (cleanStart) {
+            /* [MQTT-3.1.2-6] If CleanSession is set to 1, the Client and Server MUST discard any previous Session and
+             * start a new one. This Session lasts as long as the Network Connection. State data associated with this Session
+             * MUST NOT be reused in any subsequent Session */
+            session.clean();
+            session.setClean(true);
+         }
+
+         if (connect.variableHeader().isWillFlag()) {
+            session.getState().setWill(true);
+            byte[] willMessage = connect.payload().willMessageInBytes();
+            session.getState().setWillMessage(ByteBufAllocator.DEFAULT.buffer(willMessage.length).writeBytes(willMessage));
+            session.getState().setWillQoSLevel(connect.variableHeader().willQos());
+            session.getState().setWillRetain(connect.variableHeader().isWillRetain());
+            session.getState().setWillTopic(connect.payload().willTopic());
+            MqttProperties willProperties = connect.payload().willProperties();
+            if (willProperties != null) {
+               MqttProperties.MqttProperty willDelayInterval = willProperties.getProperty(MqttProperties.MqttPropertyType.WILL_DELAY_INTERVAL.value());
+               if (willDelayInterval != null) {
+                  session.getState().setWillDelayInterval(( int) willDelayInterval.value());
+               }
+            }
+         }
+
+         session.getConnection().setConnected(true);
+         MqttProperties connackProperties = new MqttProperties();
+         if (assignedClientId) {
+            connackProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.ASSIGNED_CLIENT_IDENTIFIER.value(), clientId));
+         }
+         session.getProtocolHandler().sendConnack(MqttConnectReturnCode.CONNECTION_ACCEPTED, sessionPresent && !cleanStart, connackProperties);
          // ensure we don't publish before the CONNACK
          session.start();
       }
@@ -145,19 +210,16 @@ public class MQTTConnectionManager {
          return;
       }
 
-      synchronized (session.getSessionState()) {
+      synchronized (session.getState()) {
          try {
-            if (isWill && failure) {
-               session.getMqttPublishManager().sendInternal(0, willTopic, willQoSLevel, willMessage, willRetain, true);
-            }
-            session.stop();
+            session.stop(failure);
             session.getConnection().destroy();
          } catch (Exception e) {
-            log.error("Error disconnecting client: " + e.getMessage());
+            // TODO make this a real error message
+            log.error("Error disconnecting client", e);
          } finally {
-            if (session.getSessionState() != null) {
-               session.getSessionState().setAttached(false);
-               String clientId = session.getSessionState().getClientId();
+            if (session.getState() != null) {
+               String clientId = session.getState().getClientId();
                /**
                 *  ensure that the connection for the client ID matches *this* connection otherwise we could remove the
                 *  entry for the client who "stole" this client ID via [MQTT-3.1.4-2]
@@ -174,10 +236,12 @@ public class MQTTConnectionManager {
       return session.getProtocolManager().getSessionState(clientId);
    }
 
-   private String validateClientId(String clientId, boolean cleanSession) {
+   private Pair<String, Boolean> validateClientId(String clientId, boolean cleanSession) {
+      Boolean assigned = Boolean.FALSE;
       if (clientId == null || clientId.isEmpty()) {
          // [MQTT-3.1.3-7] [MQTT-3.1.3-6] If client does not specify a client ID and clean session is set to 1 create it.
          if (cleanSession) {
+            assigned = Boolean.TRUE;
             clientId = UUID.randomUUID().toString();
          } else {
             // [MQTT-3.1.3-8] Return ID rejected and disconnect if clean session = false and client id is null
@@ -191,6 +255,6 @@ public class MQTTConnectionManager {
             connection.disconnect(false);
          }
       }
-      return clientId;
+      return new Pair<>(clientId, assigned);
    }
 }

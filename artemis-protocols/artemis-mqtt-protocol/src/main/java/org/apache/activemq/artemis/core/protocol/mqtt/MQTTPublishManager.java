@@ -64,7 +64,7 @@ public class MQTTPublishManager {
    }
 
    synchronized void start() throws Exception {
-      this.state = session.getSessionState();
+      this.state = session.getState();
       this.outboundStore = state.getOutboundStore();
    }
 
@@ -95,7 +95,7 @@ public class MQTTPublishManager {
    }
 
    private SimpleString createManagementAddress() {
-      return new SimpleString(MQTTUtil.MANAGEMENT_QUEUE_PREFIX + session.getSessionState().getClientId());
+      return new SimpleString(MQTTUtil.MANAGEMENT_QUEUE_PREFIX + session.getState().getClientId());
    }
 
    private void createManagementQueue() throws Exception {
@@ -190,7 +190,7 @@ public class MQTTPublishManager {
 
    void sendPubRelMessage(Message message) {
       int messageId = message.getIntProperty(MQTTUtil.MQTT_MESSAGE_ID_KEY);
-      session.getSessionState().getOutboundStore().publishReleasedSent(messageId, message.getMessageID());
+      session.getState().getOutboundStore().publishReleasedSent(messageId, message.getMessageID());
       session.getProtocolHandler().sendPubRel(messageId);
    }
 
@@ -215,7 +215,7 @@ public class MQTTPublishManager {
             session.getProtocolHandler().sendPubRel(messageId);
          }
       } catch (ActiveMQIllegalStateException e) {
-         log.warn("MQTT Client(" + session.getSessionState().getClientId() + ") attempted to Ack already Ack'd message");
+         log.warn("MQTT Client(" + session.getState().getClientId() + ") attempted to Ack already Ack'd message");
       }
    }
 
@@ -261,7 +261,7 @@ public class MQTTPublishManager {
             session.getServerSession().individualAcknowledge(ref.getB(), ref.getA());
          }
       } catch (ActiveMQIllegalStateException e) {
-         log.warn("MQTT Client(" + session.getSessionState().getClientId() + ") attempted to Ack already Ack'd message");
+         log.warn("MQTT Client(" + session.getState().getClientId() + ") attempted to Ack already Ack'd message");
       }
    }
 

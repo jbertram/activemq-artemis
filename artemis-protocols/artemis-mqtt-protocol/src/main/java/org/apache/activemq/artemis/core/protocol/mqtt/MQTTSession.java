@@ -61,6 +61,8 @@ public class MQTTSession {
 
    private CoreMessageObjectPools coreMessageObjectPools = new CoreMessageObjectPools();
 
+   private boolean five = false;
+
    public MQTTSession(MQTTProtocolHandler protocolHandler,
                       MQTTConnection connection,
                       MQTTProtocolManager protocolManager,
@@ -90,7 +92,10 @@ public class MQTTSession {
    }
 
    // TODO ensure resources are cleaned up for GC.
-   synchronized void stop() throws Exception {
+   synchronized void stop(boolean failure) throws Exception {
+      state.setFailed(failure);
+      log.info("Failed session: " + state);
+
       if (!stopped) {
          protocolHandler.stop();
          subscriptionManager.stop();
@@ -108,9 +113,24 @@ public class MQTTSession {
 
          if (state != null) {
             state.setAttached(false);
+            log.info("Unattached session: " + state);
          }
 
-         if (isClean()) {
+         if (is5()) {
+            if (state.getSessionExpiryInterval() == 0) {
+               if (state.isWill() && failure) {
+                  // The will message must be sent no matter the will delay if the session expires
+                  sendWillMessage();
+               }
+               clean();
+               protocolManager.removeSessionState(connection.getClientID());
+            } else {
+               state.setDisconnectedTime(System.currentTimeMillis());
+            }
+         } else if (isClean()) {
+            if (state.isWill() && failure) {
+               sendWillMessage();
+            }
             clean();
             protocolManager.removeSessionState(connection.getClientID());
          }
@@ -140,10 +160,6 @@ public class MQTTSession {
 
    MQTTConnectionManager getConnectionManager() {
       return mqttConnectionManager;
-   }
-
-   MQTTSessionState getSessionState() {
-      return state;
    }
 
    ServerSessionImpl getServerSession() {
@@ -177,7 +193,9 @@ public class MQTTSession {
 
    void setSessionState(MQTTSessionState state) {
       this.state = state;
-      state.setAttached(true);
+      this.state.setAttached(true);
+      this.state.setDisconnectedTime(0);
+      this.state.setSession(this);
    }
 
    MQTTRetainMessageManager getRetainMessageManager() {
@@ -210,4 +228,32 @@ public class MQTTSession {
       return coreMessageObjectPools;
    }
 
+   public boolean is5() {
+      return five;
+   }
+
+   public void set5(boolean five) {
+      this.five = five;
+   }
+
+   public void sendWillMessage() {
+      MQTTLogger.LOGGER.info("sending will message...");
+      try {
+         getMqttPublishManager().sendInternal(0,
+                                              state.getWillTopic(),
+                                              state.getWillQoSLevel(),
+                                              state.getWillMessage(),
+                                              state.isWillRetain(),
+                                              true);
+         state.setWillSent(true);
+      } catch (Exception e) {
+         // TODO make this a real error message
+         MQTTLogger.LOGGER.error("Error sending will message.", e);
+      }
+   }
+
+   @Override
+   public String toString() {
+      return "MQTTSession{ coreSessionId: " + serverSession.getName() + "}";
+   }
 }

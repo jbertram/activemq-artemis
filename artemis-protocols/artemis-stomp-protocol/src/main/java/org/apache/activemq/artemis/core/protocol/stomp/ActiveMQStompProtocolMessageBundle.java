@@ -150,8 +150,8 @@ public interface ActiveMQStompProtocolMessageBundle {
    @Message(id = 339039, value = "No id header in ACK/NACK frame.")
    ActiveMQStompException noIDInAck();
 
-   @Message(id = 339040, value = "Undefined escape sequence: {0}", format = Message.Format.MESSAGE_FORMAT)
-   ActiveMQStompException undefinedEscapeSequence(String sequence);
+   @Message(id = 339040, value = "Undefined escape sequence {0} in value for header {1} in {2} frame.", format = Message.Format.MESSAGE_FORMAT)
+   ActiveMQStompException undefinedEscapeSequence(String sequence, String headerName, String frameName);
 
    @Message(id = 339041, value = "Not allowed to specify {0} semantics on {1} address.", format = Message.Format.MESSAGE_FORMAT)
    ActiveMQStompException illegalSemantics(String requested, String exists);

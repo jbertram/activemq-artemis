@@ -1169,6 +1169,35 @@ public class MQTTTest extends MQTTTestSupport {
       assertEquals(0, getSessions().size());
    }
 
+   /*
+    * Make sure clients get their messages when they reconnect to their session
+    */
+   @Test(timeout = 60 * 1000)
+   public void testCleanSessionForMessages2() throws Exception {
+      final String CLIENTID = "cleansession";
+      final MQTT client1 = createMQTTConnection(CLIENTID, false);
+      BlockingConnection conn1 = client1.blockingConnection();
+      final String TOPIC = "TopicA";
+      conn1.connect();
+      conn1.subscribe(new Topic[]{new Topic(TOPIC, QoS.EXACTLY_ONCE)});
+      conn1.publish(TOPIC, TOPIC.getBytes(), QoS.EXACTLY_ONCE, false);
+      conn1.disconnect();
+
+      assertEquals(1, getSessions().size());
+
+      // MUST receive message from previous session (even without subscribing)
+      final MQTT client2 = createMQTTConnection(CLIENTID, false);
+      final BlockingConnection conn2 = client2.blockingConnection();
+      conn2.connect();
+      Message msg = conn2.receive(100, TimeUnit.MILLISECONDS);
+      assertNotNull(msg);
+      assertEqualsByteArrays(TOPIC.getBytes(), msg.getPayload());
+      conn2.publish(TOPIC, TOPIC.getBytes(), QoS.EXACTLY_ONCE, false);
+      conn2.disconnect();
+
+      assertEquals(1, getSessions().size());
+   }
+
    @Test(timeout = 60 * 1000)
    public void testSendMQTTReceiveJMS() throws Exception {
       doTestSendMQTTReceiveJMS("foo.*", "foo/bar");
