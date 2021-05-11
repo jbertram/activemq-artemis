@@ -28,10 +28,12 @@ import org.apache.activemq.artemis.core.server.RoutingContext;
 import org.apache.activemq.artemis.core.server.impl.RoutingContextImpl;
 import org.apache.activemq.artemis.core.transaction.Transaction;
 import org.apache.activemq.artemis.utils.collections.LinkedListIterator;
+import org.jboss.logging.Logger;
 
 public class MQTTRetainMessageManager {
 
    private MQTTSession session;
+   private static final Logger logger = Logger.getLogger(MQTTRetainMessageManager.class);
 
    public MQTTRetainMessageManager(MQTTSession session) {
       this.session = session;
@@ -63,7 +65,6 @@ public class MQTTRetainMessageManager {
 
    }
 
-   // SEND to Queue.
    void addRetainedMessagesToQueue(Queue queue, String address) throws Exception {
       // The address filter that matches all retained message queues.
       String retainAddress = MQTTUtil.convertMQTTAddressFilterToCoreRetain(address, session.getWildcardConfiguration());

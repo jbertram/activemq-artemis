@@ -1383,4 +1383,8 @@ public interface Configuration {
 
    Configuration setTemporaryQueueNamespace(String temporaryQueueNamespace);
 
+   Configuration setMqttSessionScanInterval(long mqttSessionScanInterval);
+
+   long getMqttSessionScanInterval();
+
 }

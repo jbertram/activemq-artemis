@@ -366,6 +366,8 @@ public class ConfigurationImpl implements Configuration, Serializable {
 
    private String temporaryQueueNamespace = ActiveMQDefaultConfiguration.getDefaultTemporaryQueueNamespace();
 
+   private long mqttSessionScanInterval = ActiveMQDefaultConfiguration.getMqttSessionScanInterval();
+
 
    /**
     * Parent folder for all data folders.
@@ -2600,6 +2602,17 @@ public class ConfigurationImpl implements Configuration, Serializable {
    @Override
    public Configuration setJournalMaxAtticFiles(int maxAtticFiles) {
       this.journalMaxAtticFilesFiles = maxAtticFiles;
+      return this;
+   }
+
+   @Override
+   public long getMqttSessionScanInterval() {
+      return mqttSessionScanInterval;
+   }
+
+   @Override
+   public Configuration setMqttSessionScanInterval(long mqttSessionScanInterval) {
+      this.mqttSessionScanInterval = mqttSessionScanInterval;
       return this;
    }
 

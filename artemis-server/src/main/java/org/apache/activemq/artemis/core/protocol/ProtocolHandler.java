@@ -193,7 +193,7 @@ public class ProtocolHandler {
          if (!protocolSet.isEmpty()) {
             // Use getBytes(...) as this works with direct and heap buffers.
             // See https://issues.jboss.org/browse/HORNETQ-1406
-            byte[] bytes = new byte[8];
+            byte[] bytes = new byte[16];
             in.getBytes(0, bytes);
 
             for (String protocol : protocolSet) {
