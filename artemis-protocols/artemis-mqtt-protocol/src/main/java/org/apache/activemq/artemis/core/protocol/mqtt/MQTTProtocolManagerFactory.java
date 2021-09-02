@@ -21,21 +21,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.activemq.artemis.api.core.BaseInterceptor;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 import org.apache.activemq.artemis.core.server.ActiveMQComponent;
+import org.apache.activemq.artemis.core.server.ActiveMQScheduledComponent;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.spi.core.protocol.AbstractProtocolManagerFactory;
 import org.apache.activemq.artemis.spi.core.protocol.ProtocolManager;
 import org.apache.activemq.artemis.spi.core.protocol.ProtocolManagerFactory;
 import org.apache.activemq.artemis.utils.uri.BeanSupport;
+import org.jboss.logging.Logger;
 import org.osgi.service.component.annotations.Component;
 
 @Component(service = ProtocolManagerFactory.class)
 public class MQTTProtocolManagerFactory extends AbstractProtocolManagerFactory<MQTTInterceptor> {
+
+   private static final Logger logger = Logger.getLogger(MQTTProtocolManagerFactory.class);
 
    public static final String MQTT_PROTOCOL_NAME = "MQTT";
 
@@ -81,39 +84,25 @@ public class MQTTProtocolManagerFactory extends AbstractProtocolManagerFactory<M
       services.add(new MQTTPeriodicTasks(server.getScheduledPool()));
    }
 
-   public class MQTTPeriodicTasks implements ActiveMQComponent {
-      ScheduledExecutorService pool;
-      Runnable runnable;
-
-      public MQTTPeriodicTasks(ScheduledExecutorService pool) {
-         this.pool = pool;
+   public class MQTTPeriodicTasks extends ActiveMQScheduledComponent {
+      public MQTTPeriodicTasks(ScheduledExecutorService scheduledExecutorService) {
+         super(scheduledExecutorService, null, 5, TimeUnit.SECONDS, false);
       }
 
       @Override
-      public void start() throws Exception {
-         runnable = () -> {
-            for (Map.Entry<String, MQTTSessionState> entry : sessionStates.entrySet()) {
-               MQTTSessionState state = entry.getValue();
-               MQTTLogger.LOGGER.debug("Inspecting session state: " + state);
-               if (!state.getAttached() && defaultMqttSessionExiryInterval != -1 && state.getDisconnectedTime() + (defaultMqttSessionExiryInterval * 1000) < System.currentTimeMillis()) {
-                  MQTTLogger.LOGGER.debug("Removing expired session state: " + state);
-                  sessionStates.remove(entry.getKey());
-               }
+      public void run() {
+         for (Map.Entry<String, MQTTSessionState> entry : sessionStates.entrySet()) {
+            MQTTSessionState state = entry.getValue();
+            if (logger.isDebugEnabled()) {
+               logger.debug("Inspecting session state: " + state);
             }
-         };
-         pool.scheduleAtFixedRate(runnable, 0, 5, TimeUnit.SECONDS);
-      }
-
-      @Override
-      public void stop() throws Exception {
-         if (pool instanceof ThreadPoolExecutor) {
-            ((ThreadPoolExecutor)pool).remove(runnable);
+            if (!state.getAttached() && defaultMqttSessionExiryInterval != -1 && state.getDisconnectedTime() + (defaultMqttSessionExiryInterval * 1000) < System.currentTimeMillis()) {
+               if (logger.isDebugEnabled()) {
+                  logger.debug("Removing expired session state: " + state);
+               }
+               sessionStates.remove(entry.getKey());
+            }
          }
-      }
-
-      @Override
-      public boolean isStarted() {
-         return false;
       }
    }
 }
