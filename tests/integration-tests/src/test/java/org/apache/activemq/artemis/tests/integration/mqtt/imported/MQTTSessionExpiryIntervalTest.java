@@ -47,7 +47,7 @@ public class MQTTSessionExpiryIntervalTest extends MQTTTestSupport {
 
    @Override
    protected void addMQTTConnector() throws Exception {
-      server.getConfiguration().addAcceptorConfiguration("MQTT", "tcp://localhost:" + port + "?protocols=MQTT;anycastPrefix=anycast:;multicastPrefix=multicast:;defaultMqttSessionExpiryInterval=3");
+      server.getConfiguration().addAcceptorConfiguration("MQTT", "tcp://localhost:" + port + "?protocols=MQTT;anycastPrefix=anycast:;multicastPrefix=multicast:sessionExpiryInterval=3");
 
       log.debug("Added MQTT connector to broker");
    }

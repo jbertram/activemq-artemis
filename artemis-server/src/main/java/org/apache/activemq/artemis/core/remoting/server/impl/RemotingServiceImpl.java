@@ -293,7 +293,6 @@ public class RemotingServiceImpl implements RemotingService, ServerConnectionLif
    }
 
 
-   /** No interface method, for tests only */
    public Map<String, Acceptor> getAcceptors() {
       return acceptors;
    }

@@ -24,6 +24,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.activemq.artemis.api.core.BaseInterceptor;
+import org.apache.activemq.artemis.core.protocol.ProtocolHandler;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 import org.apache.activemq.artemis.core.server.ActiveMQComponent;
 import org.apache.activemq.artemis.core.server.ActiveMQScheduledComponent;
@@ -46,21 +47,14 @@ public class MQTTProtocolManagerFactory extends AbstractProtocolManagerFactory<M
 
    private static final String[] SUPPORTED_PROTOCOLS = {MQTT_PROTOCOL_NAME};
 
-   private final Map<String, MQTTConnection> connectedClients  = new ConcurrentHashMap<>();
-   private final Map<String, MQTTSessionState> sessionStates = new ConcurrentHashMap<>();
-
-   private long defaultMqttSessionExiryInterval = TransportConstants.DEFAULT_DEFAULT_MQTT_SESSION_EXPIRY_INTERVAL;
-
    @Override
    public ProtocolManager createProtocolManager(ActiveMQServer server,
                                                 final Map<String, Object> parameters,
                                                 List<BaseInterceptor> incomingInterceptors,
                                                 List<BaseInterceptor> outgoingInterceptors) throws Exception {
-      if (parameters.containsKey(TransportConstants.DEFAULT_MQTT_SESSION_EXPIRY_INTERVAL)) {
-         defaultMqttSessionExiryInterval = Long.parseLong((String)parameters.get(TransportConstants.DEFAULT_MQTT_SESSION_EXPIRY_INTERVAL));
-      }
+
       BeanSupport.stripPasswords(parameters);
-      return BeanSupport.setData(new MQTTProtocolManager(server, connectedClients, sessionStates, incomingInterceptors, outgoingInterceptors), parameters);
+      return BeanSupport.setData(new MQTTProtocolManager(server, incomingInterceptors, outgoingInterceptors), parameters);
    }
 
    @Override
@@ -81,28 +75,29 @@ public class MQTTProtocolManagerFactory extends AbstractProtocolManagerFactory<M
 
    @Override
    public void loadProtocolServices(ActiveMQServer server, List<ActiveMQComponent> services) {
-      services.add(new MQTTPeriodicTasks(server.getScheduledPool()));
+      services.add(new MQTTPeriodicTasks(server, server.getScheduledPool()));
    }
 
    public class MQTTPeriodicTasks extends ActiveMQScheduledComponent {
-      public MQTTPeriodicTasks(ScheduledExecutorService scheduledExecutorService) {
+      final ActiveMQServer server;
+      public MQTTPeriodicTasks(ActiveMQServer server, ScheduledExecutorService scheduledExecutorService) {
          super(scheduledExecutorService, null, 5, TimeUnit.SECONDS, false);
+         this.server = server;
       }
 
       @Override
       public void run() {
-         for (Map.Entry<String, MQTTSessionState> entry : sessionStates.entrySet()) {
-            MQTTSessionState state = entry.getValue();
-            if (logger.isDebugEnabled()) {
-               logger.debug("Inspecting session state: " + state);
+         server.getRemotingService().getAcceptors().forEach((key, acceptor) -> {
+            ProtocolHandler protocolHandler = acceptor.getProtocolHandler();
+            if (protocolHandler != null) {
+               protocolHandler.getProtocolMap().values().forEach(m -> {
+                  if (m instanceof MQTTProtocolManager) {
+                     ((MQTTProtocolManager)m).scanSessions();
+                  }
+               });
             }
-            if (!state.getAttached() && defaultMqttSessionExiryInterval != -1 && state.getDisconnectedTime() + (defaultMqttSessionExiryInterval * 1000) < System.currentTimeMillis()) {
-               if (logger.isDebugEnabled()) {
-                  logger.debug("Removing expired session state: " + state);
-               }
-               sessionStates.remove(entry.getKey());
-            }
-         }
+         });
+
       }
    }
 }

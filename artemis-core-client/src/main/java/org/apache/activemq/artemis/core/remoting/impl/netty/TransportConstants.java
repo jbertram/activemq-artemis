@@ -334,10 +334,6 @@ public class TransportConstants {
 
    public static final String DISABLE_STOMP_SERVER_HEADER = "disableStompServerHeader";
 
-   public static final String DEFAULT_MQTT_SESSION_EXPIRY_INTERVAL = "defaultMqttSessionExpiryInterval";
-
-   public static final long DEFAULT_DEFAULT_MQTT_SESSION_EXPIRY_INTERVAL = -1;
-
    /** We let this to be defined as a System Variable, as we need a different timeout over our testsuite.
     *  When running on a real server, this is the default we want.
     *  When running on a test suite, we need it to be 0, You should see a property on the main pom.xml.
@@ -446,7 +442,6 @@ public class TransportConstants {
       allowableAcceptorKeys.add(TransportConstants.DISABLE_STOMP_SERVER_HEADER);
       allowableAcceptorKeys.add(TransportConstants.AUTO_START);
       allowableAcceptorKeys.add(TransportConstants.REDIRECT_TO);
-      allowableAcceptorKeys.add(TransportConstants.DEFAULT_MQTT_SESSION_EXPIRY_INTERVAL);
 
       ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
 
