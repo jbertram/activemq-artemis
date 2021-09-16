@@ -168,6 +168,8 @@
       <activemq.version.versionTag>${project.version}</activemq.version.versionTag>
       <ActiveMQ-Version>${project.version}(${activemq.version.incrementingVersion})</ActiveMQ-Version>
 
+
+
       <skipUnitTests>true</skipUnitTests>
       <skipJmsTests>true</skipJmsTests>
       <skipExtraTests>true</skipExtraTests>
