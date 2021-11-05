@@ -28,9 +28,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.activemq.artemis.core.server.NetworkHealthCheck;
 import org.apache.activemq.artemis.utils.ExecuteUtil;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
 
 /**
  * This utility class will use sudo commands to start "fake" network cards on a given address.
@@ -105,12 +105,12 @@ public class NetUtil extends ExecuteUtil {
 
          System.out.println(writer.toString());
 
-         Assume.assumeTrue("Not able to sudo ifconfig", canSudo);
+         Assumptions.assumeTrue(canSudo, "Not able to sudo ifconfig");
       }
    }
 
    public static void skipIfNotSupportedOS() {
-      Assume.assumeTrue("non supported OS", osUsed != OS.NON_SUPORTED);
+      Assumptions.assumeTrue(osUsed != OS.NON_SUPORTED, "non supported OS");
    }
 
    public static void cleanup() {
@@ -136,16 +136,16 @@ public class NetUtil extends ExecuteUtil {
    public static void netUp(String ip, String deviceID) throws Exception {
       if (osUsed == OS.MAC) {
          if (runCommand(false, "sudo", "-n", "ifconfig", "lo0", "alias", ip) != 0) {
-            Assert.fail("Cannot sudo ifconfig for ip " + ip);
+            Assertions.fail("Cannot sudo ifconfig for ip " + ip);
          }
          networks.put(ip, "lo0");
       } else if (osUsed == OS.LINUX) {
          if (runCommand(false, "sudo", "-n", "ifconfig", deviceID, ip, "netmask", "255.0.0.0") != 0) {
-            Assert.fail("Cannot sudo ifconfig for ip " + ip);
+            Assertions.fail("Cannot sudo ifconfig for ip " + ip);
          }
          networks.put(ip, deviceID);
       } else {
-         Assert.fail("OS not supported");
+         Assertions.fail("OS not supported");
       }
    }
 
@@ -158,7 +158,7 @@ public class NetUtil extends ExecuteUtil {
       String device = networks.remove(ip);
       if (!force) {
          // in case the netDown is coming from a different VM (spawned tests)
-         Assert.assertNotNull("ip " + ip + "wasn't set up before", device);
+         Assertions.assertNotNull("ip " + ip + "wasn't set up before", device);
       }
       netDown(ip, device, force);
    }
@@ -169,17 +169,17 @@ public class NetUtil extends ExecuteUtil {
       if (osUsed == OS.MAC) {
          if (runCommand(false, "sudo", "-n", "ifconfig", "lo0", "-alias", ip) != 0) {
             if (!force) {
-               Assert.fail("Cannot sudo ifconfig for ip " + ip);
+               Assertions.fail("Cannot sudo ifconfig for ip " + ip);
             }
          }
       } else if (osUsed == OS.LINUX) {
          if (runCommand(false, "sudo", "-n", "ifconfig", device, "down") != 0) {
             if (!force) {
-               Assert.fail("Cannot sudo ifconfig for ip " + ip);
+               Assertions.fail("Cannot sudo ifconfig for ip " + ip);
             }
          }
       } else {
-         Assert.fail("OS not supported");
+         Assertions.fail("OS not supported");
       }
    }
 
@@ -194,6 +194,6 @@ public class NetUtil extends ExecuteUtil {
 
    @Test
    public void testCanSudo() throws Exception {
-      Assert.assertTrue(canSudo());
+      Assertions.assertTrue(canSudo());
    }
 }

@@ -23,8 +23,8 @@ import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
@@ -47,64 +47,64 @@ public class LongHashSetTest {
    @Test
    public void initiallyContainsNoElements() {
       for (long i = 0; i < 10_000; i++) {
-         Assert.assertFalse(testSet.contains(i));
+         Assertions.assertFalse(testSet.contains(i));
       }
    }
 
    @Test
    public void initiallyContainsNoBoxedElements() {
       for (long i = 0; i < 10_000; i++) {
-         Assert.assertFalse(testSet.contains(Long.valueOf(i)));
+         Assertions.assertFalse(testSet.contains(Long.valueOf(i)));
       }
    }
 
    @Test
    public void containsAddedElement() {
-      Assert.assertTrue(testSet.add(1L));
+      Assertions.assertTrue(testSet.add(1L));
 
-      Assert.assertTrue(testSet.contains(1L));
+      Assertions.assertTrue(testSet.contains(1L));
    }
 
    @Test
    public void addingAnElementTwiceDoesNothing() {
-      Assert.assertTrue(testSet.add(1L));
+      Assertions.assertTrue(testSet.add(1L));
 
-      Assert.assertFalse(testSet.add(1L));
+      Assertions.assertFalse(testSet.add(1L));
    }
 
    @Test
    public void containsAddedBoxedElements() {
-      Assert.assertTrue(testSet.add(1L));
-      Assert.assertTrue(testSet.add(Long.valueOf(2L)));
+      Assertions.assertTrue(testSet.add(1L));
+      Assertions.assertTrue(testSet.add(Long.valueOf(2L)));
 
-      Assert.assertTrue(testSet.contains(Long.valueOf(1L)));
-      Assert.assertTrue(testSet.contains(2L));
+      Assertions.assertTrue(testSet.contains(Long.valueOf(1L)));
+      Assertions.assertTrue(testSet.contains(2L));
    }
 
    @Test
    public void removingAnElementFromAnEmptyListDoesNothing() {
-      Assert.assertFalse(testSet.remove(0L));
+      Assertions.assertFalse(testSet.remove(0L));
    }
 
    @Test
    public void removingAPresentElementRemovesIt() {
-      Assert.assertTrue(testSet.add(1L));
+      Assertions.assertTrue(testSet.add(1L));
 
-      Assert.assertTrue(testSet.remove(1L));
+      Assertions.assertTrue(testSet.remove(1L));
 
-      Assert.assertFalse(testSet.contains(1L));
+      Assertions.assertFalse(testSet.contains(1L));
    }
 
    @Test
    public void sizeIsInitiallyZero() {
-      Assert.assertEquals(0, testSet.size());
+      Assertions.assertEquals(0, testSet.size());
    }
 
    @Test
    public void sizeIncrementsWithNumberOfAddedElements() {
       addTwoElements(testSet);
 
-      Assert.assertEquals(2, testSet.size());
+      Assertions.assertEquals(2, testSet.size());
    }
 
    @Test
@@ -112,7 +112,7 @@ public class LongHashSetTest {
       testSet.add(1L);
       testSet.add(1L);
 
-      Assert.assertEquals(1, testSet.size());
+      Assertions.assertEquals(1, testSet.size());
    }
 
    @Test
@@ -143,33 +143,39 @@ public class LongHashSetTest {
       assertIteratorHasElementsWithoutHasNext();
    }
 
-   @Test(expected = NoSuchElementException.class)
+   @Test
    public void iteratorsThrowNoSuchElementException() {
-      addTwoElements(testSet);
+		Assertions.assertThrows(NoSuchElementException.class, () -> {
+         addTwoElements(testSet);
 
-      exhaustIterator();
+         exhaustIterator();
+      });
    }
 
-   @Test(expected = NoSuchElementException.class)
+   @Test
    public void iteratorsThrowNoSuchElementExceptionFromTheBeginningEveryTime() {
-      addTwoElements(testSet);
+		Assertions.assertThrows(NoSuchElementException.class, () -> {
+         addTwoElements(testSet);
 
-      try {
+         try {
+            exhaustIterator();
+         } catch (final NoSuchElementException ignore) {
+         }
+
          exhaustIterator();
-      } catch (final NoSuchElementException ignore) {
-      }
-
-      exhaustIterator();
+      });
    }
 
    @Test
    public void iteratorHasNoElements() {
-      Assert.assertFalse(testSet.iterator().hasNext());
+      Assertions.assertFalse(testSet.iterator().hasNext());
    }
 
-   @Test(expected = NoSuchElementException.class)
+   @Test
    public void iteratorThrowExceptionForEmptySet() {
-      testSet.iterator().next();
+      Assertions.assertThrows(NoSuchElementException.class, () -> {
+         testSet.iterator().next();
+      });
    }
 
    @Test
@@ -178,15 +184,15 @@ public class LongHashSetTest {
 
       testSet.clear();
 
-      Assert.assertEquals(0, testSet.size());
-      Assert.assertFalse(testSet.contains(1L));
-      Assert.assertFalse(testSet.contains(1001L));
+      Assertions.assertEquals(0, testSet.size());
+      Assertions.assertFalse(testSet.contains(1L));
+      Assertions.assertFalse(testSet.contains(1001L));
    }
 
    @Test
    public void twoEmptySetsAreEqual() {
       final LongHashSet other = new LongHashSet(100);
-      Assert.assertEquals(testSet, other);
+      Assertions.assertEquals(testSet, other);
    }
 
    @Test
@@ -196,7 +202,7 @@ public class LongHashSetTest {
       addTwoElements(testSet);
       addTwoElements(other);
 
-      Assert.assertEquals(testSet, other);
+      Assertions.assertEquals(testSet, other);
    }
 
    @Test
@@ -207,7 +213,7 @@ public class LongHashSetTest {
 
       other.add(1001L);
 
-      Assert.assertNotEquals(testSet, other);
+      Assertions.assertNotEquals(testSet, other);
    }
 
    @Test
@@ -219,12 +225,12 @@ public class LongHashSetTest {
       other.add(2L);
       other.add(1001L);
 
-      Assert.assertNotEquals(testSet, other);
+      Assertions.assertNotEquals(testSet, other);
    }
 
    @Test
    public void twoEmptySetsHaveTheSameHashcode() {
-      Assert.assertEquals(testSet.hashCode(), new LongHashSet(100).hashCode());
+      Assertions.assertEquals(testSet.hashCode(), new LongHashSet(100).hashCode());
    }
 
    @Test
@@ -235,7 +241,7 @@ public class LongHashSetTest {
 
       addTwoElements(other);
 
-      Assert.assertEquals(testSet.hashCode(), other.hashCode());
+      Assertions.assertEquals(testSet.hashCode(), other.hashCode());
    }
 
    @Test
@@ -244,19 +250,23 @@ public class LongHashSetTest {
 
       testSet.remove(1001L);
 
-      Assert.assertEquals(1, testSet.size());
+      Assertions.assertEquals(1, testSet.size());
    }
 
    @SuppressWarnings("CollectionToArraySafeParameter")
-   @Test(expected = ArrayStoreException.class)
+   @Test()
    public void toArrayThrowsArrayStoreExceptionForWrongType() {
-      testSet.toArray(new String[1]);
+      Assertions.assertThrows(ArrayStoreException.class, () -> {
+         testSet.toArray(new String[1]);
+      });
    }
 
-   @Test(expected = NullPointerException.class)
+   @Test()
    public void toArrayThrowsNullPointerExceptionForNullArgument() {
-      final Long[] into = null;
-      testSet.toArray(into);
+      Assertions.assertThrows(NullPointerException.class, () -> {
+         final Long[] into = null;
+         testSet.toArray(into);
+      });
    }
 
    @Test
@@ -281,7 +291,7 @@ public class LongHashSetTest {
    public void toArraySupportsEmptyCollection() {
       final Long[] result = testSet.toArray(new Long[testSet.size()]);
 
-      Assert.assertArrayEquals(result, new Long[]{});
+      Assertions.assertArrayEquals(result, new Long[]{});
    }
 
    // Test case from usage bug.
@@ -295,8 +305,8 @@ public class LongHashSetTest {
       requiredFields.add(49L);
       requiredFields.add(56L);
 
-      Assert.assertTrue("Failed to remove 8", requiredFields.remove(8L));
-      Assert.assertTrue("Failed to remove 9", requiredFields.remove(9L));
+      Assertions.assertTrue(requiredFields.remove(8L), "Failed to remove 8");
+      Assertions.assertTrue(requiredFields.remove(9L), "Failed to remove 9");
 
       assertThat(requiredFields, containsInAnyOrder(35L, 49L, 56L));
    }
@@ -304,11 +314,11 @@ public class LongHashSetTest {
    @Test
    public void shouldResizeWhenItHitsCapacity() {
       for (long i = 0; i < 2 * INITIAL_CAPACITY; i++) {
-         Assert.assertTrue(testSet.add(i));
+         Assertions.assertTrue(testSet.add(i));
       }
 
       for (long i = 0; i < 2 * INITIAL_CAPACITY; i++) {
-         Assert.assertTrue(testSet.contains(i));
+         Assertions.assertTrue(testSet.contains(i));
       }
    }
 
@@ -316,8 +326,8 @@ public class LongHashSetTest {
    public void containsEmptySet() {
       final LongHashSet other = new LongHashSet(100);
 
-      Assert.assertTrue(testSet.containsAll(other));
-      Assert.assertTrue(testSet.containsAll((Collection<?>) other));
+      Assertions.assertTrue(testSet.containsAll(other));
+      Assertions.assertTrue(testSet.containsAll((Collection<?>) other));
    }
 
    @Test
@@ -328,8 +338,8 @@ public class LongHashSetTest {
 
       subset.add(1L);
 
-      Assert.assertTrue(testSet.containsAll(subset));
-      Assert.assertTrue(testSet.containsAll((Collection<?>) subset));
+      Assertions.assertTrue(testSet.containsAll(subset));
+      Assertions.assertTrue(testSet.containsAll((Collection<?>) subset));
    }
 
    @Test
@@ -341,8 +351,8 @@ public class LongHashSetTest {
       other.add(1L);
       other.add(1002L);
 
-      Assert.assertFalse(testSet.containsAll(other));
-      Assert.assertFalse(testSet.containsAll((Collection<?>) other));
+      Assertions.assertFalse(testSet.containsAll(other));
+      Assertions.assertFalse(testSet.containsAll((Collection<?>) other));
    }
 
    @Test
@@ -354,16 +364,16 @@ public class LongHashSetTest {
       addTwoElements(superset);
       superset.add(15L);
 
-      Assert.assertFalse(testSet.containsAll(superset));
-      Assert.assertFalse(testSet.containsAll((Collection<?>) superset));
+      Assertions.assertFalse(testSet.containsAll(superset));
+      Assertions.assertFalse(testSet.containsAll((Collection<?>) superset));
    }
 
    @Test
    public void addingEmptySetDoesNothing() {
       addTwoElements(testSet);
 
-      Assert.assertFalse(testSet.addAll(new LongHashSet(100)));
-      Assert.assertFalse(testSet.addAll(new HashSet<>()));
+      Assertions.assertFalse(testSet.addAll(new LongHashSet(100)));
+      Assertions.assertFalse(testSet.addAll(new HashSet<>()));
       assertContainsElements(testSet);
    }
 
@@ -377,8 +387,8 @@ public class LongHashSetTest {
 
       final HashSet<Long> subSetCollection = new HashSet<>(subset);
 
-      Assert.assertFalse(testSet.addAll(subset));
-      Assert.assertFalse(testSet.addAll(subSetCollection));
+      Assertions.assertFalse(testSet.addAll(subset));
+      Assertions.assertFalse(testSet.addAll(subSetCollection));
       assertContainsElements(testSet);
    }
 
@@ -392,8 +402,8 @@ public class LongHashSetTest {
 
       final HashSet<Long> equalCollection = new HashSet<>(equal);
 
-      Assert.assertFalse(testSet.addAll(equal));
-      Assert.assertFalse(testSet.addAll(equalCollection));
+      Assertions.assertFalse(testSet.addAll(equal));
+      Assertions.assertFalse(testSet.addAll(equalCollection));
       assertContainsElements(testSet);
    }
 
@@ -406,10 +416,10 @@ public class LongHashSetTest {
       disjoint.add(2L);
       disjoint.add(1002L);
 
-      Assert.assertTrue(testSet.addAll(disjoint));
-      Assert.assertTrue(testSet.contains(1L));
-      Assert.assertTrue(testSet.contains(1001L));
-      Assert.assertTrue(testSet.containsAll(disjoint));
+      Assertions.assertTrue(testSet.addAll(disjoint));
+      Assertions.assertTrue(testSet.contains(1L));
+      Assertions.assertTrue(testSet.contains(1001L));
+      Assertions.assertTrue(testSet.containsAll(disjoint));
    }
 
    @Test
@@ -421,10 +431,10 @@ public class LongHashSetTest {
       disjoint.add(2L);
       disjoint.add(1002L);
 
-      Assert.assertTrue(testSet.addAll(disjoint));
-      Assert.assertTrue(testSet.contains(1L));
-      Assert.assertTrue(testSet.contains(1001L));
-      Assert.assertTrue(testSet.containsAll(disjoint));
+      Assertions.assertTrue(testSet.addAll(disjoint));
+      Assertions.assertTrue(testSet.contains(1L));
+      Assertions.assertTrue(testSet.contains(1001L));
+      Assertions.assertTrue(testSet.containsAll(disjoint));
    }
 
    @Test
@@ -436,10 +446,10 @@ public class LongHashSetTest {
       intersecting.add(1L);
       intersecting.add(1002L);
 
-      Assert.assertTrue(testSet.addAll(intersecting));
-      Assert.assertTrue(testSet.contains(1L));
-      Assert.assertTrue(testSet.contains(1001L));
-      Assert.assertTrue(testSet.containsAll(intersecting));
+      Assertions.assertTrue(testSet.addAll(intersecting));
+      Assertions.assertTrue(testSet.contains(1L));
+      Assertions.assertTrue(testSet.contains(1001L));
+      Assertions.assertTrue(testSet.containsAll(intersecting));
    }
 
    @Test
@@ -451,18 +461,18 @@ public class LongHashSetTest {
       intersecting.add(1L);
       intersecting.add(1002L);
 
-      Assert.assertTrue(testSet.addAll(intersecting));
-      Assert.assertTrue(testSet.contains(1L));
-      Assert.assertTrue(testSet.contains(1001L));
-      Assert.assertTrue(testSet.containsAll(intersecting));
+      Assertions.assertTrue(testSet.addAll(intersecting));
+      Assertions.assertTrue(testSet.contains(1L));
+      Assertions.assertTrue(testSet.contains(1001L));
+      Assertions.assertTrue(testSet.containsAll(intersecting));
    }
 
    @Test
    public void removingEmptySetDoesNothing() {
       addTwoElements(testSet);
 
-      Assert.assertFalse(testSet.removeAll(new LongHashSet(100)));
-      Assert.assertFalse(testSet.removeAll(new HashSet<Long>()));
+      Assertions.assertFalse(testSet.removeAll(new LongHashSet(100)));
+      Assertions.assertFalse(testSet.removeAll(new HashSet<Long>()));
       assertContainsElements(testSet);
    }
 
@@ -475,8 +485,8 @@ public class LongHashSetTest {
       disjoint.add(2L);
       disjoint.add(1002L);
 
-      Assert.assertFalse(testSet.removeAll(disjoint));
-      Assert.assertFalse(testSet.removeAll(new HashSet<Long>()));
+      Assertions.assertFalse(testSet.removeAll(disjoint));
+      Assertions.assertFalse(testSet.removeAll(new HashSet<Long>()));
       assertContainsElements(testSet);
    }
 
@@ -489,9 +499,9 @@ public class LongHashSetTest {
       intersecting.add(1L);
       intersecting.add(1002L);
 
-      Assert.assertTrue(testSet.removeAll(intersecting));
-      Assert.assertTrue(testSet.contains(1001L));
-      Assert.assertFalse(testSet.containsAll(intersecting));
+      Assertions.assertTrue(testSet.removeAll(intersecting));
+      Assertions.assertTrue(testSet.contains(1001L));
+      Assertions.assertFalse(testSet.containsAll(intersecting));
    }
 
    @Test
@@ -503,9 +513,9 @@ public class LongHashSetTest {
       intersecting.add(1L);
       intersecting.add(1002L);
 
-      Assert.assertTrue(testSet.removeAll(intersecting));
-      Assert.assertTrue(testSet.contains(1001L));
-      Assert.assertFalse(testSet.containsAll(intersecting));
+      Assertions.assertTrue(testSet.removeAll(intersecting));
+      Assertions.assertTrue(testSet.contains(1001L));
+      Assertions.assertFalse(testSet.containsAll(intersecting));
    }
 
    @Test
@@ -516,8 +526,8 @@ public class LongHashSetTest {
 
       addTwoElements(equal);
 
-      Assert.assertTrue(testSet.removeAll(equal));
-      Assert.assertTrue(testSet.isEmpty());
+      Assertions.assertTrue(testSet.removeAll(equal));
+      Assertions.assertTrue(testSet.isEmpty());
    }
 
    @Test
@@ -528,8 +538,8 @@ public class LongHashSetTest {
 
       addTwoElements(equal);
 
-      Assert.assertTrue(testSet.removeAll(equal));
-      Assert.assertTrue(testSet.isEmpty());
+      Assertions.assertTrue(testSet.removeAll(equal));
+      Assertions.assertTrue(testSet.isEmpty());
    }
 
    @Test
@@ -549,27 +559,27 @@ public class LongHashSetTest {
 
    @Test
    public void shouldNotContainMissingValueInitially() {
-      Assert.assertFalse(testSet.contains(LongHashSet.MISSING_VALUE));
+      Assertions.assertFalse(testSet.contains(LongHashSet.MISSING_VALUE));
    }
 
    @Test
    public void shouldAllowMissingValue() {
-      Assert.assertTrue(testSet.add(LongHashSet.MISSING_VALUE));
+      Assertions.assertTrue(testSet.add(LongHashSet.MISSING_VALUE));
 
-      Assert.assertTrue(testSet.contains(LongHashSet.MISSING_VALUE));
+      Assertions.assertTrue(testSet.contains(LongHashSet.MISSING_VALUE));
 
-      Assert.assertFalse(testSet.add(LongHashSet.MISSING_VALUE));
+      Assertions.assertFalse(testSet.add(LongHashSet.MISSING_VALUE));
    }
 
    @Test
    public void shouldAllowRemovalOfMissingValue() {
-      Assert.assertTrue(testSet.add(LongHashSet.MISSING_VALUE));
+      Assertions.assertTrue(testSet.add(LongHashSet.MISSING_VALUE));
 
-      Assert.assertTrue(testSet.remove(LongHashSet.MISSING_VALUE));
+      Assertions.assertTrue(testSet.remove(LongHashSet.MISSING_VALUE));
 
-      Assert.assertFalse(testSet.contains(LongHashSet.MISSING_VALUE));
+      Assertions.assertFalse(testSet.contains(LongHashSet.MISSING_VALUE));
 
-      Assert.assertFalse(testSet.remove(LongHashSet.MISSING_VALUE));
+      Assertions.assertFalse(testSet.remove(LongHashSet.MISSING_VALUE));
    }
 
    @Test
@@ -577,7 +587,7 @@ public class LongHashSetTest {
       testSet.add(1L);
       testSet.add(LongHashSet.MISSING_VALUE);
 
-      Assert.assertEquals(2, testSet.size());
+      Assertions.assertEquals(2, testSet.size());
    }
 
    @Test
@@ -610,14 +620,14 @@ public class LongHashSetTest {
       final LongHashSet other = new LongHashSet(100);
       addTwoElements(other);
 
-      Assert.assertNotEquals(testSet, other);
+      Assertions.assertNotEquals(testSet, other);
 
       other.add(LongHashSet.MISSING_VALUE);
-      Assert.assertEquals(testSet, other);
+      Assertions.assertEquals(testSet, other);
 
       testSet.remove(LongHashSet.MISSING_VALUE);
 
-      Assert.assertNotEquals(testSet, other);
+      Assertions.assertNotEquals(testSet, other);
    }
 
    @Test
@@ -644,14 +654,14 @@ public class LongHashSetTest {
       final LongHashSet other = new LongHashSet(100);
       addTwoElements(other);
 
-      Assert.assertNotEquals(testSet.hashCode(), other.hashCode());
+      Assertions.assertNotEquals(testSet.hashCode(), other.hashCode());
 
       other.add(LongHashSet.MISSING_VALUE);
-      Assert.assertEquals(testSet.hashCode(), other.hashCode());
+      Assertions.assertEquals(testSet.hashCode(), other.hashCode());
 
       testSet.remove(LongHashSet.MISSING_VALUE);
 
-      Assert.assertNotEquals(testSet.hashCode(), other.hashCode());
+      Assertions.assertNotEquals(testSet.hashCode(), other.hashCode());
    }
 
    @Test
@@ -667,7 +677,7 @@ public class LongHashSetTest {
          }
       }
 
-      Assert.assertEquals(1, missingValueCount);
+      Assertions.assertEquals(1, missingValueCount);
    }
 
    @Test
@@ -682,7 +692,7 @@ public class LongHashSetTest {
          }
       }
 
-      Assert.assertFalse(testSet.contains(LongHashSet.MISSING_VALUE));
+      Assertions.assertFalse(testSet.contains(LongHashSet.MISSING_VALUE));
    }
 
    @Test
@@ -699,11 +709,11 @@ public class LongHashSetTest {
 
    @Test
    public void shouldRemoveMissingValueWhenCleared() {
-      Assert.assertTrue(testSet.add(LongHashSet.MISSING_VALUE));
+      Assertions.assertTrue(testSet.add(LongHashSet.MISSING_VALUE));
 
       testSet.clear();
 
-      Assert.assertFalse(testSet.contains(LongHashSet.MISSING_VALUE));
+      Assertions.assertFalse(testSet.contains(LongHashSet.MISSING_VALUE));
    }
 
    @Test
@@ -722,9 +732,9 @@ public class LongHashSetTest {
          testSet.add(LongHashSet.MISSING_VALUE);
       }
 
-      Assert.assertEquals("Fail with seed:" + seed, testSet, compatibleSet);
-      Assert.assertEquals("Fail with seed:" + seed, compatibleSet, testSet);
-      Assert.assertEquals("Fail with seed:" + seed, compatibleSet.hashCode(), testSet.hashCode());
+      Assertions.assertEquals(testSet, compatibleSet, "Fail with seed:" + seed);
+      Assertions.assertEquals(compatibleSet, testSet, "Fail with seed:" + seed);
+      Assertions.assertEquals(compatibleSet.hashCode(), testSet.hashCode(), "Fail with seed:" + seed);
    }
 
    private static void addTwoElements(final LongHashSet obj) {
@@ -742,11 +752,11 @@ public class LongHashSetTest {
 
       final Set<Long> values = new HashSet<>();
 
-      Assert.assertTrue(iter.hasNext());
+      Assertions.assertTrue(iter.hasNext());
       values.add(iter.next());
-      Assert.assertTrue(iter.hasNext());
+      Assertions.assertTrue(iter.hasNext());
       values.add(iter.next());
-      Assert.assertFalse(iter.hasNext());
+      Assertions.assertFalse(iter.hasNext());
 
       assertContainsElements(values);
    }

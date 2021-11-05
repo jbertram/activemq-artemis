@@ -28,14 +28,14 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.internal.PlatformDependent;
 import org.jboss.logging.Logger;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ByteUtilTest {
 
@@ -65,7 +65,7 @@ public class ByteUtilTest {
 
    void testEquals(String string1, String string2) {
       if (!string1.equals(string2)) {
-         Assert.fail("String are not the same:=" + string1 + "!=" + string2);
+         Assertions.fail("String are not the same:=" + string1 + "!=" + string2);
       }
    }
 
@@ -93,8 +93,8 @@ public class ByteUtilTest {
 
    @Test
    public void testUnsafeUnalignedByteArrayHashCode() {
-      Assume.assumeTrue(PlatformDependent.hasUnsafe());
-      Assume.assumeTrue(PlatformDependent.isUnaligned());
+      Assumptions.assumeTrue(PlatformDependent.hasUnsafe());
+      Assumptions.assumeTrue(PlatformDependent.isUnaligned());
       Map<byte[], Integer> map = new LinkedHashMap<>();
       map.put(new byte[0], 1);
       map.put(new byte[]{1}, 32);
@@ -111,14 +111,14 @@ public class ByteUtilTest {
          map.put(new byte[]{-1, -1, -1, (byte) 0xE1}, -503316450);
       }
       for (Map.Entry<byte[], Integer> e : map.entrySet()) {
-         assertEquals("input = " + Arrays.toString(e.getKey()), e.getValue().intValue(), ByteUtil.hashCode(e.getKey()));
+         assertEquals(e.getValue().intValue(), ByteUtil.hashCode(e.getKey()), "input = " + Arrays.toString(e.getKey()));
       }
    }
 
    @Test
    public void testNoUnsafeAlignedByteArrayHashCode() {
-      Assume.assumeFalse(PlatformDependent.hasUnsafe());
-      Assume.assumeFalse(PlatformDependent.isUnaligned());
+      Assumptions.assumeFalse(PlatformDependent.hasUnsafe());
+      Assumptions.assumeFalse(PlatformDependent.isUnaligned());
       ArrayList<byte[]> inputs = new ArrayList<>();
       inputs.add(new byte[0]);
       inputs.add(new byte[]{1});
@@ -128,7 +128,7 @@ public class ByteUtilTest {
       inputs.add(new byte[]{0, 1, 2, 3, 4, 5});
       inputs.add(new byte[]{6, 7, 8, 9, 0, 1});
       inputs.add(new byte[]{-1, -1, -1, (byte) 0xE1});
-      inputs.forEach(input -> assertEquals("input = " + Arrays.toString(input), Arrays.hashCode(input), ByteUtil.hashCode(input)));
+      inputs.forEach(input -> assertEquals(Arrays.hashCode(input), ByteUtil.hashCode(input), "input = " + Arrays.toString(input)));
    }
 
    @Test
@@ -173,26 +173,26 @@ public class ByteUtilTest {
       final int position = buffer.position();
       final int limit = buffer.limit();
       ByteUtil.zeros(buffer, offset, bytes);
-      Assert.assertEquals(position, buffer.position());
-      Assert.assertEquals(limit, buffer.limit());
+      Assertions.assertEquals(position, buffer.position());
+      Assertions.assertEquals(limit, buffer.limit());
       final byte[] zeros = new byte[bytes];
       final byte[] content = new byte[bytes];
       final ByteBuffer duplicate = buffer.duplicate();
       duplicate.clear().position(offset);
       duplicate.get(content, 0, bytes);
-      Assert.assertArrayEquals(zeros, content);
+      Assertions.assertArrayEquals(zeros, content);
       if (originalRemaining != null) {
          final byte[] remaining = new byte[duplicate.remaining()];
          //duplicate position has been moved of bytes
          duplicate.get(remaining);
-         Assert.assertArrayEquals(originalRemaining, remaining);
+         Assertions.assertArrayEquals(originalRemaining, remaining);
       }
       if (originalBefore != null) {
          final byte[] before = new byte[offset];
          //duplicate position has been moved of bytes: need to reset it
          duplicate.position(0);
          duplicate.get(before);
-         Assert.assertArrayEquals(originalBefore, before);
+         Assertions.assertArrayEquals(originalBefore, before);
       }
    }
 
@@ -261,96 +261,106 @@ public class ByteUtilTest {
       shouldZeroesByteBuffer(buffer, offset, bytes);
    }
 
-   @Test(expected = ReadOnlyBufferException.class)
+	@Test
    public void shouldFailWithReadOnlyHeapByteBuffer() {
-      final byte one = (byte) 1;
-      final int capacity = 64;
-      final int bytes = 32;
-      final int offset = 1;
-      ByteBuffer buffer = ByteBuffer.allocate(capacity);
-      fill(buffer, 0, capacity, one);
-      buffer = buffer.asReadOnlyBuffer();
-      shouldZeroesByteBuffer(buffer, offset, bytes);
+		Assertions.assertThrows(ReadOnlyBufferException.class, () -> {
+         final byte one = (byte) 1;
+         final int capacity = 64;
+         final int bytes = 32;
+         final int offset = 1;
+         ByteBuffer buffer = ByteBuffer.allocate(capacity);
+         fill(buffer, 0, capacity, one);
+         buffer = buffer.asReadOnlyBuffer();
+         shouldZeroesByteBuffer(buffer, offset, bytes);
+      });
    }
 
-   @Test(expected = IndexOutOfBoundsException.class)
+	@Test
    public void shouldFailIfOffsetIsGreaterOrEqualHeapByteBufferCapacity() {
-      final byte one = (byte) 1;
-      final int capacity = 64;
-      final int bytes = 0;
-      final int offset = 64;
-      ByteBuffer buffer = ByteBuffer.allocate(capacity);
-      fill(buffer, 0, capacity, one);
-      try {
-         shouldZeroesByteBuffer(buffer, offset, bytes);
-      } catch (IndexOutOfBoundsException expectedEx) {
-         //verify that the buffer hasn't changed
-         final byte[] originalContent = duplicateRemaining(buffer, 0, 0);
-         final byte[] expectedContent = new byte[capacity];
-         Arrays.fill(expectedContent, one);
-         Assert.assertArrayEquals(expectedContent, originalContent);
-         throw expectedEx;
-      }
+		Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+         final byte one = (byte) 1;
+         final int capacity = 64;
+         final int bytes = 0;
+         final int offset = 64;
+         ByteBuffer buffer = ByteBuffer.allocate(capacity);
+         fill(buffer, 0, capacity, one);
+         try {
+            shouldZeroesByteBuffer(buffer, offset, bytes);
+         } catch (IndexOutOfBoundsException expectedEx) {
+            //verify that the buffer hasn't changed
+            final byte[] originalContent = duplicateRemaining(buffer, 0, 0);
+            final byte[] expectedContent = new byte[capacity];
+            Arrays.fill(expectedContent, one);
+            Assertions.assertArrayEquals(expectedContent, originalContent);
+            throw expectedEx;
+         }
+      });
    }
 
-   @Test(expected = IllegalArgumentException.class)
+	@Test
    public void shouldFailIfOffsetIsNegative() {
-      final byte one = (byte) 1;
-      final int capacity = 64;
-      final int bytes = 1;
-      final int offset = -1;
-      ByteBuffer buffer = ByteBuffer.allocate(capacity);
-      fill(buffer, 0, capacity, one);
-      try {
-         shouldZeroesByteBuffer(buffer, offset, bytes);
-      } catch (IndexOutOfBoundsException expectedEx) {
-         //verify that the buffer hasn't changed
-         final byte[] originalContent = duplicateRemaining(buffer, 0, 0);
-         final byte[] expectedContent = new byte[capacity];
-         Arrays.fill(expectedContent, one);
-         Assert.assertArrayEquals(expectedContent, originalContent);
-         throw expectedEx;
-      }
+		Assertions.assertThrows(IllegalArgumentException.class, () -> {
+         final byte one = (byte) 1;
+         final int capacity = 64;
+         final int bytes = 1;
+         final int offset = -1;
+         ByteBuffer buffer = ByteBuffer.allocate(capacity);
+         fill(buffer, 0, capacity, one);
+         try {
+            shouldZeroesByteBuffer(buffer, offset, bytes);
+         } catch (IndexOutOfBoundsException expectedEx) {
+            //verify that the buffer hasn't changed
+            final byte[] originalContent = duplicateRemaining(buffer, 0, 0);
+            final byte[] expectedContent = new byte[capacity];
+            Arrays.fill(expectedContent, one);
+            Assertions.assertArrayEquals(expectedContent, originalContent);
+            throw expectedEx;
+         }
+      });
    }
 
-   @Test(expected = IllegalArgumentException.class)
+	@Test
    public void shouldFailIfBytesIsNegative() {
-      final byte one = (byte) 1;
-      final int capacity = 64;
-      final int bytes = -1;
-      final int offset = 0;
-      ByteBuffer buffer = ByteBuffer.allocate(capacity);
-      fill(buffer, 0, capacity, one);
-      try {
-         shouldZeroesByteBuffer(buffer, offset, bytes);
-      } catch (IndexOutOfBoundsException expectedEx) {
-         //verify that the buffer hasn't changed
-         final byte[] originalContent = duplicateRemaining(buffer, 0, 0);
-         final byte[] expectedContent = new byte[capacity];
-         Arrays.fill(expectedContent, one);
-         Assert.assertArrayEquals(expectedContent, originalContent);
-         throw expectedEx;
-      }
+		Assertions.assertThrows(IllegalArgumentException.class, () -> {
+         final byte one = (byte) 1;
+         final int capacity = 64;
+         final int bytes = -1;
+         final int offset = 0;
+         ByteBuffer buffer = ByteBuffer.allocate(capacity);
+         fill(buffer, 0, capacity, one);
+         try {
+            shouldZeroesByteBuffer(buffer, offset, bytes);
+         } catch (IndexOutOfBoundsException expectedEx) {
+            //verify that the buffer hasn't changed
+            final byte[] originalContent = duplicateRemaining(buffer, 0, 0);
+            final byte[] expectedContent = new byte[capacity];
+            Arrays.fill(expectedContent, one);
+            Assertions.assertArrayEquals(expectedContent, originalContent);
+            throw expectedEx;
+         }
+      });
    }
 
-   @Test(expected = IndexOutOfBoundsException.class)
+	@Test
    public void shouldFailIfExceedingHeapByteBufferCapacity() {
-      final byte one = (byte) 1;
-      final int capacity = 64;
-      final int bytes = 65;
-      final int offset = 1;
-      ByteBuffer buffer = ByteBuffer.allocate(capacity);
-      fill(buffer, 0, capacity, one);
-      try {
-         shouldZeroesByteBuffer(buffer, offset, bytes);
-      } catch (IndexOutOfBoundsException expectedEx) {
-         //verify that the buffer hasn't changed
-         final byte[] originalContent = duplicateRemaining(buffer, 0, 0);
-         final byte[] expectedContent = new byte[capacity];
-         Arrays.fill(expectedContent, one);
-         Assert.assertArrayEquals(expectedContent, originalContent);
-         throw expectedEx;
-      }
+		Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+         final byte one = (byte) 1;
+         final int capacity = 64;
+         final int bytes = 65;
+         final int offset = 1;
+         ByteBuffer buffer = ByteBuffer.allocate(capacity);
+         fill(buffer, 0, capacity, one);
+         try {
+            shouldZeroesByteBuffer(buffer, offset, bytes);
+         } catch (IndexOutOfBoundsException expectedEx) {
+            //verify that the buffer hasn't changed
+            final byte[] originalContent = duplicateRemaining(buffer, 0, 0);
+            final byte[] expectedContent = new byte[capacity];
+            Arrays.fill(expectedContent, one);
+            Assertions.assertArrayEquals(expectedContent, originalContent);
+            throw expectedEx;
+         }
+      });
    }
 
    @Test
@@ -366,7 +376,7 @@ public class ByteUtilTest {
       byte[] expected = ByteBuffer.allocate(4).putInt(intValue).array();
       byte[] actual = ByteUtil.intToBytes(intValue);
       if (manualExpect != null) {
-         Assert.assertEquals(4, manualExpect.length);
+         Assertions.assertEquals(4, manualExpect.length);
          assertArrayEquals(manualExpect, actual);
       }
       assertArrayEquals(expected, actual);
@@ -388,7 +398,7 @@ public class ByteUtilTest {
       byte[] expected = ByteBuffer.allocate(8).putLong(longValue).array();
       byte[] actual = ByteUtil.longToBytes(longValue);
       if (manualExpected != null) {
-         Assert.assertEquals(8, manualExpected.length);
+         Assertions.assertEquals(8, manualExpected.length);
          assertArrayEquals(manualExpected, actual);
       }
       assertArrayEquals(expected, actual);
@@ -435,5 +445,4 @@ public class ByteUtilTest {
       ByteUtil.ensureExactWritable(buffer, 1);
       Assert.assertEquals(33, buffer.capacity());
    }
-
 }

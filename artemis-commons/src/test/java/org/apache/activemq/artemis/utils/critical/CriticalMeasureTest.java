@@ -22,8 +22,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class CriticalMeasureTest {
 
@@ -32,7 +32,7 @@ public class CriticalMeasureTest {
       CriticalMeasure measure = new CriticalMeasure(null, 1);
       long time = System.nanoTime();
       measure.timeEnter = time - TimeUnit.SECONDS.toNanos(5);
-      Assert.assertFalse(measure.checkExpiration(TimeUnit.SECONDS.toNanos(30), false));
+      Assertions.assertFalse(measure.checkExpiration(TimeUnit.SECONDS.toNanos(30), false));
    }
 
    @Test
@@ -44,7 +44,7 @@ public class CriticalMeasureTest {
       measure.enterCritical();
       measure.timeEnter = time - TimeUnit.MINUTES.toNanos(30);
       measure.leaveCritical();
-      Assert.assertFalse(measure.checkExpiration(TimeUnit.SECONDS.toNanos(30), false));
+      Assertions.assertFalse(measure.checkExpiration(TimeUnit.SECONDS.toNanos(30), false));
    }
 
    @Test
@@ -55,11 +55,11 @@ public class CriticalMeasureTest {
       long time = System.nanoTime();
       AutoCloseable closeable = measure.measure();
       measure.timeEnter = time - TimeUnit.MINUTES.toNanos(5);
-      Assert.assertTrue(measure.checkExpiration(TimeUnit.SECONDS.toNanos(30), false)); // on this call we should had a reset before
+      Assertions.assertTrue(measure.checkExpiration(TimeUnit.SECONDS.toNanos(30), false)); // on this call we should had a reset before
       // subsequent call without reset should still fail
-      Assert.assertTrue(measure.checkExpiration(TimeUnit.SECONDS.toNanos(30), true));
+      Assertions.assertTrue(measure.checkExpiration(TimeUnit.SECONDS.toNanos(30), true));
       // previous reset should have cleared it
-      Assert.assertFalse(measure.checkExpiration(TimeUnit.SECONDS.toNanos(30), false));
+      Assertions.assertFalse(measure.checkExpiration(TimeUnit.SECONDS.toNanos(30), false));
       closeable.close();
    }
 
@@ -69,9 +69,9 @@ public class CriticalMeasureTest {
       CriticalComponent component = new CriticalComponentImpl(analyzer, 5);
       try (AutoCloseable theMeasure = component.measureCritical(0)) {
          LockSupport.parkNanos(1000);
-         Assert.assertTrue(component.checkExpiration(100, false));
+         Assertions.assertTrue(component.checkExpiration(100, false));
       }
-      Assert.assertFalse(component.checkExpiration(100, false));
+      Assertions.assertFalse(component.checkExpiration(100, false));
    }
 
    @Test

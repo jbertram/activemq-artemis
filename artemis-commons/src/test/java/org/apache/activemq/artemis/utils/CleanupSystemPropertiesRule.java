@@ -22,37 +22,21 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jboss.logging.Logger;
-import org.junit.rules.ExternalResource;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
  * This will make sure any properties changed through tests are cleaned up between tests.
  */
-public class CleanupSystemPropertiesRule extends ExternalResource {
+public class CleanupSystemPropertiesRule implements BeforeEachCallback, AfterEachCallback {
 
    private static Logger log = Logger.getLogger(CleanupSystemPropertiesRule.class);
 
    private Properties originalProperties;
 
-   /**
-    * Override to set up your specific external resource.
-    *
-    * @throws if setup fails (which will disable {@code after}
-    */
    @Override
-   protected void before() throws Throwable {
-      // do nothing
-
-      originalProperties = new Properties();
-      originalProperties.putAll(System.getProperties());
-
-   }
-
-   /**
-    * Override to tear down your specific external resource.
-    */
-   @Override
-   protected void after() {
-
+   public void afterEach(ExtensionContext extensionContext) {
       Properties changed = new Properties();
       HashSet newProperties = new HashSet();
       for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
@@ -104,7 +88,11 @@ public class CleanupSystemPropertiesRule extends ExternalResource {
       // lets give GC a hand
       originalProperties.clear();
       originalProperties = null;
-
    }
 
+   @Override
+   public void beforeEach(ExtensionContext extensionContext) {
+      originalProperties = new Properties();
+      originalProperties.putAll(System.getProperties());
+   }
 }

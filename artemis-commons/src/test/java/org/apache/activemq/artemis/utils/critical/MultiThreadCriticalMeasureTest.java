@@ -28,8 +28,8 @@ import java.util.concurrent.locks.LockSupport;
 import org.apache.activemq.artemis.utils.ReusableLatch;
 import org.apache.activemq.artemis.utils.Wait;
 import org.jboss.logging.Logger;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class MultiThreadCriticalMeasureTest {
 
@@ -90,7 +90,7 @@ public class MultiThreadCriticalMeasureTest {
 
             // waiting a few milliseconds as the bug was about measuring load after a no load
             LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(20));
-            Assert.assertFalse(measure.checkExpiration(TimeUnit.MILLISECONDS.toNanos(10), false));
+            Assertions.assertFalse(measure.checkExpiration(TimeUnit.MILLISECONDS.toNanos(10), false));
             logger.debug("Count down");
 
             // letting load to happen again
@@ -100,14 +100,14 @@ public class MultiThreadCriticalMeasureTest {
          }
 
          latchOnMeasure.countUp();
-         Assert.assertTrue(Wait.waitFor(() -> measure.checkExpiration(TimeUnit.MILLISECONDS.toNanos(100), false), 1_000, 1));
+         Assertions.assertTrue(Wait.waitFor(() -> measure.checkExpiration(TimeUnit.MILLISECONDS.toNanos(100), false), 1_000, 1));
 
       } finally {
          load.set(true);
          running.set(false);
          latchOnMeasure.countDown();
 
-         Assert.assertEquals(0, errors.get());
+         Assertions.assertEquals(0, errors.get());
          executorService.shutdown();
          Wait.assertTrue(executorService::isShutdown);
          Wait.assertTrue(executorService::isTerminated, 5000, 1);

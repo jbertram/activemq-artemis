@@ -24,19 +24,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.activemq.artemis.utils.ArtemisCloseable;
 import org.apache.activemq.artemis.utils.ReusableLatch;
 import org.apache.activemq.artemis.utils.ThreadLeakCheckRule;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class CriticalAnalyzerTest {
 
-   @Rule
+   @RegisterExtension
    public ThreadLeakCheckRule rule = new ThreadLeakCheckRule();
 
    private CriticalAnalyzer analyzer;
 
-   @After
+   @AfterEach
    public void tearDown() throws Exception {
       if (analyzer != null) {
          analyzer.stop();
@@ -52,17 +52,17 @@ public class CriticalAnalyzerTest {
 
       CriticalCloseable closeable1 = component.measureCritical(0);
 
-      Assert.assertFalse(CriticalMeasure.isDummy(closeable1));
+      Assertions.assertFalse(CriticalMeasure.isDummy(closeable1));
 
       ArtemisCloseable closeable2 = component.measureCritical(0);
 
-      Assert.assertTrue(CriticalMeasure.isDummy(closeable2));
+      Assertions.assertTrue(CriticalMeasure.isDummy(closeable2));
 
       closeable1.close();
 
       closeable2 = component.measureCritical(0);
 
-      Assert.assertFalse(CriticalMeasure.isDummy(closeable2));
+      Assertions.assertFalse(CriticalMeasure.isDummy(closeable2));
    }
 
    @Test
@@ -73,7 +73,7 @@ public class CriticalAnalyzerTest {
       analyzer.add(component);
 
       CriticalCloseable closeable = component.measureCritical(0);
-      Assert.assertFalse(CriticalMeasure.isDummy(closeable));
+      Assertions.assertFalse(CriticalMeasure.isDummy(closeable));
 
       CriticalCloseable dummy = component.measureCritical(0);
 
@@ -84,17 +84,17 @@ public class CriticalAnalyzerTest {
          exception = true;
       }
 
-      Assert.assertTrue(exception);
+      Assertions.assertTrue(exception);
 
       AtomicInteger value = new AtomicInteger(0);
 
       closeable.beforeClose(() -> value.set(1000));
 
-      Assert.assertEquals(0, value.get());
+      Assertions.assertEquals(0, value.get());
 
       closeable.close();
 
-      Assert.assertEquals(1000, value.get());
+      Assertions.assertEquals(1000, value.get());
    }
 
 
@@ -126,7 +126,7 @@ public class CriticalAnalyzerTest {
          latch.countDown();
       });
 
-      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assertions.assertTrue(latch.await(10, TimeUnit.SECONDS));
 
       analyzer.stop();
    }
@@ -150,7 +150,7 @@ public class CriticalAnalyzerTest {
 
       analyzer.start();
 
-      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assertions.assertTrue(latch.await(10, TimeUnit.SECONDS));
 
       analyzer.stop();
    }
@@ -160,7 +160,7 @@ public class CriticalAnalyzerTest {
       analyzer = new CriticalAnalyzerImpl().setTimeout(10, TimeUnit.MILLISECONDS).setCheckTime(5, TimeUnit.MILLISECONDS);
       CriticalComponent component = new CriticalComponentImpl(analyzer, 2);
       component.measureCritical(0);
-      Assert.assertFalse(component.checkExpiration(TimeUnit.MINUTES.toNanos(1), false));
+      Assertions.assertFalse(component.checkExpiration(TimeUnit.MINUTES.toNanos(1), false));
       analyzer.stop();
 
    }
@@ -171,7 +171,7 @@ public class CriticalAnalyzerTest {
       CriticalComponent component = new CriticalComponentImpl(analyzer, 2);
       component.measureCritical(0);
       Thread.sleep(50);
-      Assert.assertTrue(component.checkExpiration(0, false));
+      Assertions.assertTrue(component.checkExpiration(0, false));
       analyzer.stop();
 
    }
@@ -193,7 +193,7 @@ public class CriticalAnalyzerTest {
 
       analyzer.start();
 
-      Assert.assertFalse(latch.await(100, TimeUnit.MILLISECONDS));
+      Assertions.assertFalse(latch.await(100, TimeUnit.MILLISECONDS));
 
       analyzer.stop();
    }
@@ -216,13 +216,13 @@ public class CriticalAnalyzerTest {
 
       analyzer.start();
 
-      Assert.assertTrue(latch.await(100, TimeUnit.MILLISECONDS));
+      Assertions.assertTrue(latch.await(100, TimeUnit.MILLISECONDS));
 
       measure.close();
 
       latch.setCount(1);
 
-      Assert.assertFalse(latch.await(100, TimeUnit.MILLISECONDS));
+      Assertions.assertFalse(latch.await(100, TimeUnit.MILLISECONDS));
 
       analyzer.stop();
    }

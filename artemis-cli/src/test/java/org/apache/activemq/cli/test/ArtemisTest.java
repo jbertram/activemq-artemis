@@ -95,20 +95,20 @@ import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.jboss.logging.Logger;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test to validate that the CLI doesn't throw improper exceptions when invoked.
@@ -119,7 +119,7 @@ public class ArtemisTest extends CliTestBase {
    // some tests will set this, as some security methods will need to know the server the CLI started
    private ActiveMQServer server;
 
-   @Before
+   @BeforeEach
    @Override
    public void setup() throws Exception {
       setupAuth();
@@ -128,13 +128,13 @@ public class ArtemisTest extends CliTestBase {
 
    long timeBefore;
 
-   @Before
+   @BeforeEach
    public void setupScanTimeout() throws Exception {
       timeBefore = ActiveMQDefaultConfiguration.getDefaultAddressQueueScanPeriod();
       org.apache.activemq.artemis.api.config.ActiveMQDefaultConfigurationTestAccessor.setDefaultAddressQueueScanPeriod(100);
    }
 
-   @After
+   @AfterEach
    public void resetScanTimeout() throws Exception {
       org.apache.activemq.artemis.api.config.ActiveMQDefaultConfigurationTestAccessor.setDefaultAddressQueueScanPeriod(timeBefore);
    }
@@ -164,7 +164,7 @@ public class ArtemisTest extends CliTestBase {
    public void testSync() throws Exception {
       int writes = 2;
       int tries = 5;
-      long totalAvg = SyncCalculation.syncTest(temporaryFolder.getRoot(), 4096, writes, tries, true, true, true, "file.tmp", 1, JournalType.NIO);
+      long totalAvg = SyncCalculation.syncTest(temporaryFolder, 4096, writes, tries, true, true, true, "file.tmp", 1, JournalType.NIO);
       log.debug("TotalAvg = " + totalAvg);
       long nanoTime = SyncCalculation.toNanos(totalAvg, writes, false);
       log.debug("nanoTime avg = " + nanoTime);
@@ -175,14 +175,14 @@ public class ArtemisTest extends CliTestBase {
    @Test
    public void testSimpleCreate() throws Exception {
       //instance1: default using http
-      File instance1 = new File(temporaryFolder.getRoot(), "instance1");
+      File instance1 = new File(temporaryFolder, "instance1");
       Artemis.main("create", instance1.getAbsolutePath(), "--silent", "--no-fsync", "--no-autotune");
    }
 
 
    @Test
    public void testCreateDB() throws Exception {
-      File instance1 = new File(temporaryFolder.getRoot(), "instance1");
+      File instance1 = new File(temporaryFolder, "instance1");
       Artemis.internalExecute("create", instance1.getAbsolutePath(), "--silent", "--jdbc");
    }
 
@@ -191,7 +191,7 @@ public class ArtemisTest extends CliTestBase {
    public void testSimpleCreateMapped() throws Throwable {
       try {
          //instance1: default using http
-         File instance1 = new File(temporaryFolder.getRoot(), "instance1");
+         File instance1 = new File(temporaryFolder, "instance1");
          Artemis.main("create", instance1.getAbsolutePath(), "--silent", "--mapped", "--no-autotune");
       } catch (Throwable e) {
          e.printStackTrace();
@@ -205,8 +205,8 @@ public class ArtemisTest extends CliTestBase {
                                                                 "--force", "--silent", "--no-web", "--no-autotune");
       Map<String, Object> params = configuration.getAcceptorConfigurations()
          .stream().filter(tc -> tc.getName().equals("artemis")).findFirst().get().getExtraParams();
-      Assert.assertFalse(Boolean.parseBoolean(params.get("supportAdvisory").toString()));
-      Assert.assertFalse(Boolean.parseBoolean(params.get("suppressInternalManagementObjects").toString()));
+      Assertions.assertFalse(Boolean.parseBoolean(params.get("supportAdvisory").toString()));
+      Assertions.assertFalse(Boolean.parseBoolean(params.get("suppressInternalManagementObjects").toString()));
    }
 
    @Test
@@ -216,13 +216,13 @@ public class ArtemisTest extends CliTestBase {
                                                                 "--support-advisory", "--suppress-internal-management-objects");
       Map<String, Object> params = configuration.getAcceptorConfigurations()
          .stream().filter(tc -> tc.getName().equals("artemis")).findFirst().get().getExtraParams();
-      Assert.assertTrue(Boolean.parseBoolean(params.get("supportAdvisory").toString()));
-      Assert.assertTrue(Boolean.parseBoolean(params.get("suppressInternalManagementObjects").toString()));
+      Assertions.assertTrue(Boolean.parseBoolean(params.get("supportAdvisory").toString()));
+      Assertions.assertTrue(Boolean.parseBoolean(params.get("suppressInternalManagementObjects").toString()));
    }
 
 
    private FileConfiguration createFileConfiguration(String folder, String... createAdditionalArg) throws Exception {
-      File instanceFolder = temporaryFolder.newFolder(folder);
+      File instanceFolder = new File(temporaryFolder, folder);
 
       setupAuth(instanceFolder);
 
@@ -249,7 +249,7 @@ public class ArtemisTest extends CliTestBase {
       setupAuth();
       Run.setEmbedded(true);
       //instance1: default using http
-      File instance1 = new File(temporaryFolder.getRoot(), "instance1");
+      File instance1 = new File(temporaryFolder, "instance1");
       Artemis.main("create", instance1.getAbsolutePath(), "--silent", "--no-fsync", "--no-autotune");
       File bootstrapFile = new File(new File(instance1, "etc"), "bootstrap.xml");
       assertTrue(bootstrapFile.exists());
@@ -269,7 +269,7 @@ public class ArtemisTest extends CliTestBase {
       assertFalse(bindingElem.hasAttribute("trustStorePassword"));
 
       //instance2: https
-      File instance2 = new File(temporaryFolder.getRoot(), "instance2");
+      File instance2 = new File(temporaryFolder, "instance2");
       Artemis.main("create", instance2.getAbsolutePath(), "--silent", "--ssl-key", "etc/keystore", "--ssl-key-password", "password1", "--no-fsync", "--no-autotune");
       bootstrapFile = new File(new File(instance2, "etc"), "bootstrap.xml");
       assertTrue(bootstrapFile.exists());
@@ -291,7 +291,7 @@ public class ArtemisTest extends CliTestBase {
       assertFalse(bindingElem.hasAttribute("trustStorePassword"));
 
       //instance3: https with clientAuth
-      File instance3 = new File(temporaryFolder.getRoot(), "instance3");
+      File instance3 = new File(temporaryFolder, "instance3");
       Artemis.main("create", instance3.getAbsolutePath(), "--silent", "--ssl-key", "etc/keystore", "--ssl-key-password", "password1", "--use-client-auth", "--ssl-trust", "etc/truststore", "--ssl-trust-password", "password2", "--no-fsync", "--no-autotune");
       bootstrapFile = new File(new File(instance3, "etc"), "bootstrap.xml");
       assertTrue(bootstrapFile.exists());
@@ -325,7 +325,7 @@ public class ArtemisTest extends CliTestBase {
    public void testSecurityManagerConfiguration() throws Exception {
       setupAuth();
       Run.setEmbedded(true);
-      File instance1 = new File(temporaryFolder.getRoot(), "instance1");
+      File instance1 = new File(temporaryFolder, "instance1");
       Artemis.main("create", instance1.getAbsolutePath(), "--silent", "--no-fsync", "--no-autotune", "--no-web", "--no-stomp-acceptor", "--no-amqp-acceptor", "--no-mqtt-acceptor", "--no-hornetq-acceptor");
       File originalBootstrapFile = new File(new File(instance1, "etc"), "bootstrap.xml");
       assertTrue(originalBootstrapFile.exists());
@@ -402,7 +402,7 @@ public class ArtemisTest extends CliTestBase {
    @Test
    public void testStopManagementContext() throws Exception {
       Run.setEmbedded(true);
-      File instance1 = new File(temporaryFolder.getRoot(), "instance_user");
+      File instance1 = new File(temporaryFolder, "instance_user");
       System.setProperty("java.security.auth.login.config", instance1.getAbsolutePath() + "/etc/login.config");
       Artemis.main("create", instance1.getAbsolutePath(), "--silent", "--no-autotune", "--no-web", "--no-amqp-acceptor", "--no-mqtt-acceptor", "--no-stomp-acceptor", "--no-hornetq-acceptor");
       System.setProperty("artemis.instance", instance1.getAbsolutePath());
@@ -426,7 +426,7 @@ public class ArtemisTest extends CliTestBase {
 
    private void testUserCommand(boolean basic) throws Exception {
       Run.setEmbedded(true);
-      File instance1 = new File(temporaryFolder.getRoot(), "instance_user");
+      File instance1 = new File(temporaryFolder, "instance_user");
       System.setProperty("java.security.auth.login.config", instance1.getAbsolutePath() + "/etc/login.config");
       Artemis.main("create", instance1.getAbsolutePath(), "--silent", "--no-autotune", "--no-web", "--require-login", "--security-manager", basic ? "basic" : "jaas");
       System.setProperty("artemis.instance", instance1.getAbsolutePath());
@@ -610,7 +610,7 @@ public class ArtemisTest extends CliTestBase {
 
    private void internalTestUserCommandViaManagement(boolean plaintext, boolean basic) throws Exception {
       Run.setEmbedded(true);
-      File instance1 = new File(temporaryFolder.getRoot(), "instance_user");
+      File instance1 = new File(temporaryFolder, "instance_user");
       System.setProperty("java.security.auth.login.config", instance1.getAbsolutePath() + "/etc/login.config");
       Artemis.main("create", instance1.getAbsolutePath(), "--silent", "--no-autotune", "--no-web", "--no-amqp-acceptor", "--no-mqtt-acceptor", "--no-stomp-acceptor", "--no-hornetq-acceptor", "--security-manager", basic ? "basic" : "jaas");
       System.setProperty("artemis.instance", instance1.getAbsolutePath());
@@ -713,7 +713,7 @@ public class ArtemisTest extends CliTestBase {
    public void testListUserWithMultipleRolesWithSpaces() throws Exception {
       try {
          Run.setEmbedded(true);
-         File instance1 = new File(temporaryFolder.getRoot(), "instance_user");
+         File instance1 = new File(temporaryFolder, "instance_user");
          System.setProperty("java.security.auth.login.config", instance1.getAbsolutePath() + "/etc/login.config");
          Artemis.main("create", instance1.getAbsolutePath(), "--silent", "--no-autotune", "--no-web", "--no-amqp-acceptor", "--no-mqtt-acceptor", "--no-stomp-acceptor", "--no-hornetq-acceptor", "--security-manager", "jaas");
          System.setProperty("artemis.instance", instance1.getAbsolutePath());
@@ -761,7 +761,7 @@ public class ArtemisTest extends CliTestBase {
 
    private void testProperReloadWhenAddingUserViaManagement(boolean basic) throws Exception {
       Run.setEmbedded(true);
-      File instance1 = new File(temporaryFolder.getRoot(), "instance_user");
+      File instance1 = new File(temporaryFolder, "instance_user");
       System.setProperty("java.security.auth.login.config", instance1.getAbsolutePath() + "/etc/login.config");
       Artemis.main("create", instance1.getAbsolutePath(), "--silent", "--no-autotune", "--no-web", "--no-amqp-acceptor", "--no-mqtt-acceptor", "--no-stomp-acceptor", "--no-hornetq-acceptor", "--require-login", "--security-manager", basic ? "basic" : "jaas");
       System.setProperty("artemis.instance", instance1.getAbsolutePath());
@@ -801,7 +801,7 @@ public class ArtemisTest extends CliTestBase {
    @Test
    public void testMissingUserFileViaManagement() throws Exception {
       Run.setEmbedded(true);
-      File instance1 = new File(temporaryFolder.getRoot(), "instance_user");
+      File instance1 = new File(temporaryFolder, "instance_user");
       System.setProperty("java.security.auth.login.config", instance1.getAbsolutePath() + "/etc/login.config");
       Artemis.main("create", instance1.getAbsolutePath(), "--silent", "--no-autotune", "--no-web", "--no-amqp-acceptor", "--no-mqtt-acceptor", "--no-stomp-acceptor", "--no-hornetq-acceptor");
       System.setProperty("artemis.instance", instance1.getAbsolutePath());
@@ -824,7 +824,7 @@ public class ArtemisTest extends CliTestBase {
    @Test
    public void testMissingRoleFileViaManagement() throws Exception {
       Run.setEmbedded(true);
-      File instance1 = new File(temporaryFolder.getRoot(), "instance_user");
+      File instance1 = new File(temporaryFolder, "instance_user");
       System.setProperty("java.security.auth.login.config", instance1.getAbsolutePath() + "/etc/login.config");
       Artemis.main("create", instance1.getAbsolutePath(), "--silent", "--no-autotune", "--no-web", "--no-amqp-acceptor", "--no-mqtt-acceptor", "--no-stomp-acceptor", "--no-hornetq-acceptor");
       System.setProperty("artemis.instance", instance1.getAbsolutePath());
@@ -856,7 +856,7 @@ public class ArtemisTest extends CliTestBase {
 
    private void testUserCommandReset(boolean basic) throws Exception {
       Run.setEmbedded(true);
-      File instance1 = new File(temporaryFolder.getRoot(), "instance_user");
+      File instance1 = new File(temporaryFolder, "instance_user");
       System.setProperty("java.security.auth.login.config", instance1.getAbsolutePath() + "/etc/login.config");
       Artemis.main("create", instance1.getAbsolutePath(), "--silent", "--no-autotune", "--no-web", "--require-login", "--security-manager", basic ? "basic" : "jaas");
       System.setProperty("artemis.instance", instance1.getAbsolutePath());
@@ -987,7 +987,7 @@ public class ArtemisTest extends CliTestBase {
 
    private void testConcurrentUserAdministration(boolean basic) throws Exception {
       Run.setEmbedded(true);
-      File instance1 = new File(temporaryFolder.getRoot(), "instance_user");
+      File instance1 = new File(temporaryFolder, "instance_user");
       System.setProperty("java.security.auth.login.config", instance1.getAbsolutePath() + "/etc/login.config");
       Artemis.main("create", instance1.getAbsolutePath(), "--silent", "--no-autotune", "--no-web", "--require-login", "--security-manager", basic ? "basic" : "jaas");
       System.setProperty("artemis.instance", instance1.getAbsolutePath());
@@ -1091,7 +1091,7 @@ public class ArtemisTest extends CliTestBase {
    public void testRoleWithSpaces() throws Exception {
       String roleWithSpaces = "amq with spaces";
       Run.setEmbedded(true);
-      File instanceRole = new File(temporaryFolder.getRoot(), "instance_role");
+      File instanceRole = new File(temporaryFolder, "instance_role");
       System.setProperty("java.security.auth.login.config", instanceRole.getAbsolutePath() + "/etc/login.config");
       Artemis.main("create", instanceRole.getAbsolutePath(), "--silent", "--no-autotune", "--no-web", "--require-login", "--role", roleWithSpaces);
       System.setProperty("artemis.instance", instanceRole.getAbsolutePath());
@@ -1129,7 +1129,7 @@ public class ArtemisTest extends CliTestBase {
 
    private void internalTestUserCommandResetViaManagement(boolean plaintext) throws Exception {
       Run.setEmbedded(true);
-      File instance1 = new File(temporaryFolder.getRoot(), "instance_user");
+      File instance1 = new File(temporaryFolder, "instance_user");
       System.setProperty("java.security.auth.login.config", instance1.getAbsolutePath() + "/etc/login.config");
       Artemis.main("create", instance1.getAbsolutePath(), "--silent", "--no-autotune", "--no-web", "--no-amqp-acceptor", "--no-mqtt-acceptor", "--no-stomp-acceptor", "--no-hornetq-acceptor");
       System.setProperty("artemis.instance", instance1.getAbsolutePath());
@@ -1220,8 +1220,8 @@ public class ArtemisTest extends CliTestBase {
       result = (String) mask.execute(context);
       log.debug(context.getStdout());
       SensitiveDataCodec<String> codec = mask.getCodec();
-      Assert.assertEquals(DefaultSensitiveStringCodec.class, codec.getClass());
-      Assert.assertTrue(((DefaultSensitiveStringCodec)codec).verify(password1.toCharArray(), result));
+      Assertions.assertEquals(DefaultSensitiveStringCodec.class, codec.getClass());
+      Assertions.assertTrue(((DefaultSensitiveStringCodec)codec).verify(password1.toCharArray(), result));
 
       context = new TestActionContext();
       mask = new Mask();
@@ -1234,7 +1234,7 @@ public class ArtemisTest extends CliTestBase {
 
    @Test
    public void testMaskCommandWithPasswordCodec() throws Exception {
-      File instanceWithPasswordCodec = new File(temporaryFolder.getRoot(), "instance_with_password_codec");
+      File instanceWithPasswordCodec = new File(temporaryFolder, "instance_with_password_codec");
       Files.createDirectories(Paths.get(instanceWithPasswordCodec.getAbsolutePath(), "etc"));
       Files.copy(Paths.get(ArtemisTest.class.getClassLoader().getResource("broker-with-password-codec.xml").toURI()),
                  Paths.get(instanceWithPasswordCodec.getAbsolutePath(), "etc", "broker.xml"));
@@ -1283,7 +1283,7 @@ public class ArtemisTest extends CliTestBase {
 
    @Test
    public void testPerfJournal() throws Exception {
-      File instanceFolder = temporaryFolder.newFolder("server1");
+      File instanceFolder = new File(temporaryFolder, "server1");
       setupAuth(instanceFolder);
 
       Run.setEmbedded(true);
@@ -1300,7 +1300,7 @@ public class ArtemisTest extends CliTestBase {
    }
 
    public void testSimpleRun(String folderName, int acceptorPort) throws Exception {
-      File instanceFolder = temporaryFolder.newFolder(folderName);
+      File instanceFolder = new File(temporaryFolder, folderName);
 
       setupAuth(instanceFolder);
       String queues = "q1,q2:multicast";
@@ -1324,18 +1324,18 @@ public class ArtemisTest extends CliTestBase {
                String[] seg = str.split(":");
                RoutingType routingType = RoutingType.valueOf((seg.length == 2 ? seg[1] : "anycast").toUpperCase());
                ClientSession.QueueQuery queryResult = coreSession.queueQuery(SimpleString.toSimpleString(seg[0]));
-               assertTrue("Couldn't find queue " + seg[0], queryResult.isExists());
+               assertTrue(queryResult.isExists(), "Couldn't find queue " + seg[0]);
                assertEquals(routingType, queryResult.getRoutingType());
             }
             for (String str : addresses.split(",")) {
                ClientSession.AddressQuery queryResult = coreSession.addressQuery(SimpleString.toSimpleString(str));
-               assertTrue("Couldn't find address " + str, queryResult.isExists());
+               assertTrue(queryResult.isExists(), "Couldn't find address " + str);
             }
          }
 
          try {
             Artemis.internalExecute("data", "print");
-            Assert.fail("Exception expected");
+            Assertions.fail("Exception expected");
          } catch (CLIException expected) {
          }
          Artemis.internalExecute("data", "print", "--f");
@@ -1399,7 +1399,7 @@ public class ArtemisTest extends CliTestBase {
 
    private void testAutoDelete(boolean autoDelete) throws Exception {
 
-      File instanceFolder = temporaryFolder.newFolder("autocreate" + autoDelete);
+      File instanceFolder = new File(temporaryFolder, "autocreate" + autoDelete);
       setupAuth(instanceFolder);
 
       // This is usually set when run from the command line via artemis.profile
@@ -1428,7 +1428,7 @@ public class ArtemisTest extends CliTestBase {
             Wait.assertTrue(() -> run.getB().locateQueue(queueName) != null);
             connection.start();
             MessageConsumer consumer = session.createConsumer(queue);
-            Assert.assertNotNull(consumer.receive(5000));
+            Assertions.assertNotNull(consumer.receive(5000));
          }
 
          if (autoDelete) {
@@ -1436,7 +1436,7 @@ public class ArtemisTest extends CliTestBase {
          } else {
             // Things are async, allowing some time to make sure it would eventually fail
             Thread.sleep(500);
-            Assert.assertNotNull(run.getB().locateQueue(queueName));
+            Assertions.assertNotNull(run.getB().locateQueue(queueName));
          }
       } finally {
          stopServer();
@@ -1447,7 +1447,7 @@ public class ArtemisTest extends CliTestBase {
 
    @Test
    public void testPing() throws Exception {
-      File instanceFolder = temporaryFolder.newFolder("pingTest");
+      File instanceFolder = new File(temporaryFolder, "pingTest");
 
       setupAuth(instanceFolder);
       String queues = "q1,t2";
@@ -1463,13 +1463,13 @@ public class ArtemisTest extends CliTestBase {
       deploymentManager.addDeployable(fc);
       deploymentManager.readConfiguration();
 
-      Assert.assertEquals("127.0.0.1", fc.getNetworkCheckList());
+      Assertions.assertEquals("127.0.0.1", fc.getNetworkCheckList());
 
    }
 
    @Test
    public void testAutoTune() throws Exception {
-      File instanceFolder = temporaryFolder.newFolder("autoTuneTest");
+      File instanceFolder = new File(temporaryFolder, "autoTuneTest");
 
       setupAuth(instanceFolder);
 
@@ -1485,13 +1485,13 @@ public class ArtemisTest extends CliTestBase {
       fc.setPageSyncTimeout(-1);
       deploymentManager.readConfiguration();
 
-      Assert.assertNotEquals(-1, fc.getPageSyncTimeout());
+      Assertions.assertNotEquals(-1, fc.getPageSyncTimeout());
    }
 
    @Test
    public void testQstat() throws Exception {
 
-      File instanceQstat = new File(temporaryFolder.getRoot(), "instanceQStat");
+      File instanceQstat = new File(temporaryFolder, "instanceQStat");
       setupAuth(instanceQstat);
       Run.setEmbedded(true);
       Artemis.main("create", instanceQstat.getAbsolutePath(), "--silent", "--no-fsync", "--no-autotune", "--no-web", "--require-login");
@@ -1523,7 +1523,7 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          ArrayList<String> lines = getOutputLines(context, false);
          // Header line + 3 queues
-         Assert.assertEquals("rows returned using queueName=Test1", 4, lines.size());
+         Assertions.assertEquals(4, lines.size(), "rows returned using queueName=Test1");
 
          //check all queues are displayed when no Filter set
          context = new TestActionContext();
@@ -1533,7 +1533,7 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          lines = getOutputLines(context, false);
          // Header line + 4 queues (at least - possibly other infra queues as well)
-         Assert.assertTrue("rows returned filtering no name ", 5 <= lines.size());
+         Assertions.assertTrue(5 <= lines.size(), "rows returned filtering no name ");
 
          //check all queues containing "Test1" are displayed using Filter field NAME
          context = new TestActionContext();
@@ -1546,7 +1546,7 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          lines = getOutputLines(context, false);
          // Header line + 3 queues
-         Assert.assertEquals("rows returned filtering by NAME ", 4, lines.size());
+         Assertions.assertEquals(4, lines.size(), "rows returned filtering by NAME ");
 
          //check all queues NOT containing "management" are displayed using Filter field NAME
          context = new TestActionContext();
@@ -1559,7 +1559,7 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          lines = getOutputLines(context, false);
          // Header line + 6 queues (Test1/11/12/20+DLQ+ExpiryQueue, but not activemq.management.d6dbba78-d76f-43d6-a2c9-fc0575ed6f5d)
-         Assert.assertEquals("rows returned filtering by NAME operation NOT_CONTAINS", 7, lines.size());
+         Assertions.assertEquals(7, lines.size(), "rows returned filtering by NAME operation NOT_CONTAINS");
 
          //check only queue named "Test1" is displayed using Filter field NAME and operation EQUALS
          context = new TestActionContext();
@@ -1572,19 +1572,19 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          lines = getOutputLines(context, false);
          //Header line + 1 queue only
-         Assert.assertEquals("rows returned filtering by NAME operation EQUALS", 2, lines.size());
+         Assertions.assertEquals(2, lines.size(), "rows returned filtering by NAME operation EQUALS");
          //verify contents of queue stat line is correct
          String queueTest1 = lines.get(1);
          String[] parts = queueTest1.split("\\|");
-         Assert.assertEquals("queue name", "Test1", parts[1].trim());
-         Assert.assertEquals("address name", "Test1", parts[2].trim());
-         Assert.assertEquals("Consumer count", "2", parts[3].trim());
-         Assert.assertEquals("Message count", "10", parts[4].trim());
-         Assert.assertEquals("Added count", "15", parts[5].trim());
-         Assert.assertEquals("Delivering count", "10", parts[6].trim());
-         Assert.assertEquals("Acked count", "5", parts[7].trim());
-         Assert.assertEquals("Scheduled count", "0", parts[8].trim());
-         Assert.assertEquals("Routing type", "ANYCAST", parts[9].trim());
+         Assertions.assertEquals("Test1", parts[1].trim(), "queue name");
+         Assertions.assertEquals("Test1", parts[2].trim(), "address name");
+         Assertions.assertEquals("2", parts[3].trim(), "Consumer count");
+         Assertions.assertEquals("10", parts[4].trim(), "Message count");
+         Assertions.assertEquals("15", parts[5].trim(), "Added count");
+         Assertions.assertEquals("10", parts[6].trim(), "Delivering count");
+         Assertions.assertEquals("5", parts[7].trim(), "Acked count");
+         Assertions.assertEquals("0", parts[8].trim(), "Scheduled count");
+         Assertions.assertEquals("ANYCAST", parts[9].trim(), "Routing type");
 
          //check all queues containing address "Test1" are displayed using Filter field ADDRESS
          context = new TestActionContext();
@@ -1597,7 +1597,7 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          lines = getOutputLines(context, false);
          // Header line + 3 queues
-         Assert.assertEquals("rows returned filtering by ADDRESS", 4, lines.size());
+         Assertions.assertEquals(4, lines.size(), "rows returned filtering by ADDRESS");
 
          //check all queues containing address "Test1" are displayed using Filter field MESSAGE_COUNT
          context = new TestActionContext();
@@ -1611,7 +1611,7 @@ public class ArtemisTest extends CliTestBase {
          lines = getOutputLines(context, false);
 
          // Header line + 0 queues
-         Assert.assertEquals("rows returned filtering by MESSAGE_COUNT", 1, lines.size());
+         Assertions.assertEquals(1, lines.size(), "rows returned filtering by MESSAGE_COUNT");
 
          //check all queues containing address "Test1" are displayed using Filter field MESSAGE_ADDED
          context = new TestActionContext();
@@ -1624,7 +1624,7 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          lines = getOutputLines(context, false);
          // Header line + 0 queues
-         Assert.assertEquals("rows returned filtering by MESSAGES_ADDED", 1, lines.size());
+         Assertions.assertEquals(1, lines.size(), "rows returned filtering by MESSAGES_ADDED");
 
          //check  queues with greater_than 19 MESSAGE_ADDED  displayed
          context = new TestActionContext();
@@ -1638,9 +1638,9 @@ public class ArtemisTest extends CliTestBase {
          lines = getOutputLines(context, false);
 
          // Header line + 1 queues
-         Assert.assertEquals("rows returned filtering by MESSAGES_ADDED", 2, lines.size());
+         Assertions.assertEquals(2, lines.size(), "rows returned filtering by MESSAGES_ADDED");
          String[] columns = lines.get(1).split("\\|");
-         Assert.assertEquals("queue name filtered by MESSAGES_ADDED GREATER_THAN ", "Test20", columns[2].trim());
+         Assertions.assertEquals("Test20", columns[2].trim(), "queue name filtered by MESSAGES_ADDED GREATER_THAN ");
 
          //check queues with less_than 2 MESSAGE_ADDED displayed
          context = new TestActionContext();
@@ -1654,13 +1654,13 @@ public class ArtemisTest extends CliTestBase {
          lines = getOutputLines(context, false);
 
          // Header line + "at least" 2 queues
-         Assert.assertTrue("rows returned filtering by MESSAGES_ADDED LESS_THAN", 2 <= lines.size());
+         Assertions.assertTrue(2 <= lines.size(), "rows returned filtering by MESSAGES_ADDED LESS_THAN");
 
          //walk the result returned and the specific destinations are not part of the output
          for (String line : lines) {
             columns = line.split("\\|");
-            Assert.assertNotEquals("ensure Test20 is not part of returned result", "Test20", columns[2].trim());
-            Assert.assertNotEquals("ensure Test1 is not part of returned result", "Test1", columns[2].trim());
+            Assertions.assertNotEquals("ensure Test20 is not part of returned result", "Test20", columns[2].trim());
+            Assertions.assertNotEquals("ensure Test1 is not part of returned result", "Test1", columns[2].trim());
          }
 
          //check all queues containing address "Test1" are displayed using Filter field DELIVERING_COUNT
@@ -1675,8 +1675,8 @@ public class ArtemisTest extends CliTestBase {
          lines = getOutputLines(context, false);
          columns = lines.get(1).split("\\|");
          // Header line + 1 queues
-         Assert.assertEquals("rows returned filtering by DELIVERING_COUNT", 2, lines.size());
-         Assert.assertEquals("queue name filtered by DELIVERING_COUNT ", "Test1", columns[2].trim());
+         Assertions.assertEquals(2, lines.size(), "rows returned filtering by DELIVERING_COUNT");
+         Assertions.assertEquals("Test1", columns[2].trim(), "queue name filtered by DELIVERING_COUNT ");
 
          //check all queues containing address "Test1" are displayed using Filter field CONSUMER_COUNT
          context = new TestActionContext();
@@ -1690,8 +1690,8 @@ public class ArtemisTest extends CliTestBase {
          lines = getOutputLines(context, false);
          columns = lines.get(1).split("\\|");
          // Header line + 1 queues
-         Assert.assertEquals("rows returned filtering by CONSUMER_COUNT ", 2, lines.size());
-         Assert.assertEquals("queue name filtered by CONSUMER_COUNT ", "Test1", columns[2].trim());
+         Assertions.assertEquals(2, lines.size(), "rows returned filtering by CONSUMER_COUNT ");
+         Assertions.assertEquals("Test1", columns[2].trim(), "queue name filtered by CONSUMER_COUNT ");
 
          //check all queues containing address "Test1" are displayed using Filter field MESSAGE_ACKED
          context = new TestActionContext();
@@ -1705,8 +1705,8 @@ public class ArtemisTest extends CliTestBase {
          lines = getOutputLines(context, false);
          columns = lines.get(1).split("\\|");
          // Header line + 1 queues
-         Assert.assertEquals("rows returned filtering by MESSAGE_ACKED ", 2, lines.size());
-         Assert.assertEquals("queue name filtered by MESSAGE_ACKED", "Test1", columns[2].trim());
+         Assertions.assertEquals(2, lines.size(), "rows returned filtering by MESSAGE_ACKED ");
+         Assertions.assertEquals("Test1", columns[2].trim(), "queue name filtered by MESSAGE_ACKED");
 
          //check no queues  are displayed when name does not match
          context = new TestActionContext();
@@ -1717,7 +1717,7 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          lines = getOutputLines(context, false);
          // Header line + 0 queues
-         Assert.assertEquals("rows returned by queueName for no Matching queue ", 1, lines.size());
+         Assertions.assertEquals(1, lines.size(), "rows returned by queueName for no Matching queue ");
 
          //check maxrows is taking effect"
          context = new TestActionContext();
@@ -1729,7 +1729,7 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          lines = getOutputLines(context, false);
          // Header line + 1 queue only + warning line
-         Assert.assertEquals("rows returned by maxRows=1", 3, lines.size());
+         Assertions.assertEquals(3, lines.size(), "rows returned by maxRows=1");
 
       } finally {
          stopServer();
@@ -1740,7 +1740,7 @@ public class ArtemisTest extends CliTestBase {
    @Test
    public void testQstatErrors() throws Exception {
 
-      File instanceQstat = new File(temporaryFolder.getRoot(), "instanceQStatErrors");
+      File instanceQstat = new File(temporaryFolder, "instanceQStatErrors");
       setupAuth(instanceQstat);
       Run.setEmbedded(true);
       Artemis.main("create", instanceQstat.getAbsolutePath(), "--silent", "--no-fsync", "--no-autotune", "--no-web", "--require-login");
@@ -1759,12 +1759,12 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          ArrayList<String> lines = getOutputLines(context, false);
          // Header line + 0 queue
-         Assert.assertEquals("No stdout for wrong FIELD", 0, lines.size());
+         Assertions.assertEquals(0, lines.size(), "No stdout for wrong FIELD");
 
          lines = getOutputLines(context, true);
          // 1 error line
-         Assert.assertEquals("stderr for wrong FIELD", 1, lines.size());
-         Assert.assertTrue("'FIELD incorrect' error messsage", lines.get(0).contains("'--field' must be set to one of the following"));
+         Assertions.assertEquals(1, lines.size(), "stderr for wrong FIELD");
+         Assertions.assertTrue(lines.get(0).contains("'--field' must be set to one of the following"), "'FIELD incorrect' error messsage");
 
          //Test err when OPERATION wrong
          context = new TestActionContext();
@@ -1777,11 +1777,11 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          lines = getOutputLines(context, false);
          // Header line + 0 queue
-         Assert.assertEquals("No stdout for wrong OPERATION", 0, lines.size());
+         Assertions.assertEquals(0, lines.size(), "No stdout for wrong OPERATION");
          lines = getOutputLines(context, true);
          // 1 error line
-         Assert.assertEquals("stderr for wrong OPERATION", 1, lines.size());
-         Assert.assertTrue("'OPERATION incorrect' error message", lines.get(0).contains("'--operation' must be set to one of the following"));
+         Assertions.assertEquals(1, lines.size(), "stderr for wrong OPERATION");
+         Assertions.assertTrue(lines.get(0).contains("'--operation' must be set to one of the following"), "'OPERATION incorrect' error message");
 
          //Test err when queueName and field set together
          context = new TestActionContext();
@@ -1795,12 +1795,12 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          lines = getOutputLines(context, false);
          // Header line + 0 queue
-         Assert.assertEquals("No stdout for --field and --queueName both set", 0, lines.size());
+         Assertions.assertEquals(0, lines.size(), "No stdout for --field and --queueName both set");
 
          lines = getOutputLines(context, true);
          // 1 error line
-         Assert.assertEquals("stderr for  --field and --queueName both set", 1, lines.size());
-         Assert.assertTrue("field and queueName error message", lines.get(0).contains("'--field' and '--queueName' cannot be specified together"));
+         Assertions.assertEquals(1, lines.size(), "stderr for  --field and --queueName both set");
+         Assertions.assertTrue(lines.get(0).contains("'--field' and '--queueName' cannot be specified together"), "field and queueName error message");
 
          //Test err when field set but no value
          context = new TestActionContext();
@@ -1812,11 +1812,11 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          lines = getOutputLines(context, false);
          // Header line + 0 queue
-         Assert.assertEquals("No stdout for --field set BUT no --value", 0, lines.size());
+         Assertions.assertEquals(0, lines.size(), "No stdout for --field set BUT no --value");
          lines = getOutputLines(context, true);
          // 1 error line
-         Assert.assertEquals("stderr for --field set BUT no --value", 1, lines.size());
-         Assert.assertTrue("NO VALUE error message", lines.get(0).contains("'--value' needs to be set when '--field' is specified"));
+         Assertions.assertEquals(1, lines.size(), "stderr for --field set BUT no --value");
+         Assertions.assertTrue(lines.get(0).contains("'--value' needs to be set when '--field' is specified"), "NO VALUE error message");
 
          //Test err when field set but no operation
          context = new TestActionContext();
@@ -1828,11 +1828,11 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          lines = getOutputLines(context, false);
          // Header line + 0 queue
-         Assert.assertEquals("No stdout for --field set BUT no --operation", 0, lines.size());
+         Assertions.assertEquals(0, lines.size(), "No stdout for --field set BUT no --operation");
          lines = getOutputLines(context, true);
          // 1 error line
-         Assert.assertEquals("stderr for --field set BUT no --operation", 1, lines.size());
-         Assert.assertTrue("OPERATION incorrect error message", lines.get(0).contains("'--operation' must be set when '--field' is specified "));
+         Assertions.assertEquals(1, lines.size(), "stderr for --field set BUT no --operation");
+         Assertions.assertTrue(lines.get(0).contains("'--operation' must be set when '--field' is specified "), "OPERATION incorrect error message");
 
       } finally {
          stopServer();
@@ -1843,7 +1843,7 @@ public class ArtemisTest extends CliTestBase {
    @Test
    public void testQstatWarnings() throws Exception {
 
-      File instanceQstat = new File(temporaryFolder.getRoot(), "instanceQStat");
+      File instanceQstat = new File(temporaryFolder, "instanceQStat");
       setupAuth(instanceQstat);
       Run.setEmbedded(true);
       Artemis.main("create", instanceQstat.getAbsolutePath(), "--silent", "--no-fsync", "--no-autotune", "--no-web", "--require-login");
@@ -1872,8 +1872,8 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          lines = getOutputLines(context, false);
          // Header line + DEFAULT_MAX_ROWS queues + warning line
-         Assert.assertEquals("rows returned using queueName=Test", 1 + StatQueue.DEFAULT_MAX_ROWS, lines.size());
-         Assert.assertFalse(lines.get(lines.size() - 1).startsWith("WARNING"));
+         Assertions.assertEquals(1 + StatQueue.DEFAULT_MAX_ROWS, lines.size(), "rows returned using queueName=Test");
+         Assertions.assertFalse(lines.get(lines.size() - 1).startsWith("WARNING"));
 
          //check all queues containing "Test" are displayed
          context = new TestActionContext();
@@ -1885,8 +1885,8 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          lines = getOutputLines(context, false);
          // Header line + DEFAULT_MAX_ROWS queues
-         Assert.assertEquals("rows returned using queueName=Test", 1 + StatQueue.DEFAULT_MAX_ROWS, lines.size());
-         Assert.assertFalse(lines.get(lines.size() - 1).startsWith("WARNING"));
+         Assertions.assertEquals(1 + StatQueue.DEFAULT_MAX_ROWS, lines.size(), "rows returned using queueName=Test");
+         Assertions.assertFalse(lines.get(lines.size() - 1).startsWith("WARNING"));
 
          sendMessages(session, "Test" + StatQueue.DEFAULT_MAX_ROWS, 1);
 
@@ -1899,8 +1899,8 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          lines = getOutputLines(context, false);
          // Header line + DEFAULT_MAX_ROWS queues + warning line
-         Assert.assertEquals("rows returned using queueName=Test", 1 + StatQueue.DEFAULT_MAX_ROWS + 1, lines.size());
-         Assert.assertTrue(lines.get(lines.size() - 1).startsWith("WARNING"));
+         Assertions.assertEquals(1 + StatQueue.DEFAULT_MAX_ROWS + 1, lines.size(), "rows returned using queueName=Test");
+         Assertions.assertTrue(lines.get(lines.size() - 1).startsWith("WARNING"));
 
          //check all queues containing "Test" are displayed
          context = new TestActionContext();
@@ -1912,8 +1912,8 @@ public class ArtemisTest extends CliTestBase {
          statQueue.execute(context);
          lines = getOutputLines(context, false);
          // Header line + DEFAULT_MAX_ROWS queues + warning line
-         Assert.assertEquals("rows returned using queueName=Test", 1 + StatQueue.DEFAULT_MAX_ROWS + 1, lines.size());
-         Assert.assertTrue(lines.get(lines.size() - 1).startsWith("WARNING"));
+         Assertions.assertEquals(1 + StatQueue.DEFAULT_MAX_ROWS + 1, lines.size(), "rows returned using queueName=Test");
+         Assertions.assertTrue(lines.get(lines.size() - 1).startsWith("WARNING"));
 
       } finally {
          stopServer();
@@ -2083,11 +2083,11 @@ public class ArtemisTest extends CliTestBase {
          }
       }
       if (contains) {
-         assertTrue("user " + username + " not found", userFound);
-         assertTrue("role " + role + " not found", roleFound);
+         assertTrue(userFound, "user " + username + " not found");
+         assertTrue(roleFound, "role " + role + " not found");
       } else {
-         assertFalse("user " + username + " found", userFound);
-         assertFalse("role " + role + " found", roleFound);
+         assertFalse(userFound, "user " + username + " found");
+         assertFalse(roleFound, "role " + role + " found");
       }
    }
 

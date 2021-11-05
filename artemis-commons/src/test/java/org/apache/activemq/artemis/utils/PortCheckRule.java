@@ -21,37 +21,20 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 
-import org.junit.Assert;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
  * This will make sure any properties changed through tests are cleaned up between tests.
  */
-public class PortCheckRule extends TestWatcher {
+public class PortCheckRule implements BeforeEachCallback, AfterEachCallback {
 
    final int[] port;
 
    public PortCheckRule(int... port) {
       this.port = port;
-   }
-
-   @Override
-   protected void starting(Description description) {
-      for (int p : port) {
-         if (!checkAvailable(p)) {
-            Assert.fail("a previous test is using port " + p + " on " + description);
-         }
-      }
-   }
-
-   @Override
-   protected void finished(Description description) {
-      for (int p : port) {
-         if (!checkAvailable(p)) {
-            Assert.fail(description + " has left a server socket open on port " + p);
-         }
-      }
    }
 
    public static boolean checkAvailable(int port) {
@@ -71,4 +54,21 @@ public class PortCheckRule extends TestWatcher {
       }
    }
 
+   @Override
+   public void afterEach(ExtensionContext extensionContext) throws Exception {
+      for (int p : port) {
+         if (!checkAvailable(p)) {
+            Assertions.fail(extensionContext.getDisplayName() + " has left a server socket open on port " + p);
+         }
+      }
+   }
+
+   @Override
+   public void beforeEach(ExtensionContext extensionContext) throws Exception {
+      for (int p : port) {
+         if (!checkAvailable(p)) {
+            Assertions.fail("a previous test is using port " + p + " on " + extensionContext.getDisplayName());
+         }
+      }
+   }
 }

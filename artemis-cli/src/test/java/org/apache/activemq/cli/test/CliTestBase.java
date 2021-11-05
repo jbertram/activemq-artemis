@@ -16,22 +16,6 @@
  */
 package org.apache.activemq.cli.test;
 
-import org.apache.activemq.artemis.api.core.RoutingType;
-import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
-import org.apache.activemq.artemis.cli.Artemis;
-import org.apache.activemq.artemis.cli.commands.Run;
-import org.apache.activemq.artemis.cli.commands.queue.CreateQueue;
-import org.apache.activemq.artemis.cli.commands.tools.LockAbstract;
-import org.apache.activemq.artemis.nativo.jlibaio.LibaioContext;
-import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
-import org.apache.activemq.artemis.jms.client.ActiveMQDestination;
-import org.apache.activemq.artemis.spi.core.security.jaas.PropertiesLoader;
-import org.apache.activemq.artemis.utils.ThreadLeakCheckRule;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-
 import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -44,16 +28,32 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.apache.activemq.artemis.api.core.RoutingType;
+import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
+import org.apache.activemq.artemis.cli.Artemis;
+import org.apache.activemq.artemis.cli.commands.Run;
+import org.apache.activemq.artemis.cli.commands.queue.CreateQueue;
+import org.apache.activemq.artemis.cli.commands.tools.LockAbstract;
+import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
+import org.apache.activemq.artemis.jms.client.ActiveMQDestination;
+import org.apache.activemq.artemis.nativo.jlibaio.LibaioContext;
+import org.apache.activemq.artemis.spi.core.security.jaas.PropertiesLoader;
+import org.apache.activemq.artemis.utils.ThreadLeakCheckRule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.io.TempDir;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CliTestBase {
 
-   @Rule
-   public TemporaryFolder temporaryFolder;
+   @TempDir
+   public File temporaryFolder;
 
-   @Rule
+   @RegisterExtension
    public ThreadLeakCheckRule leakCheckRule = new ThreadLeakCheckRule();
 
    private String original = System.getProperty("java.security.auth.login.config");
@@ -61,16 +61,15 @@ public class CliTestBase {
    public CliTestBase() {
       File parent = new File("./target/tmp");
       parent.mkdirs();
-      temporaryFolder = new TemporaryFolder(parent);
    }
 
-   @Before
+   @BeforeEach
    public void setup() throws Exception {
       Run.setEmbedded(true);
       PropertiesLoader.resetUsersAndGroupsCache();
    }
 
-   @After
+   @AfterEach
    public void tearDown() throws Exception {
       ActiveMQClient.clearThreadPools();
       System.clearProperty("artemis.instance");
@@ -87,7 +86,7 @@ public class CliTestBase {
    }
 
    protected Object startServer() throws Exception {
-      File rootDirectory = new File(temporaryFolder.getRoot(), "broker");
+      File rootDirectory = new File(temporaryFolder, "broker");
       setupAuth(rootDirectory);
       Run.setEmbedded(true);
       Artemis.main("create", rootDirectory.getAbsolutePath(), "--silent", "--no-fsync", "--no-autotune", "--no-web", "--require-login", "--disable-persistence");
@@ -96,7 +95,7 @@ public class CliTestBase {
    }
 
    void setupAuth() {
-      setupAuth(temporaryFolder.getRoot());
+      setupAuth(temporaryFolder);
    }
 
    void setupAuth(File folder) {

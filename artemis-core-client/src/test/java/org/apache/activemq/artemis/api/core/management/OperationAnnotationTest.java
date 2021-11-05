@@ -19,7 +19,7 @@
 
 package org.apache.activemq.artemis.api.core.management;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -28,7 +28,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @RunWith(Parameterized.class)
 public class OperationAnnotationTest {
@@ -76,7 +76,7 @@ public class OperationAnnotationTest {
                         break;
                      }
                   }
-                  assertTrue("method " + m + " has parameters with no Parameter annotation", hasParameterAnnotation);
+                  assertTrue(hasParameterAnnotation, "method " + m + " has parameters with no Parameter annotation");
                }
             }
          }

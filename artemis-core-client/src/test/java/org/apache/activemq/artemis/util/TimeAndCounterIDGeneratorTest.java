@@ -21,10 +21,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.activemq.artemis.utils.TimeAndCounterIDGenerator;
 import org.apache.activemq.artemis.utils.collections.ConcurrentHashSet;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class TimeAndCounterIDGeneratorTest extends Assert {
+public class TimeAndCounterIDGeneratorTest extends Assertions {
 
    @Test
    public void testCalculation() {
@@ -36,7 +36,7 @@ public class TimeAndCounterIDGeneratorTest extends Assert {
       for (long i = 0; i < max; i++) {
          long seqNr = seq.generateID();
 
-         Assert.assertTrue("The sequence generator should aways generate crescent numbers", seqNr > lastNr);
+         Assertions.assertTrue(seqNr > lastNr, "The sequence generator should aways generate crescent numbers");
 
          lastNr = seqNr;
       }
@@ -48,16 +48,16 @@ public class TimeAndCounterIDGeneratorTest extends Assert {
       TimeAndCounterIDGenerator seq = new TimeAndCounterIDGenerator();
 
       long id1 = seq.generateID();
-      Assert.assertEquals(1, id1 & 0xffff);
-      Assert.assertEquals(2, seq.generateID() & 0xffff);
+      Assertions.assertEquals(1, id1 & 0xffff);
+      Assertions.assertEquals(2, seq.generateID() & 0xffff);
 
       seq.refresh();
 
       long id2 = seq.generateID();
 
-      Assert.assertTrue(id2 > id1);
+      Assertions.assertTrue(id2 > id1);
 
-      Assert.assertEquals(1, id2 & 0xffff);
+      Assertions.assertEquals(1, id2 & 0xffff);
 
    }
 
@@ -83,12 +83,12 @@ public class TimeAndCounterIDGeneratorTest extends Assert {
          public void run() {
             try {
                latchAlign.countDown();
-               assertTrue("Latch has got to return within a minute", latchStart.await(1, TimeUnit.MINUTES));
+               assertTrue(latchStart.await(1, TimeUnit.MINUTES), "Latch has got to return within a minute");
 
                long lastValue = 0L;
                for (int i = 0; i < NUMBER_OF_IDS; i++) {
                   long value = seq.generateID();
-                  Assert.assertTrue(TimeAndCounterIDGeneratorTest.hex(value) + " should be greater than " +
+                  Assertions.assertTrue(TimeAndCounterIDGeneratorTest.hex(value) + " should be greater than " +
                                        TimeAndCounterIDGeneratorTest.hex(lastValue) +
                                        " on seq " +
                                        seq.toString(), value > lastValue);
@@ -110,7 +110,7 @@ public class TimeAndCounterIDGeneratorTest extends Assert {
          arrays[i].start();
       }
 
-      assertTrue("Latch has got to return within a minute", latchAlign.await(1, TimeUnit.MINUTES));
+      assertTrue(latchAlign.await(1, TimeUnit.MINUTES), "Latch has got to return within a minute");
 
       latchStart.countDown();
 
@@ -121,7 +121,7 @@ public class TimeAndCounterIDGeneratorTest extends Assert {
          }
       }
 
-      Assert.assertEquals(NUMBER_OF_THREADS * NUMBER_OF_IDS, hashSet.size());
+      Assertions.assertEquals(NUMBER_OF_THREADS * NUMBER_OF_IDS, hashSet.size());
 
       hashSet.clear();
 
@@ -138,7 +138,7 @@ public class TimeAndCounterIDGeneratorTest extends Assert {
       try {
          // This is simulating a situation where we generated more than 268 million messages on the same time interval
          seq.generateID();
-         Assert.fail("It was supposed to throw an exception, as the counter was set to explode on this test");
+         Assertions.fail("It was supposed to throw an exception, as the counter was set to explode on this test");
       } catch (Exception e) {
       }
 
@@ -153,7 +153,7 @@ public class TimeAndCounterIDGeneratorTest extends Assert {
       // This is ok... the time portion would be added to the next one generated 10 seconds ago
       seq.generateID();
 
-      Assert.assertTrue(TimeAndCounterIDGeneratorTest.hex(timeMark) + " < " +
+      Assertions.assertTrue(TimeAndCounterIDGeneratorTest.hex(timeMark) + " < " +
                            TimeAndCounterIDGeneratorTest.hex(seq.getInternalTimeMark()), timeMark < seq.getInternalTimeMark());
    }
 

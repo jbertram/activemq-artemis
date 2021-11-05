@@ -96,8 +96,9 @@
          <artifactId>arquillian-junit-core</artifactId>
       </dependency>
       <dependency>
-         <groupId>junit</groupId>
-         <artifactId>junit</artifactId>
+         <groupId>org.junit.jupiter</groupId>
+         <artifactId>junit-jupiter</artifactId>
+         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>jakarta.jms</groupId>

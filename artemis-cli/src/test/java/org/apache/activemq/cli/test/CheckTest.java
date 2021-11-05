@@ -35,8 +35,8 @@ import org.apache.activemq.artemis.cli.commands.tools.LockAbstract;
 import org.apache.activemq.artemis.core.server.impl.ActiveMQServerImpl;
 import org.apache.activemq.artemis.utils.Base64;
 import org.apache.activemq.artemis.utils.Wait;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class CheckTest extends CliTestBase {
    final String queueName = "TEST";
@@ -53,14 +53,14 @@ public class CheckTest extends CliTestBase {
          nodeCheck = new NodeCheck();
          nodeCheck.setUser("admin");
          nodeCheck.setPassword("admin");
-         Assert.assertEquals(1, nodeCheck.execute(context));
+         Assertions.assertEquals(1, nodeCheck.execute(context));
 
          context = new TestActionContext();
          nodeCheck = new NodeCheck();
          nodeCheck.setUser("admin");
          nodeCheck.setPassword("admin");
          nodeCheck.setUp(true);
-         Assert.assertEquals(1, nodeCheck.execute(context));
+         Assertions.assertEquals(1, nodeCheck.execute(context));
       } finally {
          stopServer();
       }
@@ -79,14 +79,14 @@ public class CheckTest extends CliTestBase {
          nodeCheck.setUser("admin");
          nodeCheck.setPassword("admin");
          nodeCheck.setDiskUsage(-1);
-         Assert.assertEquals(1, nodeCheck.execute(context));
+         Assertions.assertEquals(1, nodeCheck.execute(context));
 
          context = new TestActionContext();
          nodeCheck = new NodeCheck();
          nodeCheck.setUser("admin");
          nodeCheck.setPassword("admin");
          nodeCheck.setDiskUsage(90);
-         Assert.assertEquals(1, nodeCheck.execute(context));
+         Assertions.assertEquals(1, nodeCheck.execute(context));
 
          try {
             context = new TestActionContext();
@@ -96,9 +96,9 @@ public class CheckTest extends CliTestBase {
             nodeCheck.setDiskUsage(0);
             nodeCheck.execute(context);
 
-            Assert.fail("CLIException expected.");
+            Assertions.fail("CLIException expected.");
          } catch (Exception e) {
-            Assert.assertTrue("CLIException expected.", e instanceof CLIException);
+            Assertions.assertTrue(e instanceof CLIException, "CLIException expected.");
          }
       } finally {
          stopServer();
@@ -118,7 +118,7 @@ public class CheckTest extends CliTestBase {
          nodeCheck.setUser("admin");
          nodeCheck.setPassword("admin");
          nodeCheck.setMemoryUsage(90);
-         Assert.assertEquals(1, nodeCheck.execute(context));
+         Assertions.assertEquals(1, nodeCheck.execute(context));
 
          try {
             context = new TestActionContext();
@@ -128,9 +128,9 @@ public class CheckTest extends CliTestBase {
             nodeCheck.setMemoryUsage(-1);
             nodeCheck.execute(context);
 
-            Assert.fail("CLIException expected.");
+            Assertions.fail("CLIException expected.");
          } catch (Exception e) {
-            Assert.assertTrue("CLIException expected.", e instanceof CLIException);
+            Assertions.assertTrue(e instanceof CLIException, "CLIException expected.");
          }
       } finally {
          stopServer();
@@ -142,8 +142,8 @@ public class CheckTest extends CliTestBase {
       NodeCheck nodeCheck;
       TestActionContext context;
 
-      File masterInstance = new File(temporaryFolder.getRoot(), "masterInstance");
-      File slaveInstance = new File(temporaryFolder.getRoot(), "slaveInstance");
+      File masterInstance = new File(temporaryFolder, "masterInstance");
+      File slaveInstance = new File(temporaryFolder, "slaveInstance");
 
       Run.setEmbedded(true);
       setupAuth(masterInstance);
@@ -165,7 +165,7 @@ public class CheckTest extends CliTestBase {
          nodeCheck.setUser("admin");
          nodeCheck.setPassword("admin");
          nodeCheck.setLive(true);
-         Assert.assertEquals(1, nodeCheck.execute(context));
+         Assertions.assertEquals(1, nodeCheck.execute(context));
 
          try {
             context = new TestActionContext();
@@ -175,9 +175,9 @@ public class CheckTest extends CliTestBase {
             nodeCheck.setBackup(true);
             nodeCheck.execute(context);
 
-            Assert.fail("CLIException expected.");
+            Assertions.fail("CLIException expected.");
          } catch (Exception e) {
-            Assert.assertTrue("CLIException expected.", e instanceof CLIException);
+            Assertions.assertTrue(e instanceof CLIException, "CLIException expected.");
          }
 
          LockAbstract.unlock();
@@ -195,7 +195,7 @@ public class CheckTest extends CliTestBase {
             nodeCheck.setLive(true);
             nodeCheck.setBackup(true);
             nodeCheck.setPeers(2);
-            Assert.assertEquals(3, nodeCheck.execute(context));
+            Assertions.assertEquals(3, nodeCheck.execute(context));
          } finally {
             Artemis.internalExecute(null, slaveInstance, new String[] {"stop"}, ActionContext.system());
          }
@@ -222,9 +222,9 @@ public class CheckTest extends CliTestBase {
             queueCheck.setName(queueName);
             queueCheck.execute(context);
 
-            Assert.fail("CLIException expected.");
+            Assertions.fail("CLIException expected.");
          } catch (Exception e) {
-            Assert.assertTrue("CLIException expected.", e instanceof CLIException);
+            Assertions.assertTrue(e instanceof CLIException, "CLIException expected.");
          }
 
          server.createQueue(new QueueConfiguration(queueName));
@@ -234,7 +234,7 @@ public class CheckTest extends CliTestBase {
          queueCheck.setUser("admin");
          queueCheck.setPassword("admin");
          queueCheck.setName(queueName);
-         Assert.assertEquals(1, queueCheck.execute(context));
+         Assertions.assertEquals(1, queueCheck.execute(context));
 
          context = new TestActionContext();
          queueCheck = new QueueCheck();
@@ -242,7 +242,7 @@ public class CheckTest extends CliTestBase {
          queueCheck.setPassword("admin");
          queueCheck.setUp(true);
          queueCheck.setName(queueName);
-         Assert.assertEquals(1, queueCheck.execute(context));
+         Assertions.assertEquals(1, queueCheck.execute(context));
       } finally {
          stopServer();
       }
@@ -268,7 +268,7 @@ public class CheckTest extends CliTestBase {
          queueCheck.setPassword("admin");
          queueCheck.setName(queueName);
          queueCheck.setBrowse(null);
-         Assert.assertEquals(1, queueCheck.execute(context));
+         Assertions.assertEquals(1, queueCheck.execute(context));
 
          QueueControl queueControl = (QueueControl)server.getManagementService().
             getResource(ResourceNames.QUEUE + queueName);
@@ -284,7 +284,7 @@ public class CheckTest extends CliTestBase {
          queueCheck.setPassword("admin");
          queueCheck.setName(queueName);
          queueCheck.setBrowse(messages);
-         Assert.assertEquals(1, queueCheck.execute(context));
+         Assertions.assertEquals(1, queueCheck.execute(context));
       } finally {
          stopServer();
       }
@@ -310,7 +310,7 @@ public class CheckTest extends CliTestBase {
          queueCheck.setPassword("admin");
          queueCheck.setName(queueName);
          queueCheck.setConsume(null);
-         Assert.assertEquals(1, queueCheck.execute(context));
+         Assertions.assertEquals(1, queueCheck.execute(context));
 
          QueueControl queueControl = (QueueControl)server.getManagementService().
             getResource(ResourceNames.QUEUE + queueName);
@@ -326,7 +326,7 @@ public class CheckTest extends CliTestBase {
          queueCheck.setPassword("admin");
          queueCheck.setName(queueName);
          queueCheck.setConsume(messages);
-         Assert.assertEquals(1, queueCheck.execute(context));
+         Assertions.assertEquals(1, queueCheck.execute(context));
       } finally {
          stopServer();
       }
@@ -350,9 +350,9 @@ public class CheckTest extends CliTestBase {
             queueCheck.setTimeout(100);
             queueCheck.execute(context);
 
-            Assert.fail("CLIException expected.");
+            Assertions.fail("CLIException expected.");
          } catch (Exception e) {
-            Assert.assertTrue("CLIException expected.", e instanceof CLIException);
+            Assertions.assertTrue(e instanceof CLIException, "CLIException expected.");
          }
       } finally {
          stopServer();
@@ -377,7 +377,7 @@ public class CheckTest extends CliTestBase {
          queueCheck.setPassword("admin");
          queueCheck.setName(queueName);
          queueCheck.setProduce(messages);
-         Assert.assertEquals(1, queueCheck.execute(context));
+         Assertions.assertEquals(1, queueCheck.execute(context));
 
          queueControl = (QueueControl)server.getManagementService().
             getResource(ResourceNames.QUEUE + queueName);
@@ -408,11 +408,11 @@ public class CheckTest extends CliTestBase {
          queueCheck.setProduce(messages);
          queueCheck.setBrowse(messages);
          queueCheck.setConsume(messages);
-         Assert.assertEquals(3, queueCheck.execute(context));
+         Assertions.assertEquals(3, queueCheck.execute(context));
 
          QueueControl queueControl = (QueueControl)server.getManagementService().
             getResource(ResourceNames.QUEUE + queueName);
-         Assert.assertEquals(0, queueControl.getMessageCount());
+         Assertions.assertEquals(0, queueControl.getMessageCount());
       } finally {
          stopServer();
       }

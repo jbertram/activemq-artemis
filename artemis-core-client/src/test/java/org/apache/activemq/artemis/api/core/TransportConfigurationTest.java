@@ -24,12 +24,13 @@ import java.util.Map;
 import io.netty.buffer.Unpooled;
 import org.apache.activemq.artemis.core.buffers.impl.ChannelBufferWrapper;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.MatcherAssertions.assertThat;
 
 public class TransportConfigurationTest {
 
@@ -38,8 +39,8 @@ public class TransportConfigurationTest {
       TransportConfiguration configuration = new TransportConfiguration("SomeClass", new HashMap<String, Object>(), null);
       TransportConfiguration configuration2 = new TransportConfiguration("SomeClass", new HashMap<String, Object>(), null);
 
-      Assert.assertEquals(configuration, configuration2);
-      Assert.assertEquals(configuration.hashCode(), configuration2.hashCode());
+      Assertions.assertEquals(configuration, configuration2);
+      Assertions.assertEquals(configuration.hashCode(), configuration2.hashCode());
 
       HashMap<String, Object> configMap1 = new HashMap<>();
       configMap1.put("host", "localhost");
@@ -48,14 +49,14 @@ public class TransportConfigurationTest {
 
       configuration = new TransportConfiguration("SomeClass", configMap1, null);
       configuration2 = new TransportConfiguration("SomeClass", configMap2, null);
-      Assert.assertEquals(configuration, configuration2);
-      Assert.assertEquals(configuration.hashCode(), configuration2.hashCode());
+      Assertions.assertEquals(configuration, configuration2);
+      Assertions.assertEquals(configuration.hashCode(), configuration2.hashCode());
 
       configuration = new TransportConfiguration("SomeClass", configMap1, "name1");
       configuration2 = new TransportConfiguration("SomeClass", configMap2, "name2");
-      Assert.assertNotEquals(configuration, configuration2);
-      Assert.assertNotEquals(configuration.hashCode(), configuration2.hashCode());
-      Assert.assertTrue(configuration.isEquivalent(configuration2));
+      Assertions.assertNotEquals(configuration, configuration2);
+      Assertions.assertNotEquals(configuration.hashCode(), configuration2.hashCode());
+      Assertions.assertTrue(configuration.isEquivalent(configuration2));
 
       configMap1 = new HashMap<>();
       configMap1.put("host", "localhost");
@@ -63,8 +64,8 @@ public class TransportConfigurationTest {
       configMap2.put("host", "localhost3");
       configuration = new TransportConfiguration("SomeClass", configMap1, null);
       configuration2 = new TransportConfiguration("SomeClass", configMap2, null);
-      Assert.assertNotEquals(configuration, configuration2);
-      Assert.assertNotEquals(configuration.hashCode(), configuration2.hashCode());
+      Assertions.assertNotEquals(configuration, configuration2);
+      Assertions.assertNotEquals(configuration.hashCode(), configuration2.hashCode());
 
    }
 
@@ -75,17 +76,17 @@ public class TransportConfigurationTest {
       final Map<String, Object> params = Collections.emptyMap();
       final Map<String, Object> extraParams = Collections.singletonMap("key", "foo");
 
-      Assert.assertEquals(new TransportConfiguration(className, params, name, null), new TransportConfiguration(className, params, name, null));
-      Assert.assertEquals(new TransportConfiguration(className, params, name, null), new TransportConfiguration(className, params, name, Collections.emptyMap()));
-      Assert.assertEquals(new TransportConfiguration(className, params, name, Collections.emptyMap()), new TransportConfiguration(className, params, name, null));
-      Assert.assertEquals(new TransportConfiguration(className, params, name, extraParams), new TransportConfiguration(className, params, name, extraParams));
-      Assert.assertEquals(new TransportConfiguration(className, params, name, extraParams), new TransportConfiguration(className, params, name, new HashMap<>(extraParams)));
+      Assertions.assertEquals(new TransportConfiguration(className, params, name, null), new TransportConfiguration(className, params, name, null));
+      Assertions.assertEquals(new TransportConfiguration(className, params, name, null), new TransportConfiguration(className, params, name, Collections.emptyMap()));
+      Assertions.assertEquals(new TransportConfiguration(className, params, name, Collections.emptyMap()), new TransportConfiguration(className, params, name, null));
+      Assertions.assertEquals(new TransportConfiguration(className, params, name, extraParams), new TransportConfiguration(className, params, name, extraParams));
+      Assertions.assertEquals(new TransportConfiguration(className, params, name, extraParams), new TransportConfiguration(className, params, name, new HashMap<>(extraParams)));
 
-      Assert.assertNotEquals(new TransportConfiguration(className, params, name, null), new TransportConfiguration(className, params, name, extraParams));
-      Assert.assertNotEquals(new TransportConfiguration(className, params, name, Collections.emptyMap()), new TransportConfiguration(className, params, name, extraParams));
-      Assert.assertNotEquals(new TransportConfiguration(className, params, name, extraParams), new TransportConfiguration(className, params, name, Collections.singletonMap("key", "other")));
-      Assert.assertNotEquals(new TransportConfiguration(className, params, name, extraParams), new TransportConfiguration(className, params, name, null));
-      Assert.assertNotEquals(new TransportConfiguration(className, params, name, extraParams), new TransportConfiguration(className, params, name, Collections.emptyMap()));
+      Assertions.assertNotEquals(new TransportConfiguration(className, params, name, null), new TransportConfiguration(className, params, name, extraParams));
+      Assertions.assertNotEquals(new TransportConfiguration(className, params, name, Collections.emptyMap()), new TransportConfiguration(className, params, name, extraParams));
+      Assertions.assertNotEquals(new TransportConfiguration(className, params, name, extraParams), new TransportConfiguration(className, params, name, Collections.singletonMap("key", "other")));
+      Assertions.assertNotEquals(new TransportConfiguration(className, params, name, extraParams), new TransportConfiguration(className, params, name, null));
+      Assertions.assertNotEquals(new TransportConfiguration(className, params, name, extraParams), new TransportConfiguration(className, params, name, Collections.emptyMap()));
    }
 
    @Test
@@ -134,14 +135,14 @@ public class TransportConfigurationTest {
       TransportConfiguration decodedTransportConfiguration = new TransportConfiguration();
       decodedTransportConfiguration.decode(buffer);
 
-      Assert.assertFalse(buffer.readable());
+      Assertions.assertFalse(buffer.readable());
 
-      Assert.assertEquals(transportConfiguration.getParams(), decodedTransportConfiguration.getParams());
+      Assertions.assertEquals(transportConfiguration.getParams(), decodedTransportConfiguration.getParams());
 
-      Assert.assertTrue((transportConfiguration.getExtraParams() == null && (decodedTransportConfiguration.getExtraParams() == null || decodedTransportConfiguration.getExtraParams().isEmpty())) ||
+      Assertions.assertTrue((transportConfiguration.getExtraParams() == null && (decodedTransportConfiguration.getExtraParams() == null || decodedTransportConfiguration.getExtraParams().isEmpty())) ||
             (decodedTransportConfiguration.getExtraParams() == null && (transportConfiguration.getExtraParams() == null || transportConfiguration.getExtraParams().isEmpty())) ||
             (transportConfiguration.getExtraParams() != null && decodedTransportConfiguration.getExtraParams() != null && transportConfiguration.getExtraParams().equals(decodedTransportConfiguration.getExtraParams())));
 
-      Assert.assertEquals(transportConfiguration, decodedTransportConfiguration);
+      Assertions.assertEquals(transportConfiguration, decodedTransportConfiguration);
    }
 }

@@ -17,16 +17,16 @@
 
 package org.apache.activemq.artemis.utils.network;
 
-import org.junit.rules.ExternalResource;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
  * Just a rule where you can use to automate cleanup on NetUtil.
  * */
-public class NetUtilResource extends ExternalResource {
+public class NetUtilResource implements AfterAllCallback {
 
    @Override
-   protected void after() {
-      super.after();
+   public void afterAll(ExtensionContext extensionContext) {
       NetUtil.cleanup();
    }
 }

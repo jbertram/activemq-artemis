@@ -21,8 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.activemq.artemis.utils.ConfigurationHelper;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ConfigurationHelperTest {
 
@@ -30,13 +30,13 @@ public class ConfigurationHelperTest {
    public void testDefaultInt() {
       Map<String, Object> values = new HashMap<>();
       values.put("test", "zzz");
-      Assert.assertEquals(3, ConfigurationHelper.getIntProperty("test", 3, values));
+      Assertions.assertEquals(3, ConfigurationHelper.getIntProperty("test", 3, values));
    }
 
    @Test
    public void testDefaultLong() {
       Map<String, Object> values = new HashMap<>();
       values.put("test", "zzz");
-      Assert.assertEquals(3L, ConfigurationHelper.getLongProperty("test", 3L, values));
+      Assertions.assertEquals(3L, ConfigurationHelper.getLongProperty("test", 3L, values));
    }
 }

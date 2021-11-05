@@ -33,10 +33,10 @@ import org.apache.activemq.artemis.core.protocol.core.impl.wireformat.SessionSen
 import org.apache.activemq.artemis.reader.TextMessageUtil;
 import org.apache.activemq.artemis.utils.Base64;
 import org.apache.activemq.artemis.utils.UUID;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -69,11 +69,11 @@ public class CoreMessageTest {
    private ByteBuf BYTE_ENCODE;
 
 
-   @Before
+   @BeforeEach
    public void before() {
       BYTE_ENCODE = Unpooled.wrappedBuffer(Base64.decode(STRING_ENCODE, Base64.DONT_BREAK_LINES | Base64.URL_SAFE));
       // some extra caution here, nothing else, to make sure we would get the same encoding back
-      Assert.assertEquals(STRING_ENCODE, encodeString(BYTE_ENCODE.array()));
+      Assertions.assertEquals(STRING_ENCODE, encodeString(BYTE_ENCODE.array()));
       BYTE_ENCODE.readerIndex(0).writerIndex(BYTE_ENCODE.capacity());
    }
 
@@ -82,7 +82,7 @@ public class CoreMessageTest {
    public void testPassThrough() {
       CoreMessage decodedMessage = decodeMessage();
 
-      Assert.assertEquals(TEXT, TextMessageUtil.readBodyText(decodedMessage.getReadOnlyBodyBuffer()).toString());
+      Assertions.assertEquals(TEXT, TextMessageUtil.readBodyText(decodedMessage.getReadOnlyBodyBuffer()).toString());
    }
 
    @Test
@@ -90,7 +90,7 @@ public class CoreMessageTest {
       final CoreMessage decodedMessage = decodeMessage();
       final int bodyBufferSize = decodedMessage.getBodyBufferSize();
       final int readonlyBodyBufferReadableBytes = decodedMessage.getReadOnlyBodyBuffer().readableBytes();
-      Assert.assertEquals(bodyBufferSize, readonlyBodyBufferReadableBytes);
+      Assertions.assertEquals(bodyBufferSize, readonlyBodyBufferReadableBytes);
    }
 
    /** The message is received, then sent to the other side untouched */
@@ -99,7 +99,7 @@ public class CoreMessageTest {
       CoreMessage decodedMessage = decodeMessage();
 
       int encodeSize = decodedMessage.getEncodeSize();
-      Assert.assertEquals(BYTE_ENCODE.capacity(), encodeSize);
+      Assertions.assertEquals(BYTE_ENCODE.capacity(), encodeSize);
 
       SessionSendMessage sendMessage = new SessionSendMessage(decodedMessage, true, null);
       sendMessage.setChannelID(777);
@@ -115,11 +115,11 @@ public class CoreMessageTest {
 
       sendMessageReceivedSent.decode(buffer);
 
-      Assert.assertEquals(encodeSize, sendMessageReceivedSent.getMessage().getEncodeSize());
+      Assertions.assertEquals(encodeSize, sendMessageReceivedSent.getMessage().getEncodeSize());
 
-      Assert.assertTrue(sendMessageReceivedSent.isRequiresResponse());
+      Assertions.assertTrue(sendMessageReceivedSent.isRequiresResponse());
 
-      Assert.assertEquals(TEXT, TextMessageUtil.readBodyText(sendMessageReceivedSent.getMessage().getReadOnlyBodyBuffer()).toString());
+      Assertions.assertEquals(TEXT, TextMessageUtil.readBodyText(sendMessageReceivedSent.getMessage().getReadOnlyBodyBuffer()).toString());
    }
 
    /** The message is received, then sent to the other side untouched */
@@ -128,7 +128,7 @@ public class CoreMessageTest {
       CoreMessage decodedMessage = decodeMessage();
 
       int encodeSize = decodedMessage.getEncodeSize();
-      Assert.assertEquals(BYTE_ENCODE.capacity(), encodeSize);
+      Assertions.assertEquals(BYTE_ENCODE.capacity(), encodeSize);
 
       SessionReceiveMessage sendMessage = new SessionReceiveMessage(33, decodedMessage, 7);
       sendMessage.setChannelID(777);
@@ -141,13 +141,13 @@ public class CoreMessageTest {
 
       sendMessageReceivedSent.decode(buffer);
 
-      Assert.assertEquals(33, sendMessageReceivedSent.getConsumerID());
+      Assertions.assertEquals(33, sendMessageReceivedSent.getConsumerID());
 
-      Assert.assertEquals(7, sendMessageReceivedSent.getDeliveryCount());
+      Assertions.assertEquals(7, sendMessageReceivedSent.getDeliveryCount());
 
-      Assert.assertEquals(encodeSize, sendMessageReceivedSent.getMessage().getEncodeSize());
+      Assertions.assertEquals(encodeSize, sendMessageReceivedSent.getMessage().getEncodeSize());
 
-      Assert.assertEquals(TEXT, TextMessageUtil.readBodyText(sendMessageReceivedSent.getMessage().getReadOnlyBodyBuffer()).toString());
+      Assertions.assertEquals(TEXT, TextMessageUtil.readBodyText(sendMessageReceivedSent.getMessage().getReadOnlyBodyBuffer()).toString());
    }
 
    private CoreMessage decodeMessage() {
@@ -159,11 +159,11 @@ public class CoreMessageTest {
 
       int encodeSize = coreMessage.getEncodeSize();
 
-      Assert.assertEquals(newBuffer.capacity(), encodeSize);
+      Assertions.assertEquals(newBuffer.capacity(), encodeSize);
 
-      Assert.assertEquals(ADDRESS, coreMessage.getAddressSimpleString());
+      Assertions.assertEquals(ADDRESS, coreMessage.getAddressSimpleString());
 
-      Assert.assertEquals(PROP1_VALUE.toString(), coreMessage.getStringProperty(PROP1_NAME));
+      Assertions.assertEquals(PROP1_VALUE.toString(), coreMessage.getStringProperty(PROP1_NAME));
 
       ByteBuf destinedBuffer = Unpooled.buffer(BYTE_ENCODE.array().length);
       coreMessage.sendBuffer(destinedBuffer, 0);
@@ -173,9 +173,9 @@ public class CoreMessageTest {
 
       CoreMessage newDecoded = internalDecode(Unpooled.wrappedBuffer(destinedArray));
 
-      Assert.assertEquals(encodeSize, newDecoded.getEncodeSize());
+      Assertions.assertEquals(encodeSize, newDecoded.getEncodeSize());
 
-      Assert.assertArrayEquals(sourceArray, destinedArray);
+      Assertions.assertArrayEquals(sourceArray, destinedArray);
 
       return coreMessage;
    }
@@ -209,7 +209,7 @@ public class CoreMessageTest {
 
       try {
          empty2.getBodyBuffer().readLong();
-         Assert.fail("should throw exception");
+         Assertions.fail("should throw exception");
       } catch (Exception expected) {
 
       }
@@ -222,23 +222,23 @@ public class CoreMessageTest {
       coreMessage.putStringProperty("prop", BIGGER_TEXT);
       coreMessage.putBytesProperty("bytesProp", BIGGER_TEXT.getBytes(StandardCharsets.UTF_8));
 
-      Assert.assertEquals(BIGGER_TEXT.length(), ((String)coreMessage.toMap().get("prop")).length());
-      Assert.assertEquals(BIGGER_TEXT.getBytes(StandardCharsets.UTF_8).length, ((byte[])coreMessage.toMap().get("bytesProp")).length);
+      Assertions.assertEquals(BIGGER_TEXT.length(), ((String)coreMessage.toMap().get("prop")).length());
+      Assertions.assertEquals(BIGGER_TEXT.getBytes(StandardCharsets.UTF_8).length, ((byte[])coreMessage.toMap().get("bytesProp")).length);
 
       // limit the values
-      Assert.assertNotEquals(BIGGER_TEXT.getBytes(StandardCharsets.UTF_8).length, ((byte[])coreMessage.toMap(40).get("bytesProp")).length);
+      Assertions.assertNotEquals(BIGGER_TEXT.getBytes(StandardCharsets.UTF_8).length, ((byte[])coreMessage.toMap(40).get("bytesProp")).length);
       String mapVal = ((String)coreMessage.toMap(40).get("prop"));
-      Assert.assertNotEquals(BIGGER_TEXT.length(), mapVal.length());
-      Assert.assertTrue(mapVal.contains("more"));
+      Assertions.assertNotEquals(BIGGER_TEXT.length(), mapVal.length());
+      Assertions.assertTrue(mapVal.contains("more"));
 
       mapVal = ((String)coreMessage.toMap(0).get("prop"));
-      Assert.assertNotEquals(BIGGER_TEXT.length(), mapVal.length());
-      Assert.assertTrue(mapVal.contains("more"));
+      Assertions.assertNotEquals(BIGGER_TEXT.length(), mapVal.length());
+      Assertions.assertTrue(mapVal.contains("more"));
 
-      Assert.assertEquals(BIGGER_TEXT.length(), Integer.parseInt(mapVal.substring(mapVal.lastIndexOf('+') + 1, mapVal.lastIndexOf('m')).trim()));
+      Assertions.assertEquals(BIGGER_TEXT.length(), Integer.parseInt(mapVal.substring(mapVal.lastIndexOf('+') + 1, mapVal.lastIndexOf('m')).trim()));
 
-      Assert.assertEquals(BIGGER_TEXT.getBytes(StandardCharsets.UTF_8).length, ((byte[])coreMessage.toPropertyMap().get("bytesProp")).length);
-      Assert.assertNotEquals(BIGGER_TEXT.getBytes(StandardCharsets.UTF_8).length, ((byte[])coreMessage.toPropertyMap(40).get("bytesProp")).length);
+      Assertions.assertEquals(BIGGER_TEXT.getBytes(StandardCharsets.UTF_8).length, ((byte[])coreMessage.toPropertyMap().get("bytesProp")).length);
+      Assertions.assertNotEquals(BIGGER_TEXT.getBytes(StandardCharsets.UTF_8).length, ((byte[])coreMessage.toPropertyMap(40).get("bytesProp")).length);
    }
 
    @Test
@@ -252,11 +252,11 @@ public class CoreMessageTest {
       CoreMessage empty2 = new CoreMessage();
       empty2.receiveBuffer(buffer);
 
-      Assert.assertEquals((byte)7, empty2.getBodyBuffer().readByte());
+      Assertions.assertEquals((byte)7, empty2.getBodyBuffer().readByte());
 
       try {
          empty2.getBodyBuffer().readByte();
-         Assert.fail("should throw exception");
+         Assertions.fail("should throw exception");
       } catch (Exception expected) {
 
       }
@@ -288,7 +288,7 @@ public class CoreMessageTest {
 
       SimpleString newText = TextMessageUtil.readBodyText(newCoreMessage.getReadOnlyBodyBuffer());
 
-      Assert.assertEquals(newString, newText.toString());
+      Assertions.assertEquals(newString, newText.toString());
 
 //      coreMessage.putStringProperty()
    }
@@ -305,8 +305,8 @@ public class CoreMessageTest {
          threads[i] = new Thread(() -> {
             try {
                for (int j = 0; j < 50; j++) {
-                  Assert.assertEquals(ADDRESS, coreMessage.getAddressSimpleString());
-                  Assert.assertEquals(PROP1_VALUE.toString(), coreMessage.getStringProperty(PROP1_NAME));
+                  Assertions.assertEquals(ADDRESS, coreMessage.getAddressSimpleString());
+                  Assertions.assertEquals(PROP1_VALUE.toString(), coreMessage.getStringProperty(PROP1_NAME));
 
                   ByteBuf destinedBuffer = Unpooled.buffer(BYTE_ENCODE.array().length);
                   coreMessage.sendBuffer(destinedBuffer, 0);
@@ -314,9 +314,9 @@ public class CoreMessageTest {
                   byte[] destinedArray = destinedBuffer.array();
                   byte[] sourceArray = BYTE_ENCODE.array();
 
-                  Assert.assertArrayEquals(sourceArray, destinedArray);
+                  Assertions.assertArrayEquals(sourceArray, destinedArray);
 
-                  Assert.assertEquals(TEXT, TextMessageUtil.readBodyText(coreMessage.getReadOnlyBodyBuffer()).toString());
+                  Assertions.assertEquals(TEXT, TextMessageUtil.readBodyText(coreMessage.getReadOnlyBodyBuffer()).toString());
                }
             } catch (Throwable e) {
                e.printStackTrace();
@@ -344,15 +344,15 @@ public class CoreMessageTest {
    public void compareOriginal() throws Exception {
       String generated = generate(TEXT);
 
-      Assert.assertEquals(STRING_ENCODE, generated);
+      Assertions.assertEquals(STRING_ENCODE, generated);
 
       for (int i = 0; i < generated.length(); i++) {
-         Assert.assertEquals("Chart at " + i + " was " + generated.charAt(i) + " instead of " + STRING_ENCODE.charAt(i), generated.charAt(i), STRING_ENCODE.charAt(i));
+         Assertions.assertEquals(generated.charAt(i), STRING_ENCODE.charAt(i), "Chart at " + i + " was " + generated.charAt(i) + " instead of " + STRING_ENCODE.charAt(i));
       }
    }
 
    /** Use this method to update the encode for the known message */
-   @Ignore
+   @Disabled
    @Test
    public void generate() throws Exception {
 

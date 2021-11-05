@@ -18,8 +18,8 @@ package org.apache.activemq.artemis.util;
 
 import org.apache.activemq.artemis.tests.util.SilentTestCase;
 import org.apache.activemq.artemis.utils.XMLUtil;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -33,7 +33,7 @@ public class XMLUtilTest extends SilentTestCase {
 
       Element e = XMLUtil.stringToElement(document);
 
-      Assert.assertEquals("foo", XMLUtil.getTextContent(e));
+      Assertions.assertEquals("foo", XMLUtil.getTextContent(e));
    }
 
    @Test
@@ -42,7 +42,7 @@ public class XMLUtilTest extends SilentTestCase {
 
       Element e = XMLUtil.stringToElement(document);
 
-      Assert.assertEquals("foo", XMLUtil.getTextContent(e));
+      Assertions.assertEquals("foo", XMLUtil.getTextContent(e));
    }
 
    @Test
@@ -55,7 +55,7 @@ public class XMLUtilTest extends SilentTestCase {
 
       Element subelement = XMLUtil.stringToElement(s);
 
-      Assert.assertEquals("a", subelement.getNodeName());
+      Assertions.assertEquals("a", subelement.getNodeName());
    }
 
    @Test
@@ -68,7 +68,7 @@ public class XMLUtilTest extends SilentTestCase {
 
       Element subelement = XMLUtil.stringToElement(s);
 
-      Assert.assertEquals("a", subelement.getNodeName());
+      Assertions.assertEquals("a", subelement.getNodeName());
    }
 
    @Test
@@ -81,7 +81,7 @@ public class XMLUtilTest extends SilentTestCase {
 
       Element subelement = XMLUtil.stringToElement(s);
 
-      Assert.assertEquals("a", subelement.getNodeName());
+      Assertions.assertEquals("a", subelement.getNodeName());
       NodeList nl = subelement.getChildNodes();
 
       // try to find <b>
@@ -92,7 +92,7 @@ public class XMLUtilTest extends SilentTestCase {
             found = true;
          }
       }
-      Assert.assertTrue(found);
+      Assertions.assertTrue(found);
    }
 
    @Test
@@ -118,7 +118,7 @@ public class XMLUtilTest extends SilentTestCase {
 
       try {
          XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), XMLUtil.stringToElement(s2));
-         Assert.fail("this should throw exception");
+         Assertions.fail("this should throw exception");
       } catch (IllegalArgumentException e) {
          // expected
       }
@@ -155,7 +155,7 @@ public class XMLUtilTest extends SilentTestCase {
 
       try {
          XMLUtil.assertEquivalent(XMLUtil.stringToElement(s), XMLUtil.stringToElement(s2));
-         Assert.fail("this should throw exception");
+         Assertions.fail("this should throw exception");
       } catch (IllegalArgumentException e) {
          // OK
          e.printStackTrace();
@@ -213,7 +213,7 @@ public class XMLUtilTest extends SilentTestCase {
       System.setProperty("sysprop1", "test1");
       System.setProperty("sysprop2", "content4");
       String replaced = XMLUtil.replaceSystemPropsInString(before);
-      Assert.assertEquals(after, replaced);
+      Assertions.assertEquals(after, replaced);
    }
 
    @Test
@@ -223,7 +223,7 @@ public class XMLUtilTest extends SilentTestCase {
       System.setProperty("sysprop1", "test1");
       System.setProperty("sysprop2", "content4");
       String replaced = XMLUtil.replaceSystemPropsInString(before);
-      Assert.assertEquals(after, replaced);
+      Assertions.assertEquals(after, replaced);
    }
 
    @Test
@@ -233,7 +233,7 @@ public class XMLUtilTest extends SilentTestCase {
       System.setProperty("sysprop1", "test1");
       System.setProperty("sysprop2", "content4");
       String replaced = XMLUtil.replaceSystemPropsInString(before);
-      Assert.assertEquals(after, replaced);
+      Assertions.assertEquals(after, replaced);
    }
 
    @Test
@@ -241,7 +241,7 @@ public class XMLUtilTest extends SilentTestCase {
       String xml = "<![CDATA[somedata]]>";
       String stripped = XMLUtil.stripCDATA(xml);
 
-      Assert.assertEquals("somedata", stripped);
+      Assertions.assertEquals("somedata", stripped);
    }
 
 }

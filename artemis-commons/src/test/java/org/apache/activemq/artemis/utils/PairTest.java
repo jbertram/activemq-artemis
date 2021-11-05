@@ -17,10 +17,10 @@
 package org.apache.activemq.artemis.utils;
 
 import org.apache.activemq.artemis.api.core.Pair;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class PairTest extends Assert {
+public class PairTest extends Assertions {
 
    @Test
    public void testPair() {

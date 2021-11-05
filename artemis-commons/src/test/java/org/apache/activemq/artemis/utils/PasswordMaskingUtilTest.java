@@ -16,9 +16,10 @@
  */
 package org.apache.activemq.artemis.utils;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PasswordMaskingUtilTest {
 
@@ -28,8 +29,10 @@ public class PasswordMaskingUtilTest {
       assertTrue(codec instanceof DefaultSensitiveStringCodec);
    }
 
-   @Test(expected = IllegalArgumentException.class)
+	@Test
    public void testGetCodecUsingInvalidCodec() throws Exception {
-      PasswordMaskingUtil.getCodec("codec doesn't exist");
+		assertThrows(IllegalArgumentException.class, () -> {
+         PasswordMaskingUtil.getCodec("codec doesn't exist");
+      });
    }
 }

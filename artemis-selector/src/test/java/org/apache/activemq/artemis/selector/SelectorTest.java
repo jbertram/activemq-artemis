@@ -23,8 +23,8 @@ import org.apache.activemq.artemis.selector.filter.BooleanExpression;
 import org.apache.activemq.artemis.selector.filter.FilterException;
 import org.apache.activemq.artemis.selector.filter.Filterable;
 import org.apache.activemq.artemis.selector.impl.SelectorParser;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class SelectorTest {
 
@@ -512,16 +512,16 @@ public class SelectorTest {
    protected void assertInvalidSelector(MockMessage message, String text) {
       try {
          SelectorParser.parse(text);
-         Assert.fail("Created a valid selector");
+         Assertions.fail("Created a valid selector");
       } catch (FilterException e) {
       }
    }
 
    protected void assertSelector(MockMessage message, String text, boolean expected) throws FilterException {
       BooleanExpression selector = SelectorParser.parse(text);
-      Assert.assertTrue("Created a valid selector", selector != null);
+      Assertions.assertTrue(selector != null, "Created a valid selector");
       boolean value = selector.matches(message);
-      Assert.assertEquals("Selector for: " + text, expected, value);
+      Assertions.assertEquals(expected, value, "Selector for: " + text);
    }
 
    protected MockMessage createMessage(String subject) {

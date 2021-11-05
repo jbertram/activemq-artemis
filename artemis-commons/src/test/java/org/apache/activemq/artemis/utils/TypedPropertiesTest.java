@@ -20,27 +20,27 @@ import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.apache.activemq.artemis.api.core.ActiveMQBuffer;
 import org.apache.activemq.artemis.api.core.ActiveMQBuffers;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.utils.collections.TypedProperties;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.activemq.artemis.utils.collections.TypedProperties.searchProperty;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 
 public class TypedPropertiesTest {
 
    private static void assertEqualsTypeProperties(final TypedProperties expected, final TypedProperties actual) {
-      Assert.assertNotNull(expected);
-      Assert.assertNotNull(actual);
-      Assert.assertEquals(expected.getEncodeSize(), actual.getEncodeSize());
-      Assert.assertEquals(expected.getPropertyNames(), actual.getPropertyNames());
+      Assertions.assertNotNull(expected);
+      Assertions.assertNotNull(actual);
+      Assertions.assertEquals(expected.getEncodeSize(), actual.getEncodeSize());
+      Assertions.assertEquals(expected.getPropertyNames(), actual.getPropertyNames());
       Iterator<SimpleString> iterator = actual.getPropertyNames().iterator();
       while (iterator.hasNext()) {
          SimpleString key = iterator.next();
@@ -49,9 +49,9 @@ public class TypedPropertiesTest {
          if (expectedValue instanceof byte[] && actualValue instanceof byte[]) {
             byte[] expectedBytes = (byte[]) expectedValue;
             byte[] actualBytes = (byte[]) actualValue;
-            Assert.assertArrayEquals(expectedBytes, actualBytes);
+            Assertions.assertArrayEquals(expectedBytes, actualBytes);
          } else {
-            Assert.assertEquals(expectedValue, actualValue);
+            Assertions.assertEquals(expectedValue, actualValue);
          }
       }
    }
@@ -68,80 +68,80 @@ public class TypedPropertiesTest {
 
       TypedProperties copy = new TypedProperties(props);
 
-      Assert.assertEquals(props.getEncodeSize(), copy.getEncodeSize());
-      Assert.assertEquals(props.getPropertyNames(), copy.getPropertyNames());
+      Assertions.assertEquals(props.getEncodeSize(), copy.getEncodeSize());
+      Assertions.assertEquals(props.getPropertyNames(), copy.getPropertyNames());
 
-      Assert.assertTrue(copy.containsProperty(key));
-      Assert.assertEquals(props.getProperty(key), copy.getProperty(key));
+      Assertions.assertTrue(copy.containsProperty(key));
+      Assertions.assertEquals(props.getProperty(key), copy.getProperty(key));
    }
 
    @Test
    public void testRemove() throws Exception {
       props.putSimpleStringProperty(key, RandomUtil.randomSimpleString());
 
-      Assert.assertTrue(props.containsProperty(key));
-      Assert.assertNotNull(props.getProperty(key));
+      Assertions.assertTrue(props.containsProperty(key));
+      Assertions.assertNotNull(props.getProperty(key));
 
       props.removeProperty(key);
 
-      Assert.assertFalse(props.containsProperty(key));
-      Assert.assertNull(props.getProperty(key));
+      Assertions.assertFalse(props.containsProperty(key));
+      Assertions.assertNull(props.getProperty(key));
    }
 
    @Test
    public void testClear() throws Exception {
       props.putSimpleStringProperty(key, RandomUtil.randomSimpleString());
 
-      Assert.assertTrue(props.containsProperty(key));
-      Assert.assertNotNull(props.getProperty(key));
+      Assertions.assertTrue(props.containsProperty(key));
+      Assertions.assertNotNull(props.getProperty(key));
 
-      Assert.assertThat(props.getEncodeSize(), greaterThan(0));
+      assertThat(props.getEncodeSize(), greaterThan(0));
 
       props.clear();
 
-      Assert.assertEquals(1, props.getEncodeSize());
+      Assertions.assertEquals(1, props.getEncodeSize());
 
-      Assert.assertFalse(props.containsProperty(key));
-      Assert.assertNull(props.getProperty(key));
+      Assertions.assertFalse(props.containsProperty(key));
+      Assertions.assertNull(props.getProperty(key));
    }
 
    @Test
    public void testKey() throws Exception {
       props.putBooleanProperty(key, true);
       boolean bool = (Boolean) props.getProperty(key);
-      Assert.assertEquals(true, bool);
+      Assertions.assertEquals(true, bool);
 
       props.putCharProperty(key, 'a');
       char c = (Character) props.getProperty(key);
-      Assert.assertEquals('a', c);
+      Assertions.assertEquals('a', c);
    }
 
    @Test
    public void testGetPropertyOnEmptyProperties() throws Exception {
-      Assert.assertFalse(props.containsProperty(key));
-      Assert.assertNull(props.getProperty(key));
+      Assertions.assertFalse(props.containsProperty(key));
+      Assertions.assertNull(props.getProperty(key));
    }
 
    @Test
    public void testRemovePropertyOnEmptyProperties() throws Exception {
-      Assert.assertFalse(props.containsProperty(key));
-      Assert.assertNull(props.removeProperty(key));
+      Assertions.assertFalse(props.containsProperty(key));
+      Assertions.assertNull(props.removeProperty(key));
    }
 
    @Test
    public void testNullProperty() throws Exception {
       props.putSimpleStringProperty(key, null);
-      Assert.assertTrue(props.containsProperty(key));
-      Assert.assertNull(props.getProperty(key));
+      Assertions.assertTrue(props.containsProperty(key));
+      Assertions.assertNull(props.getProperty(key));
    }
 
    @Test
    public void testBytesPropertyWithNull() throws Exception {
       props.putBytesProperty(key, null);
 
-      Assert.assertTrue(props.containsProperty(key));
+      Assertions.assertTrue(props.containsProperty(key));
       byte[] bb = (byte[]) props.getProperty(key);
-      Assert.assertNull(bb);
+      Assertions.assertNull(bb);
    }
 
    @Test
@@ -157,27 +157,27 @@ public class TypedPropertiesTest {
       props.putTypedProperties(otherProps);
 
       long ll = props.getLongProperty(longKey);
-      Assert.assertEquals(longValue, ll);
+      Assertions.assertEquals(longValue, ll);
       SimpleString ss = props.getSimpleStringProperty(simpleStringKey);
-      Assert.assertEquals(simpleStringValue, ss);
+      Assertions.assertEquals(simpleStringValue, ss);
    }
 
    @Test
    public void testEmptyTypedProperties() throws Exception {
-      Assert.assertEquals(0, props.getPropertyNames().size());
+      Assertions.assertEquals(0, props.getPropertyNames().size());
 
       props.putTypedProperties(new TypedProperties());
 
-      Assert.assertEquals(0, props.getPropertyNames().size());
+      Assertions.assertEquals(0, props.getPropertyNames().size());
    }
 
    @Test
    public void testNullTypedProperties() throws Exception {
-      Assert.assertEquals(0, props.getPropertyNames().size());
+      Assertions.assertEquals(0, props.getPropertyNames().size());
 
       props.putTypedProperties(null);
 
-      Assert.assertEquals(0, props.getPropertyNames().size());
+      Assertions.assertEquals(0, props.getPropertyNames().size());
    }
 
    @Test
@@ -200,7 +200,7 @@ public class TypedPropertiesTest {
       ActiveMQBuffer buffer = ActiveMQBuffers.dynamicBuffer(1024);
       props.encode(buffer.byteBuf());
 
-      Assert.assertEquals(props.getEncodeSize(), buffer.writerIndex());
+      Assertions.assertEquals(props.getEncodeSize(), buffer.writerIndex());
 
       TypedProperties decodedProps = new TypedProperties();
       decodedProps.decode(buffer.byteBuf());
@@ -213,7 +213,7 @@ public class TypedPropertiesTest {
       props.removeProperty(keyToRemove);
       props.encode(buffer.byteBuf());
 
-      Assert.assertEquals(props.getEncodeSize(), buffer.writerIndex());
+      Assertions.assertEquals(props.getEncodeSize(), buffer.writerIndex());
    }
 
    @Test
@@ -223,7 +223,7 @@ public class TypedPropertiesTest {
       ActiveMQBuffer buffer = ActiveMQBuffers.dynamicBuffer(1024);
       emptyProps.encode(buffer.byteBuf());
 
-      Assert.assertEquals(props.getEncodeSize(), buffer.writerIndex());
+      Assertions.assertEquals(props.getEncodeSize(), buffer.writerIndex());
 
       TypedProperties decodedProps = new TypedProperties();
       decodedProps.decode(buffer.byteBuf());
@@ -236,23 +236,23 @@ public class TypedPropertiesTest {
    @Test
    public void testCannotClearInternalPropertiesIfEmpty() {
       TypedProperties properties = new TypedProperties();
-      Assert.assertFalse(properties.clearInternalProperties());
+      Assertions.assertFalse(properties.clearInternalProperties());
    }
 
    @Test
    public void testClearInternalPropertiesIfAny() {
       TypedProperties properties = new TypedProperties(PROP_NAME::equals);
       properties.putBooleanProperty(PROP_NAME, RandomUtil.randomBoolean());
-      Assert.assertTrue(properties.clearInternalProperties());
-      Assert.assertFalse(properties.containsProperty(PROP_NAME));
+      Assertions.assertTrue(properties.clearInternalProperties());
+      Assertions.assertFalse(properties.containsProperty(PROP_NAME));
    }
 
    @Test
    public void testCannotClearInternalPropertiesTwiceIfAny() {
       TypedProperties properties = new TypedProperties(PROP_NAME::equals);
       properties.putBooleanProperty(PROP_NAME, RandomUtil.randomBoolean());
-      Assert.assertTrue(properties.clearInternalProperties());
-      Assert.assertFalse(properties.clearInternalProperties());
+      Assertions.assertTrue(properties.clearInternalProperties());
+      Assertions.assertFalse(properties.clearInternalProperties());
    }
 
    @Test
@@ -261,7 +261,7 @@ public class TypedPropertiesTest {
       ByteBuf buf = Unpooled.buffer(Byte.BYTES, Byte.BYTES);
       props.encode(buf);
       buf.resetReaderIndex();
-      Assert.assertFalse("There is no property", searchProperty(SimpleString.toSimpleString(""), buf, 0));
+      Assertions.assertFalse(searchProperty(SimpleString.toSimpleString(""), buf, 0), "There is no property");
    }
 
    @Test
@@ -284,50 +284,56 @@ public class TypedPropertiesTest {
       ByteBuf buf = Unpooled.buffer();
       props.encode(buf);
       buf.resetReaderIndex();
-      Assert.assertFalse(searchProperty(value, buf, 0));
+      Assertions.assertFalse(searchProperty(value, buf, 0));
       props.forEachKey(key -> {
-         Assert.assertTrue(searchProperty(key, buf, 0));
-         Assert.assertTrue(searchProperty(SimpleString.toSimpleString(key.toString()), buf, 0));
+         Assertions.assertTrue(searchProperty(key, buf, 0));
+         Assertions.assertTrue(searchProperty(SimpleString.toSimpleString(key.toString()), buf, 0));
          // concat a string just to check if the search won't perform an eager search to find the string pattern
-         Assert.assertFalse(searchProperty(key.concat(" "), buf, 0));
+         Assertions.assertFalse(searchProperty(key.concat(" "), buf, 0));
       });
    }
 
-   @Test(expected = IndexOutOfBoundsException.class)
+	@Test
    public void testSearchPartiallyEncodedBuffer() {
-      final int expectedLength = Integer.BYTES + Byte.BYTES;
-      ByteBuf buf = Unpooled.buffer(expectedLength, expectedLength);
-      buf.writeByte(DataConstants.NOT_NULL);
-      buf.writeInt(1);
-      buf.resetReaderIndex();
-      searchProperty(SimpleString.toSimpleString(" "), buf, 0);
+		Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+         final int expectedLength = Integer.BYTES + Byte.BYTES;
+         ByteBuf buf = Unpooled.buffer(expectedLength, expectedLength);
+         buf.writeByte(DataConstants.NOT_NULL);
+         buf.writeInt(1);
+         buf.resetReaderIndex();
+         searchProperty(SimpleString.toSimpleString(" "), buf, 0);
+      });
    }
 
-   @Test(expected = IndexOutOfBoundsException.class)
+	@Test
    public void testSearchPartiallyEncodedString() {
-      final int expectedLength = Integer.BYTES + Byte.BYTES + Integer.BYTES;
-      ByteBuf buf = Unpooled.buffer(expectedLength, expectedLength);
-      buf.writeByte(DataConstants.NOT_NULL);
-      buf.writeInt(1);
-      //SimpleString::data length
-      buf.writeInt(2);
-      buf.resetReaderIndex();
-      searchProperty(SimpleString.toSimpleString("a"), buf, 0);
+		Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+         final int expectedLength = Integer.BYTES + Byte.BYTES + Integer.BYTES;
+         ByteBuf buf = Unpooled.buffer(expectedLength, expectedLength);
+         buf.writeByte(DataConstants.NOT_NULL);
+         buf.writeInt(1);
+         //SimpleString::data length
+         buf.writeInt(2);
+         buf.resetReaderIndex();
+         searchProperty(SimpleString.toSimpleString("a"), buf, 0);
+      });
    }
 
-   @Test(expected = IllegalStateException.class)
+	@Test
    public void testSearchWithInvalidTypeBeforeEnd() {
-      ByteBuf buf = Unpooled.buffer();
-      buf.writeByte(DataConstants.NOT_NULL);
-      // fake 2 properties
-      buf.writeInt(2);
-      // 1 key with length 2
-      buf.writeInt(2);
-      buf.writeShort(3);
-      // invalid type
-      buf.writeByte(Byte.MIN_VALUE);
-      buf.resetReaderIndex();
-      searchProperty(SimpleString.toSimpleString(""), buf, 0);
+		Assertions.assertThrows(IllegalStateException.class, () -> {
+         ByteBuf buf = Unpooled.buffer();
+         buf.writeByte(DataConstants.NOT_NULL);
+         // fake 2 properties
+         buf.writeInt(2);
+         // 1 key with length 2
+         buf.writeInt(2);
+         buf.writeShort(3);
+         // invalid type
+         buf.writeByte(Byte.MIN_VALUE);
+         buf.resetReaderIndex();
+         searchProperty(SimpleString.toSimpleString(""), buf, 0);
+      });
    }
 
    @Test
@@ -342,10 +348,10 @@ public class TypedPropertiesTest {
       // invalid type
       buf.writeByte(Byte.MIN_VALUE);
       buf.resetReaderIndex();
-      Assert.assertFalse(searchProperty(SimpleString.toSimpleString(""), buf, 0));
+      Assertions.assertFalse(searchProperty(SimpleString.toSimpleString(""), buf, 0));
    }
 
-   @Before
+   @BeforeEach
    public void setUp() throws Exception {
       props = new TypedProperties();
       key = RandomUtil.randomSimpleString();
@@ -365,7 +371,7 @@ public class TypedPropertiesTest {
          bb.resetReaderIndex();
          final TypedProperties.StringValue expectedPooled = pool.getOrCreate(bb);
          bb.resetReaderIndex();
-         Assert.assertSame(expectedPooled, pool.getOrCreate(bb));
+         Assertions.assertSame(expectedPooled, pool.getOrCreate(bb));
          bb.resetReaderIndex();
       }
    }
@@ -376,7 +382,7 @@ public class TypedPropertiesTest {
       final ByteBuf bb = Unpooled.buffer(tooLong.sizeof(), tooLong.sizeof());
       SimpleString.writeSimpleString(bb, tooLong);
       final TypedProperties.StringValue.ByteBufStringValuePool pool = new TypedProperties.StringValue.ByteBufStringValuePool(1, tooLong.length() - 1);
-      Assert.assertNotSame(pool.getOrCreate(bb), pool.getOrCreate(bb.resetReaderIndex()));
+      Assertions.assertNotSame(pool.getOrCreate(bb), pool.getOrCreate(bb.resetReaderIndex()));
    }
 
    @Test
@@ -408,6 +414,6 @@ public class TypedPropertiesTest {
 
       t.join();
 
-      Assert.assertFalse(error.get());
+      Assertions.assertFalse(error.get());
    }
 }

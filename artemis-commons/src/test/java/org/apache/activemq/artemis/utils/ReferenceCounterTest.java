@@ -22,10 +22,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class ReferenceCounterTest extends Assert {
+public class ReferenceCounterTest extends Assertions {
 
    class LatchRunner implements Runnable {
 

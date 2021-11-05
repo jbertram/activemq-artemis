@@ -32,30 +32,30 @@ import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.apache.activemq.artemis.core.client.impl.ServerLocatorImpl;
 import org.apache.activemq.artemis.utils.ActiveMQThreadFactory;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ClientThreadPoolsTest {
 
    private static Properties systemProperties;
 
-   @BeforeClass
+   @BeforeAll
    public static void setup() {
       systemProperties = System.getProperties();
    }
 
-   @AfterClass
+   @AfterAll
    public static void tearDown() {
       System.clearProperty(ActiveMQClient.THREAD_POOL_MAX_SIZE_PROPERTY_KEY);
       System.clearProperty(ActiveMQClient.SCHEDULED_THREAD_POOL_SIZE_PROPERTY_KEY);
       ActiveMQClient.initializeGlobalThreadPoolProperties();
       ActiveMQClient.clearThreadPools();
-      Assert.assertEquals(ActiveMQClient.DEFAULT_GLOBAL_THREAD_POOL_MAX_SIZE, ActiveMQClient.getGlobalThreadPoolSize());
+      Assertions.assertEquals(ActiveMQClient.DEFAULT_GLOBAL_THREAD_POOL_MAX_SIZE, ActiveMQClient.getGlobalThreadPoolSize());
    }
 
    @Test
@@ -92,9 +92,9 @@ public class ClientThreadPoolsTest {
          }
       });
 
-      Assert.assertTrue(inUse.await(10, TimeUnit.SECONDS));
+      Assertions.assertTrue(inUse.await(10, TimeUnit.SECONDS));
       ActiveMQClient.clearThreadPools(100, TimeUnit.MILLISECONDS);
-      Assert.assertTrue(neverLeave.await(10, TimeUnit.SECONDS));
+      Assertions.assertTrue(neverLeave.await(10, TimeUnit.SECONDS));
    }
 
    @Test
@@ -123,13 +123,13 @@ public class ClientThreadPoolsTest {
          }
       });
 
-      Assert.assertTrue(inUse.await(10, TimeUnit.SECONDS));
+      Assertions.assertTrue(inUse.await(10, TimeUnit.SECONDS));
       poolExecutor.shutdownNow();
       scheduledThreadPoolExecutor.shutdownNow();
-      Assert.assertTrue(neverLeave.await(10, TimeUnit.SECONDS));
+      Assertions.assertTrue(neverLeave.await(10, TimeUnit.SECONDS));
 
-      Assert.assertTrue(inUse.await(10, TimeUnit.SECONDS));
-      Assert.assertTrue(neverLeave.await(10, TimeUnit.SECONDS));
+      Assertions.assertTrue(inUse.await(10, TimeUnit.SECONDS));
+      Assertions.assertTrue(neverLeave.await(10, TimeUnit.SECONDS));
 
       ActiveMQClient.clearThreadPools(100, TimeUnit.MILLISECONDS);
    }
@@ -205,9 +205,9 @@ public class ClientThreadPoolsTest {
          });
       }
 
-      Assert.assertTrue(doneMax.await(5, TimeUnit.SECONDS));
+      Assertions.assertTrue(doneMax.await(5, TimeUnit.SECONDS));
       latch.countDown();
-      Assert.assertTrue(latchTotal.await(5, TimeUnit.SECONDS));
+      Assertions.assertTrue(latchTotal.await(5, TimeUnit.SECONDS));
 
       ScheduledThreadPoolExecutor scheduledThreadPool = (ScheduledThreadPoolExecutor) scheduledThreadPoolField.get(serverLocator);
 
@@ -239,7 +239,7 @@ public class ClientThreadPoolsTest {
       assertEquals(scheduledThreadPool, stpe);
    }
 
-   @After
+   @AfterEach
    public void cleanup() {
       // Resets the global thread pool properties back to default.
       System.setProperties(systemProperties);

@@ -27,14 +27,18 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.logging.Logger;
-import org.junit.Assert;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.TestWatcher;
 
 /**
  * This is useful to make sure you won't have leaking threads between tests
  */
-public class ThreadLeakCheckRule extends TestWatcher {
+public class ThreadLeakCheckRule implements TestWatcher {
 
    private static Logger log = Logger.getLogger(ThreadLeakCheckRule.class);
 
@@ -44,46 +48,26 @@ public class ThreadLeakCheckRule extends TestWatcher {
 
    protected boolean testFailed = false;
 
-   protected Description testDescription = null;
-
    protected Throwable failure = null;
 
    protected Map<Thread, StackTraceElement[]> previousThreads;
-
-   /**
-    * Override to set up your specific external resource.
-    *
-    * @throws if setup fails (which will disable {@code after}
-    */
-   @Override
-   protected void starting(Description description) {
-      // do nothing
-
-      previousThreads = Thread.getAllStackTraces();
-
-   }
 
    public void disable() {
       enabled = false;
    }
 
-   @Override
-   protected void failed(Throwable e, Description description) {
+   protected void failed(Throwable e) {
       this.failure = e;
       this.testFailed = true;
-      this.testDescription = description;
    }
 
    @Override
-   protected void succeeded(Description description) {
+   public void testSuccessful(ExtensionContext context) {
       this.testFailed = false;
    }
 
-   /**
-    * Override to tear down your specific external resource.
-    */
    @Override
-   protected void finished(Description description) {
+   public void testFailed(ExtensionContext context, Throwable cause) {
       log.debug("checking thread enabled? " + enabled + " testFailed? " + testFailed);
       try {
          if (enabled) {
@@ -109,13 +93,13 @@ public class ThreadLeakCheckRule extends TestWatcher {
             if (failed) {
                if (!testFailed) {
                   //we only fail on thread leak if test passes.
-                  Assert.fail("Thread leaked");
+                  Assertions.fail("Thread leaked");
                } else {
                   System.out.println("***********************************************************************");
                   System.out.println("             The test failed and there is a leak");
                   System.out.println("***********************************************************************");
                   failure.printStackTrace();
-                  Assert.fail("Test " + testDescription + " Failed with a leak - " + failure.getMessage());
+                  Assertions.fail("Test " + context.getDisplayName() + " Failed with a leak - " + failure.getMessage());
                }
             } else if (failedOnce) {
                System.out.println("******************** Threads cleared after retries ********************");
@@ -129,7 +113,6 @@ public class ThreadLeakCheckRule extends TestWatcher {
          // clearing just to help GC
          previousThreads = null;
       }
-
    }
 
    private static int failedGCCalls = 0;

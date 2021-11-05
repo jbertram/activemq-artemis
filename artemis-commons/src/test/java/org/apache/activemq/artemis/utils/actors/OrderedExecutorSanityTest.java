@@ -27,8 +27,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.logging.Logger;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class OrderedExecutorSanityTest {
    private static final Logger log = Logger.getLogger(OrderedExecutorSanityTest.class);
@@ -53,8 +53,8 @@ public class OrderedExecutorSanityTest {
             });
             expectedResults.add(value);
          }
-         Assert.assertTrue("The tasks must be executed in " + timeoutMillis + " ms", executed.await(timeoutMillis, TimeUnit.MILLISECONDS));
-         Assert.assertArrayEquals("The processing of tasks must be ordered", expectedResults.toArray(), results.toArray());
+         Assertions.assertTrue(executed.await(timeoutMillis, TimeUnit.MILLISECONDS), "The tasks must be executed in " + timeoutMillis + " ms");
+         Assertions.assertArrayEquals(expectedResults.toArray(), results.toArray(), "The processing of tasks must be ordered");
       } finally {
          executorService.shutdown();
       }
@@ -68,13 +68,13 @@ public class OrderedExecutorSanityTest {
          final OrderedExecutor executor = new OrderedExecutor(executorService);
          final CountDownLatch executed = new CountDownLatch(1);
          executor.execute(executed::countDown);
-         Assert.assertTrue("The task must be executed in " + timeoutMillis + " ms", executed.await(timeoutMillis, TimeUnit.MILLISECONDS));
+         Assertions.assertTrue(executed.await(timeoutMillis, TimeUnit.MILLISECONDS), "The task must be executed in " + timeoutMillis + " ms");
          executor.shutdownNow();
-         Assert.assertEquals("There are no remaining tasks to be executed", 0, executor.remaining());
+         Assertions.assertEquals(0, executor.remaining(), "There are no remaining tasks to be executed");
          //from now on new tasks won't be executed
          executor.execute(() -> System.out.println("this will never happen"));
          //to avoid memory leaks the executor must take care of the new submitted tasks immediatly
-         Assert.assertEquals("Any new task submitted after death must be collected", 0, executor.remaining());
+         Assertions.assertEquals(0, executor.remaining(), "Any new task submitted after death must be collected");
       } finally {
          executorService.shutdown();
       }
@@ -108,10 +108,10 @@ public class OrderedExecutorSanityTest {
 
          latch.await();
          ran.await(1, TimeUnit.SECONDS);
-         Assert.assertEquals(100, numberOfTasks.get());
+         Assertions.assertEquals(100, numberOfTasks.get());
 
-         Assert.assertEquals(ProcessorBase.STATE_FORCED_SHUTDOWN, executor.status());
-         Assert.assertEquals(0, executor.remaining());
+         Assertions.assertEquals(ProcessorBase.STATE_FORCED_SHUTDOWN, executor.status());
+         Assertions.assertEquals(0, executor.remaining());
       } finally {
          executorService.shutdown();
       }
@@ -143,13 +143,13 @@ public class OrderedExecutorSanityTest {
 
          latch.await();
          try {
-            Assert.assertEquals(100, executor.shutdownNow());
+            Assertions.assertEquals(100, executor.shutdownNow());
          } finally {
             secondlatch.await();
          }
 
-         Assert.assertEquals(ProcessorBase.STATE_FORCED_SHUTDOWN, executor.status());
-         Assert.assertEquals(0, executor.remaining());
+         Assertions.assertEquals(ProcessorBase.STATE_FORCED_SHUTDOWN, executor.status());
+         Assertions.assertEquals(0, executor.remaining());
       } finally {
          executorService.shutdown();
       }
@@ -172,7 +172,7 @@ public class OrderedExecutorSanityTest {
             for (int l = 0; l < MAX_LOOP; l++) {
                executor.execute(executed::countDown);
             }
-            Assert.assertTrue(executed.await(1, TimeUnit.MINUTES));
+            Assertions.assertTrue(executed.await(1, TimeUnit.MINUTES));
             long end = System.nanoTime();
 
             long elapsed = (end - start);

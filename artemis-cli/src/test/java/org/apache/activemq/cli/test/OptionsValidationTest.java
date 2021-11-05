@@ -16,85 +16,74 @@
  */
 package org.apache.activemq.cli.test;
 
+import java.io.File;
+import java.util.stream.Stream;
+
 import io.airlift.airline.ParseArgumentsUnexpectedException;
 import org.apache.activemq.artemis.cli.Artemis;
 import org.apache.activemq.artemis.cli.commands.ActionContext;
 import org.apache.activemq.artemis.cli.commands.InvalidOptionsError;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collection;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-@RunWith(value = Parameterized.class)
 public class OptionsValidationTest extends CliTestBase {
 
    private File artemisInstance;
 
-   private String group;
-   private String command;
-   private boolean needInstance;
-
-   @Parameterized.Parameters(name = "group={0}, command={1}, need-instance={2}")
-   public static Collection getParameters() {
-      return Arrays.asList(new Object[][]{{null, "create", false},
-                                          {null, "run", true},
-                                          {null, "kill", true},
-                                          {null, "stop", true},
-                                          {"address", "create", false},
-                                          {"address", "delete", false},
-                                          {"address", "update", false},
-                                          {"address", "show", false},
-                                          {null, "browser", false},
-                                          {null, "consumer", false},
-                                          {null, "mask", false},
-                                          {null, "help", false},
-                                          {null, "migrate1x", false},
-                                          {null, "producer", false},
-                                          {"queue", "create", false},
-                                          {"queue", "delete", false},
-                                          {"queue", "update", false},
-                                          {"data", "print", false},
-                                          {"data", "print", true},
-                                          {"data", "exp", true},
-                                          {"data", "imp", true},
-                                          {"data", "encode", true},
-                                          {"data", "decode", true},
-                                          {"data", "compact", true},
-                                          {"user", "add", true},
-                                          {"user", "rm", true},
-                                          {"user", "list", true},
-                                          {"user", "reset", true}
-      });
-   }
-
-   public OptionsValidationTest(String group, String command, boolean needInstance) {
-      this.group = group;
-      this.command = command;
-      this.needInstance = needInstance;
-   }
-
-   @Before
-   public void setUp() throws Exception {
+   @BeforeEach
+   @Override
+   public void setup() throws Exception {
       super.setup();
-      this.artemisInstance = new File(temporaryFolder.getRoot() + "instance1");
+      this.artemisInstance = new File(temporaryFolder + "instance1");
    }
 
-   @After
+   @AfterEach
    @Override
    public void tearDown() throws Exception {
       super.tearDown();
    }
+   static Stream<Arguments> parameters() {
+      return Stream.of(
+         Arguments.of(null, "create", false),
+         Arguments.of(null, "run", true),
+         Arguments.of(null, "kill", true),
+         Arguments.of(null, "stop", true),
+         Arguments.of("address", "create", false),
+         Arguments.of("address", "delete", false),
+         Arguments.of("address", "update", false),
+         Arguments.of("address", "show", false),
+         Arguments.of(null, "browser", false),
+         Arguments.of(null, "consumer", false),
+         Arguments.of(null, "mask", false),
+         Arguments.of(null, "help", false),
+         Arguments.of(null, "migrate1x", false),
+         Arguments.of(null, "producer", false),
+         Arguments.of("queue", "create", false),
+         Arguments.of("queue", "delete", false),
+         Arguments.of("queue", "update", false),
+         Arguments.of("data", "print", false),
+         Arguments.of("data", "print", true),
+         Arguments.of("data", "exp", true),
+         Arguments.of("data", "imp", true),
+         Arguments.of("data", "encode", true),
+         Arguments.of("data", "decode", true),
+         Arguments.of("data", "compact", true),
+         Arguments.of("user", "add", true),
+         Arguments.of("user", "rm", true),
+         Arguments.of("user", "list", true),
+         Arguments.of("user", "reset", true)
+      );
+   }
 
-   @Test
-   public void testCommand() throws Exception {
+   @ParameterizedTest
+   @MethodSource("parameters")
+   public void testCommand(String group, String command, boolean needInstance) throws Exception {
       ActionContext context = new TestActionContext();
       String[] invalidArgs = null;
       if (group == null) {

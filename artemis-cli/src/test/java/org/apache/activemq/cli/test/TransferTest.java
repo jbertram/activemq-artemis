@@ -26,10 +26,10 @@ import org.apache.activemq.artemis.core.server.Queue;
 import org.apache.activemq.artemis.core.server.management.ManagementContext;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.apache.activemq.artemis.utils.Wait;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.jms.Connection;
 import javax.jms.Session;
@@ -40,7 +40,7 @@ public class TransferTest extends CliTestBase {
    private ActiveMQServer server;
    private static final int TEST_MESSAGE_COUNT = 10;
 
-   @Before
+   @BeforeEach
    @Override
    public void setup() throws Exception {
       setupAuth();
@@ -50,7 +50,7 @@ public class TransferTest extends CliTestBase {
       connection = cf.createConnection("admin", "admin");
    }
 
-   @After
+   @AfterEach
    @Override
    public void tearDown() throws Exception {
       closeConnection(cf, connection);
@@ -93,13 +93,13 @@ public class TransferTest extends CliTestBase {
       if (limit > 0) {
          transfer.setMessageCount(limit);
 
-         Assert.assertEquals(limit, transfer.execute(new TestActionContext()));
+         Assertions.assertEquals(limit, transfer.execute(new TestActionContext()));
 
          Queue targetQueue = server.locateQueue(targetQueueName);
          Wait.assertEquals(messages - limit, sourceQueue::getMessageCount);
          Wait.assertEquals(limit, targetQueue::getMessageCount);
       } else {
-         Assert.assertEquals(messages, transfer.execute(new TestActionContext()));
+         Assertions.assertEquals(messages, transfer.execute(new TestActionContext()));
 
          Queue targetQueue = server.locateQueue(targetQueueName);
          Wait.assertEquals(0, sourceQueue::getMessageCount);

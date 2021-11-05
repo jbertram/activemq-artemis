@@ -26,27 +26,27 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.activemq.artemis.core.server.ActiveMQScheduledComponent;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class ActiveMQScheduledComponentTest {
 
-   @Rule
+   @RegisterExtension
    public ThreadLeakCheckRule rule = new ThreadLeakCheckRule();
 
    ScheduledExecutorService scheduledExecutorService;
    ExecutorService executorService;
 
-   @Before
+   @BeforeEach
    public void before() {
       scheduledExecutorService = new ScheduledThreadPoolExecutor(5);
       executorService = Executors.newSingleThreadExecutor();
    }
 
-   @After
+   @AfterEach
    public void after() {
       executorService.shutdown();
       scheduledExecutorService.shutdown();
@@ -75,7 +75,7 @@ public class ActiveMQScheduledComponentTest {
 
       local.stop();
 
-      Assert.assertTrue("just because one took a lot of time, it doesn't mean we can accumulate many, we got " + count + " executions", count.get() < 5);
+      Assertions.assertTrue(count.get() < 5, "just because one took a lot of time, it doesn't mean we can accumulate many, we got " + count + " executions");
    }
 
    @Test
@@ -90,7 +90,7 @@ public class ActiveMQScheduledComponentTest {
          }
       };
       local.start();
-      Assert.assertTrue(triggered.await(10, TimeUnit.SECONDS));
+      Assertions.assertTrue(triggered.await(10, TimeUnit.SECONDS));
       local.stop();
    }
 
@@ -110,7 +110,7 @@ public class ActiveMQScheduledComponentTest {
       assert initialDelay != newInitialDelay && newInitialDelay != period;
       local.setInitialDelay(newInitialDelay);
       local.stop();
-      Assert.assertEquals("the initial dalay can't change", newInitialDelay, local.getInitialDelay());
+      Assertions.assertEquals(newInitialDelay, local.getInitialDelay(), "the initial dalay can't change");
    }
 
    @Test
@@ -136,7 +136,7 @@ public class ActiveMQScheduledComponentTest {
 
       local.stop();
 
-      Assert.assertTrue("just because one took a lot of time, it doesn't mean we can accumulate many, we got " + count + " executions", count.get() <= 5 && count.get() > 0);
+      Assertions.assertTrue(count.get() <= 5 && count.get() > 0, "just because one took a lot of time, it doesn't mean we can accumulate many, we got " + count + " executions");
    }
 
    @Test
@@ -154,7 +154,7 @@ public class ActiveMQScheduledComponentTest {
       local.start(); // should be ok to call start again
 
       try {
-         Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
+         Assertions.assertTrue(latch.await(10, TimeUnit.SECONDS));
 
          // re-scheduling the executor at a big interval..
          // just to make sure it won't hung
@@ -182,13 +182,13 @@ public class ActiveMQScheduledComponentTest {
 
       try {
 
-         Assert.assertFalse(latch.await(20, TimeUnit.MILLISECONDS));
+         Assertions.assertFalse(latch.await(20, TimeUnit.MILLISECONDS));
 
          local.delay();
-         Assert.assertTrue(latch.await(20, TimeUnit.MILLISECONDS));
+         Assertions.assertTrue(latch.await(20, TimeUnit.MILLISECONDS));
          latch.setCount(1);
 
-         Assert.assertFalse(latch.await(20, TimeUnit.MILLISECONDS));
+         Assertions.assertFalse(latch.await(20, TimeUnit.MILLISECONDS));
 
          // re-scheduling the executor at a big interval..
          // just to make sure it won't hung
@@ -216,8 +216,8 @@ public class ActiveMQScheduledComponentTest {
       try {
          final boolean triggeredBeforePeriod = latch.await(local.getPeriod(), local.getTimeUnit());
          final long timeToFirstTrigger = TimeUnit.NANOSECONDS.convert(System.nanoTime() - start, local.getTimeUnit());
-         Assert.assertTrue("Takes too long to start", triggeredBeforePeriod);
-         Assert.assertTrue("Started too early", timeToFirstTrigger >= local.getInitialDelay());
+         Assertions.assertTrue(triggeredBeforePeriod, "Takes too long to start");
+         Assertions.assertTrue(timeToFirstTrigger >= local.getInitialDelay(), "Started too early");
       } finally {
          local.stop();
       }

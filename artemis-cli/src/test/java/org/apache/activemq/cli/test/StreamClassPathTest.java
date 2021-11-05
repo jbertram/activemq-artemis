@@ -21,8 +21,8 @@ import java.io.InputStream;
 
 import org.apache.activemq.artemis.cli.commands.Create;
 import org.apache.activemq.artemis.cli.commands.messages.Producer;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class StreamClassPathTest {
 
@@ -70,7 +70,7 @@ public class StreamClassPathTest {
 
    private void testStream(Class clazz, String source) throws Exception {
       InputStream in = clazz.getResourceAsStream(source);
-      Assert.assertNotNull(source + " not found", in);
+      Assertions.assertNotNull(in, source + " not found");
       in.close();
    }
 }

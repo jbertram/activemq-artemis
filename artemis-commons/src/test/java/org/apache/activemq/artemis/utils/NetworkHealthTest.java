@@ -23,6 +23,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -33,12 +34,12 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import org.apache.activemq.artemis.core.server.ActiveMQComponent;
 import org.apache.activemq.artemis.core.server.NetworkHealthCheck;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class NetworkHealthTest {
 
@@ -88,13 +89,13 @@ public class NetworkHealthTest {
       }
    };
 
-   @Before
+   @BeforeEach
    public void before() throws Exception {
       latch.setCount(1);
    }
 
    private void startHTTPServer() throws IOException {
-      Assert.assertNull(httpServer);
+      Assertions.assertNull(httpServer);
       InetSocketAddress address = new InetSocketAddress("127.0.0.1", 8787);
       httpServer = HttpServer.create(address, 100);
       httpServer.start();
@@ -120,7 +121,7 @@ public class NetworkHealthTest {
       }
    }
 
-   @After
+   @AfterEach
    public void after() {
       stopHTTPServer();
       for (NetworkHealthCheck check : this.list) {
@@ -136,11 +137,11 @@ public class NetworkHealthTest {
 
       InetAddress address = InetAddress.getByName(IPV6_LOCAL);
 
-      Assert.assertTrue(address instanceof Inet6Address);
+      Assertions.assertTrue(address instanceof Inet6Address);
 
-      Assert.assertTrue(check.purePing(address));
+      Assertions.assertTrue(check.purePing(address));
 
-      Assert.assertTrue(check.check(address));
+      Assertions.assertTrue(check.check(address));
    }
 
    @Test
@@ -160,9 +161,9 @@ public class NetworkHealthTest {
       component.stop();
 
       latch.setCount(1);
-      Assert.assertTrue(latch.await(1, TimeUnit.MINUTES));
+      Assertions.assertTrue(latch.await(1, TimeUnit.MINUTES));
 
-      Assert.assertFalse("NetworkHealthCheck should have no business on restarting the component, the network was never down, hence no check needed!", component.isStarted());
+      Assertions.assertFalse(component.isStarted(), "NetworkHealthCheck should have no business on restarting the component, the network was never down, hence no check needed!");
 
    }
 
@@ -172,7 +173,7 @@ public class NetworkHealthTest {
 
       // using two addresses for URI and localhost
       check.parseAddressList("localhost, , 127.0.0.2");
-      Assert.assertEquals(2, check.getAddresses().size());
+      Assertions.assertEquals(2, check.getAddresses().size());
    }
 
    @Test
@@ -181,8 +182,8 @@ public class NetworkHealthTest {
 
       // using two addresses for URI and localhost
       check.parseAddressList("localhost, , 127.0.0.2");
-      Assert.assertEquals(2, check.getAddresses().size());
-      Assert.assertEquals(0, check.getUrls().size());
+      Assertions.assertEquals(2, check.getAddresses().size());
+      Assertions.assertEquals(0, check.getUrls().size());
    }
 
    @Test
@@ -198,11 +199,11 @@ public class NetworkHealthTest {
       // Any external IP, to make sure we would use a PING
       InetAddress address = InetAddress.getByName(localaddress);
 
-      Assert.assertTrue(check.check(address));
+      Assertions.assertTrue(check.check(address));
 
-      Assert.assertTrue(check.purePing(address));
+      Assertions.assertTrue(check.purePing(address));
 
-      Assert.assertFalse(check.purePing(INVALID_ADDRESS));
+      Assertions.assertFalse(check.purePing(INVALID_ADDRESS));
 
    }
 
@@ -223,7 +224,7 @@ public class NetworkHealthTest {
    @Test
    public void testCheckNoNodes() throws Exception {
       NetworkHealthCheck check = addCheck(new NetworkHealthCheck());
-      Assert.assertTrue(check.check());
+      Assertions.assertTrue(check.check());
    }
 
    @Test
@@ -233,38 +234,38 @@ public class NetworkHealthTest {
 
       NetworkHealthCheck check = addCheck(new NetworkHealthCheck(null, 100, 1000));
 
-      Assert.assertTrue(check.check(new URL("http://localhost:8787")));
+      Assertions.assertTrue(check.check(new URL("http://localhost:8787")));
 
       stopHTTPServer();
 
-      Assert.assertFalse(check.check(new URL("http://localhost:8787")));
+      Assertions.assertFalse(check.check(new URL("http://localhost:8787")));
 
       check.addComponent(component);
 
       URL url = new URL("http://localhost:8787");
-      Assert.assertFalse(check.check(url));
+      Assertions.assertFalse(check.check(url));
 
       startHTTPServer();
 
-      Assert.assertTrue(check.check(url));
+      Assertions.assertTrue(check.check(url));
 
       check.addURL(url);
 
-      Assert.assertFalse(latch.await(500, TimeUnit.MILLISECONDS));
-      Assert.assertTrue(component.isStarted());
+      Assertions.assertFalse(latch.await(500, TimeUnit.MILLISECONDS));
+      Assertions.assertTrue(component.isStarted());
 
       // stopping the web server should stop the component
       stopHTTPServer();
 
-      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
-      Assert.assertFalse(component.isStarted());
+      Assertions.assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assertions.assertFalse(component.isStarted());
 
       latch.setCount(1);
 
       startHTTPServer();
 
-      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
-      Assert.assertTrue(component.isStarted());
+      Assertions.assertTrue(latch.await(10, TimeUnit.SECONDS));
+      Assertions.assertTrue(component.isStarted());
 
    }
 
@@ -293,8 +294,8 @@ public class NetworkHealthTest {
 
       myCheck.check(InetAddress.getByName("127.0.0.1"));
 
-      Assert.assertEquals(0, isReacheable.get());
-      Assert.assertEquals(1, purePing.get());
+      Assertions.assertEquals(0, isReacheable.get());
+      Assertions.assertEquals(1, purePing.get());
    }
 
    @Test
@@ -321,18 +322,20 @@ public class NetworkHealthTest {
 
       myCheck.check(InetAddress.getByName("127.0.0.1"));
 
-      Assert.assertEquals(1, isReacheable.get());
-      Assert.assertEquals(0, purePing.get());
+      Assertions.assertEquals(1, isReacheable.get());
+      Assertions.assertEquals(0, purePing.get());
    }
 
-   @Test(timeout = 30_000)
+	@Test
    public void testPurePingTimeout() throws Exception {
+		Assertions.assertTimeout(Duration.ofMillis(30_000), () -> {
       NetworkHealthCheck check = new NetworkHealthCheck(null, 100, 2000);
 
-      long time = System.currentTimeMillis();
-      //[RFC1166] reserves the address block 192.0.2.0/24 for test.
-      Assert.assertFalse(check.purePing(InetAddress.getByName("192.0.2.0")));
-      Assert.assertTrue(System.currentTimeMillis() - time >= 2000);
+         long time = System.currentTimeMillis();
+         //[RFC1166] reserves the address block 192.0.2.0/24 for test.
+         Assertions.assertFalse(check.purePing(InetAddress.getByName("192.0.2.0")));
+         Assertions.assertTrue(System.currentTimeMillis() - time >= 2000);
+      });
    }
 
 }

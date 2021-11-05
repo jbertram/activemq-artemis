@@ -17,15 +17,15 @@
 package org.apache.activemq.artemis.utils;
 
 import org.jboss.logging.Logger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class DefaultSensitiveStringCodecTest {
 
@@ -75,6 +75,6 @@ public class DefaultSensitiveStringCodecTest {
       String decoded = codec.decode(maskedText);
       log.debug("encoded value: " + maskedText);
 
-      assertEquals("decoded result not match: " + decoded, decoded, plainText);
+      assertEquals(decoded, plainText, "decoded result not match: " + decoded);
    }
 }

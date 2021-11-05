@@ -20,9 +20,9 @@ import org.apache.activemq.artemis.api.core.RoutingType;
 import org.apache.activemq.artemis.cli.commands.messages.Producer;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.apache.activemq.artemis.utils.CompositeAddress;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.jms.Connection;
 import javax.jms.Message;
@@ -30,14 +30,14 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CliProducerTest extends CliTestBase {
    private Connection connection;
    private ActiveMQConnectionFactory cf;
    private static final int TEST_MESSAGE_COUNT = 10;
 
-   @Before
+   @BeforeEach
    @Override
    public void setup() throws Exception {
       setupAuth();
@@ -47,7 +47,7 @@ public class CliProducerTest extends CliTestBase {
       connection = cf.createConnection("admin", "admin");
    }
 
-   @After
+   @AfterEach
    @Override
    public void tearDown() throws Exception {
       closeConnection(cf, connection);

@@ -22,8 +22,8 @@ import java.util.List;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.uri.ConnectorTransportConfigurationParser;
 import org.jboss.logging.Logger;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ConnectorTransportConfigurationParserURITest {
 
@@ -40,13 +40,13 @@ public class ConnectorTransportConfigurationParserURITest {
          objects.forEach((t) -> logger.info("transportConfig:" + t.toString()));
       }
 
-      Assert.assertEquals(3, objects.size());
-      Assert.assertEquals("live", objects.get(0).getParams().get("host"));
-      Assert.assertEquals("1", objects.get(0).getParams().get("port"));
-      Assert.assertEquals("backupA", objects.get(1).getParams().get("host"));
-      Assert.assertEquals("2", objects.get(1).getParams().get("port"));
-      Assert.assertEquals("backupB", objects.get(2).getParams().get("host"));
-      Assert.assertEquals("3", objects.get(2).getParams().get("port"));
+      Assertions.assertEquals(3, objects.size());
+      Assertions.assertEquals("live", objects.get(0).getParams().get("host"));
+      Assertions.assertEquals("1", objects.get(0).getParams().get("port"));
+      Assertions.assertEquals("backupA", objects.get(1).getParams().get("host"));
+      Assertions.assertEquals("2", objects.get(1).getParams().get("port"));
+      Assertions.assertEquals("backupB", objects.get(2).getParams().get("host"));
+      Assertions.assertEquals("3", objects.get(2).getParams().get("port"));
    }
 
 }

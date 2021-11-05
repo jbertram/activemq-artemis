@@ -23,8 +23,8 @@ import org.apache.activemq.artemis.json.JsonObject;
 import org.apache.activemq.artemis.json.JsonObjectBuilder;
 
 import org.apache.activemq.artemis.utils.JsonLoader;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class JsonUtilTest {
 
@@ -37,9 +37,9 @@ public class JsonUtilTest {
 
       JsonObject jsonObject = jsonObjectBuilder.build();
 
-      Assert.assertTrue(jsonObject.containsKey("not-null"));
-      Assert.assertTrue(jsonObject.containsKey("null"));
-      Assert.assertEquals(2, jsonObject.size());
+      Assertions.assertTrue(jsonObject.containsKey("not-null"));
+      Assertions.assertTrue(jsonObject.containsKey("null"));
+      Assertions.assertEquals(2, jsonObject.size());
    }
 
    @Test
@@ -51,7 +51,7 @@ public class JsonUtilTest {
 
       JsonArray jsonArray = jsonArrayBuilder.build();
 
-      Assert.assertEquals(2, jsonArray.size());
+      Assertions.assertEquals(2, jsonArray.size());
    }
 
    @Test
@@ -65,8 +65,8 @@ public class JsonUtilTest {
 
       JsonObject jsonObject = jsonObjectBuilder.build();
 
-      Assert.assertTrue(jsonObject.containsKey("byteArray"));
-      Assert.assertEquals(6, jsonObject.getJsonArray("byteArray").size());
+      Assertions.assertTrue(jsonObject.containsKey("byteArray"));
+      Assertions.assertEquals(6, jsonObject.getJsonArray("byteArray").size());
    }
 
    @Test
@@ -78,7 +78,7 @@ public class JsonUtilTest {
 
       JsonArray jsonArray = jsonArrayBuilder.build();
 
-      Assert.assertEquals(1, jsonArray.size());
+      Assertions.assertEquals(1, jsonArray.size());
    }
 
    @Test
@@ -90,7 +90,7 @@ public class JsonUtilTest {
       String truncated = (String) JsonUtil.truncate(prefix + remaining, valueSizeLimit);
 
       String expected = prefix + ", + " + String.valueOf(remaining.length()) + " more";
-      Assert.assertEquals(expected, truncated);
+      Assertions.assertEquals(expected, truncated);
    }
 
    @Test
@@ -98,7 +98,7 @@ public class JsonUtilTest {
       String input = "testTruncateUsingStringWithoutValueSizeLimit";
       String notTruncated = (String) JsonUtil.truncate(input, -1);
 
-      Assert.assertEquals(input, notTruncated);
+      Assertions.assertEquals(input, notTruncated);
    }
 
    @Test
@@ -110,7 +110,7 @@ public class JsonUtilTest {
       String truncated = JsonUtil.truncateString(prefix + remaining, valueSizeLimit);
 
       String expected = prefix + ", + " + String.valueOf(remaining.length()) + " more";
-      Assert.assertEquals(expected, truncated);
+      Assertions.assertEquals(expected, truncated);
    }
 
    @Test
@@ -118,6 +118,6 @@ public class JsonUtilTest {
       String input = "testTruncateStringWithoutValueSizeLimit";
       String notTruncated = JsonUtil.truncateString(input, -1);
 
-      Assert.assertEquals(input, notTruncated);
+      Assertions.assertEquals(input, notTruncated);
    }
 }

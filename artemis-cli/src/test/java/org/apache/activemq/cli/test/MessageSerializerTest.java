@@ -44,14 +44,14 @@ import org.apache.activemq.artemis.jms.client.ActiveMQDestination;
 import org.apache.activemq.artemis.utils.CompositeAddress;
 import org.apache.activemq.artemis.utils.RandomUtil;
 import org.apache.activemq.artemis.utils.Wait;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.activemq.cli.test.ArtemisTest.getOutputLines;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Test to validate that the CLI doesn't throw improper exceptions when invoked.
@@ -62,7 +62,7 @@ public class MessageSerializerTest extends CliTestBase {
    private ActiveMQConnectionFactory cf;
    private static final int TEST_MESSAGE_COUNT = 10;
 
-   @Before
+   @BeforeEach
    @Override
    public void setup() throws Exception {
       setupAuth();
@@ -72,7 +72,7 @@ public class MessageSerializerTest extends CliTestBase {
       connection = cf.createConnection("admin", "admin");
    }
 
-   @After
+   @AfterEach
    @Override
    public void tearDown() throws Exception {
       closeConnection(cf, connection);
@@ -80,7 +80,9 @@ public class MessageSerializerTest extends CliTestBase {
    }
 
    private File createMessageFile() throws IOException {
-      return temporaryFolder.newFile("messages.xml");
+      File file = new File(temporaryFolder, "messages.xml");
+      file.createNewFile();
+      return file;
    }
 
    private List<Message> generateTextMessages(Session session, Destination destination) throws Exception {

@@ -96,8 +96,12 @@
          <artifactId>commons-beanutils</artifactId>
       </dependency>
       <dependency>
-         <groupId>junit</groupId>
-         <artifactId>junit</artifactId>
+         <groupId>jakarta.json</groupId>
+         <artifactId>jakarta.json-api</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.junit.jupiter</groupId>
+         <artifactId>junit-jupiter</artifactId>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -124,6 +128,7 @@
          </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
+<<<<<<< HEAD
             <artifactId>maven-shade-plugin</artifactId>
             <executions>
                <execution>
@@ -160,6 +165,13 @@
                   </configuration>
                </execution>
             </executions>
+=======
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+               <source>8</source>
+               <target>8</target>
+            </configuration>
+>>>>>>> aa776870fa... f
          </plugin>
       </plugins>
    </build>

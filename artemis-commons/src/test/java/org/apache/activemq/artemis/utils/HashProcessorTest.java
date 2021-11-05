@@ -16,16 +16,14 @@
  */
 package org.apache.activemq.artemis.utils;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import java.util.stream.Stream;
 
-import java.util.Arrays;
-import java.util.Collection;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(Parameterized.class)
 public class HashProcessorTest {
 
    private static final String USER1_PASSWORD = "password";
@@ -36,29 +34,19 @@ public class HashProcessorTest {
 
    private static final String USER3_PASSWORD = "artemis000";
 
-   @Parameterized.Parameters(name = "{index}: testing password {0}")
-   public static Collection<Object[]> data() {
-      return Arrays.asList(new Object[][] {
-         {USER1_PASSWORD, USER1_HASHED_PASSWORD, true},
-         {USER2_PASSWORD, USER2_HASHED_PASSWORD, true},
-         {USER3_PASSWORD, USER3_PASSWORD, true},
-         {USER1_PASSWORD, USER2_PASSWORD, false},
-         {USER3_PASSWORD, USER2_HASHED_PASSWORD, false}
-      });
+   static Stream<Arguments> parameters() {
+      return Stream.of(
+         Arguments.of(USER1_PASSWORD, USER1_HASHED_PASSWORD, true),
+         Arguments.of(USER2_PASSWORD, USER2_HASHED_PASSWORD, true),
+         Arguments.of(USER3_PASSWORD, USER3_PASSWORD, true),
+         Arguments.of(USER1_PASSWORD, USER2_PASSWORD, false),
+         Arguments.of(USER3_PASSWORD, USER2_HASHED_PASSWORD, false)
+      );
    }
 
-   private String password;
-   private String storedPassword;
-   private boolean match;
-
-   public HashProcessorTest(String password, String storedPassword, boolean match) {
-      this.password = password;
-      this.storedPassword = storedPassword;
-      this.match = match;
-   }
-
-   @Test
-   public void testPasswordVerification() throws Exception {
+   @ParameterizedTest()
+   @MethodSource("parameters")
+   public void testPasswordVerification(String password, String storedPassword, boolean match) throws Exception {
       HashProcessor processor = PasswordMaskingUtil.getHashProcessor(storedPassword);
       boolean result = processor.compare(password.toCharArray(), storedPassword);
       assertEquals(match, result);

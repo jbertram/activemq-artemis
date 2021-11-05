@@ -149,8 +149,9 @@
       <version.org.jacoco>0.8.6</version.org.jacoco>
       <version.org.jacoco.plugin>0.8.6</version.org.jacoco.plugin>
       <version.micrometer>1.6.3</version.micrometer>
-      <hamcrest.version>2.1</hamcrest.version>
+      <hamcrest.version>2.2</hamcrest.version>
       <junit.version>4.13.2</junit.version>
+      <junit.jupiter.version>5.8.1</junit.jupiter.version>
       <surefire.version>2.22.2</surefire.version>
       <version.jaxb.runtime>2.3.3</version.jaxb.runtime>
       <paho.client.mqttv3.version>1.2.5</paho.client.mqttv3.version>
@@ -277,12 +278,23 @@
    <dependencyManagement>
       <dependencies>
          <!-- ## Test Dependencies ## Note: Junit is required in certain module tests.  We should control versions from here. -->
-         <dependency>
+         <!--dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
-            <!-- License: CPL 1.0 -->
+         </dependency-->
+         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
          </dependency>
          <dependency>
             <groupId>org.easymock</groupId>

@@ -16,18 +16,16 @@
  */
 package org.apache.activemq.artemis.utils;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class MaskPasswordResolvingTest {
 
    private static final String plainPassword = "password";
@@ -37,37 +35,26 @@ public class MaskPasswordResolvingTest {
    private static final String oldCustomizedCodecPassword = "secret";
    private static final String oldExplicitPlainPassword = "PASSWORD";
 
-   @Parameterized.Parameters(name = "mask({0})password({1})codec({2})")
-   public static Collection<Object[]> params() {
-      return Arrays.asList(new Object[][]{{null, plainPassword, null},
-                                          {null, "ENC(3bdfd94fe8cdf710e7fefa72f809ea90)", null},
-                                          {null, "ENC(momsword)", "org.apache.activemq.artemis.utils.MaskPasswordResolvingTest$SimplePasswordCodec"},
-                                          {true, "662d05f5a83f9e073af6b8dc081d34aa", null},
-                                          {true, "momsword", "org.apache.activemq.artemis.utils.MaskPasswordResolvingTest$SimplePasswordCodec"},
-                                          {false, oldExplicitPlainPassword, null},
-                                          {false, oldExplicitPlainPassword, "org.apache.activemq.artemis.utils.MaskPasswordResolvingTest$SimplePasswordCodec"}});
+   static Stream<Arguments> parameters() {
+      return Stream.of(
+         Arguments.of(null, plainPassword, null),
+         Arguments.of(null, "ENC(3bdfd94fe8cdf710e7fefa72f809ea90)", null),
+         Arguments.of(null, "ENC(momsword)", "org.apache.activemq.artemis.utils.MaskPasswordResolvingTest$SimplePasswordCodec"),
+         Arguments.of(true, "662d05f5a83f9e073af6b8dc081d34aa", null),
+         Arguments.of(true, "momsword", "org.apache.activemq.artemis.utils.MaskPasswordResolvingTest$SimplePasswordCodec"),
+         Arguments.of(false, oldExplicitPlainPassword, null),
+         Arguments.of(false, oldExplicitPlainPassword, "org.apache.activemq.artemis.utils.MaskPasswordResolvingTest$SimplePasswordCodec")
+      );
    }
 
-   private Boolean maskPassword;
-   private String password;
-   private String codec;
-
-   public MaskPasswordResolvingTest(Boolean maskPassword, String password, String codec) {
-      this.maskPassword = maskPassword;
-      this.password = password;
-      this.codec = codec;
-   }
-
-   @Test
-   public void testPasswordResolving() throws Exception {
+   @ParameterizedTest
+   @MethodSource("parameters")
+   public void testPasswordResolving(Boolean maskPassword, String password, String codec) throws Exception {
       String resolved = PasswordMaskingUtil.resolveMask(maskPassword, password, codec);
-      checkResult(resolved);
-   }
 
-   private void checkResult(String resolved) throws Exception {
-      if (this.maskPassword == null) {
-         if (PasswordMaskingUtil.isEncMasked(this.password)) {
-            if (this.codec != null) {
+      if (maskPassword == null) {
+         if (PasswordMaskingUtil.isEncMasked(password)) {
+            if (codec != null) {
                assertEquals(customizedCodecPassword, resolved);
             } else {
                assertEquals(defaultMaskPassword, resolved);
@@ -76,8 +63,8 @@ public class MaskPasswordResolvingTest {
             assertEquals(plainPassword, resolved);
          }
       } else {
-         if (this.maskPassword) {
-            if (this.codec != null) {
+         if (maskPassword) {
+            if (codec != null) {
                assertEquals(oldCustomizedCodecPassword, resolved);
             } else {
                assertEquals(oldDefaultMaskedPassword, resolved);
