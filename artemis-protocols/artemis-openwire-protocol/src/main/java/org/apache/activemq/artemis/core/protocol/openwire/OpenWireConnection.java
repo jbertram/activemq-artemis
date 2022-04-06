@@ -1852,4 +1852,15 @@ public class OpenWireConnection extends AbstractRemotingConnection implements Se
    public CoreMessageObjectPools getCoreMessageObjectPools() {
       return coreMessageObjectPools;
    }
+
+   @Override
+   public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append("OpenWireConnection[");
+      sb.append("id=").append(getID()).append(", ");
+      sb.append("ipAddress=").append(getRemoteAddress()).append(", ");
+      sb.append("username=").append(getUsername());
+      sb.append("]@").append(Integer.toHexString(System.identityHashCode(this)));
+      return sb.toString();
+   }
 }

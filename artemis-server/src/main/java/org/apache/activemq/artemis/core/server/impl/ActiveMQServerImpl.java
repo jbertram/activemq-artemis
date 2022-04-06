@@ -221,6 +221,8 @@ public class ActiveMQServerImpl implements ActiveMQServer {
 
    private static final Logger logger = Logger.getLogger(ActiveMQServerImpl.class);
 
+   private static final Logger issueLogger = Logger.getLogger("ENTMQBR-5970");
+
    public static final String INTERNAL_NAMING_PREFIX = "$.artemis.internal";
 
    /**
@@ -1380,6 +1382,7 @@ public class ActiveMQServerImpl implements ActiveMQServer {
       backupManager = null;
       this.storageManager = null;
 
+      issueLogger.debugf("Clearing %d sessions", sessions.size());
       sessions.clear();
 
       state = SERVER_STATE.STOPPED;
@@ -1570,7 +1573,7 @@ public class ActiveMQServerImpl implements ActiveMQServer {
                      conn.fail(ActiveMQMessageBundle.BUNDLE.destroyConnectionWithSessionMetadataSendException(metaKey, parameterValue));
                   }
                   session.close(true);
-                  sessions.remove(session.getName());
+                  removeSession(session.getName());
                }
             } catch (Throwable e) {
                ActiveMQServerLogger.LOGGER.unableDestroyConnectionWithSessionMetadata(e);
@@ -1828,6 +1831,7 @@ public class ActiveMQServerImpl implements ActiveMQServer {
 
       ServerSessionImpl session = new ServerSessionImpl(name, username, password, validatedUser, minLargeMessageSize, autoCommitSends, autoCommitAcks, preAcknowledge, configuration.isPersistDeliveryCountBeforeDelivery(), xa, connection, storageManager, postOffice, resourceManager, securityStore, managementService, this, configuration.getManagementAddress(), defaultAddress == null ? null : new SimpleString(defaultAddress), callback, context, pagingManager, prefixes, securityDomain);
 
+      issueLogger.debug(("Adding session " + name + ": " + session));
       sessions.put(name, session);
 
       if (hasBrokerSessionPlugins()) {
@@ -1844,7 +1848,13 @@ public class ActiveMQServerImpl implements ActiveMQServer {
 
    @Override
    public void removeSession(final String name) throws Exception {
-      sessions.remove(name);
+      ServerSession session = sessions.remove(name);
+      issueLogger.debugf("Removed session %s: %s", name, session);
+      issueLogger.trace(name + " trace", new Exception());
+   }
+
+   public void addSession(final ServerSession session) throws Exception {
+      sessions.put(session.getName(), session);
    }
 
    @Override

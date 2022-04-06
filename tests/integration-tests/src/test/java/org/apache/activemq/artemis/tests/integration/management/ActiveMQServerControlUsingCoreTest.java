@@ -1661,6 +1661,14 @@ public class ActiveMQServerControlUsingCoreTest extends ActiveMQServerControlTes
                             String filter) throws Exception {
             proxy.invokeOperation("replay", startScan, endScan, address, target, filter);
          }
+
+         public void logOrphanedSessions() {
+         }
+
+         @Override
+         public int closeOrphanedSessions() throws Exception {
+            return 0;
+         }
       };
    }
 

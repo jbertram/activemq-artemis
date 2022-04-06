@@ -83,6 +83,8 @@ public class RemotingServiceImpl implements RemotingService, ServerConnectionLif
 
    private static final Logger logger = Logger.getLogger(RemotingServiceImpl.class);
 
+   private static final Logger issueLogger = Logger.getLogger("ENTMQBR-5970");
+
    private static final int ACCEPTOR_STOP_TIMEOUT = 3000;
 
 
@@ -434,6 +436,7 @@ public class RemotingServiceImpl implements RemotingService, ServerConnectionLif
 
       acceptors.clear();
 
+      issueLogger.debugf("Clearing %d connections", connections.size());
       connections.clear();
       connectionCountLatch.setCount(0);
 
@@ -489,6 +492,8 @@ public class RemotingServiceImpl implements RemotingService, ServerConnectionLif
    @Override
    public RemotingConnection removeConnection(final Object remotingConnectionID) {
       ConnectionEntry entry = connections.remove(remotingConnectionID);
+      issueLogger.debug("Removed connection " + remotingConnectionID + ": " + entry);
+      issueLogger.trace(remotingConnectionID + " trace", new Exception());
 
       if (entry != null) {
          logger.debug("RemotingServiceImpl::removing connection ID " + remotingConnectionID);
@@ -580,6 +585,7 @@ public class RemotingServiceImpl implements RemotingService, ServerConnectionLif
 
    @Override
    public void addConnectionEntry(Connection connection, ConnectionEntry entry) {
+      issueLogger.debug("Adding connection " + connection.getID() + ": " + entry);
       connections.put(connection.getID(), entry);
    }
 

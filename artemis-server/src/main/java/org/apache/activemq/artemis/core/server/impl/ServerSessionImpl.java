@@ -1993,26 +1993,37 @@ public class ServerSessionImpl implements ServerSession, FailureListener {
       return server.getPostOffice().getAddressInfo(removePrefix(address));
    }
 
+//   @Override
+//   public String toString() {
+//      StringBuffer buffer = new StringBuffer();
+//      if (this.metaData != null) {
+//         for (Map.Entry<String, String> value : metaData.entrySet()) {
+//            if (buffer.length() != 0) {
+//               buffer.append(",");
+//            }
+//            Object tmpValue = value.getValue();
+//            if (tmpValue == null || tmpValue.toString().isEmpty()) {
+//               buffer.append(value.getKey() + "=*N/A*");
+//            } else {
+//               buffer.append(value.getKey() + "=" + tmpValue);
+//            }
+//         }
+//      }
+//      // This will actually appear on some management operations
+//      // so please don't clog this with debug objects
+//      // unless you provide a special way for management to translate sessions
+//      return "ServerSessionImpl(" + buffer.toString() + ")";
+//   }
+
+
    @Override
    public String toString() {
-      StringBuffer buffer = new StringBuffer();
-      if (this.metaData != null) {
-         for (Map.Entry<String, String> value : metaData.entrySet()) {
-            if (buffer.length() != 0) {
-               buffer.append(",");
-            }
-            Object tmpValue = value.getValue();
-            if (tmpValue == null || tmpValue.toString().isEmpty()) {
-               buffer.append(value.getKey() + "=*N/A*");
-            } else {
-               buffer.append(value.getKey() + "=" + tmpValue);
-            }
-         }
-      }
-      // This will actually appear on some management operations
-      // so please don't clog this with debug objects
-      // unless you provide a special way for management to translate sessions
-      return "ServerSessionImpl(" + buffer.toString() + ")";
+      StringBuilder sb = new StringBuilder();
+      sb.append("ServerSessionImpl[");
+      sb.append("name=").append(name).append(", ");
+      sb.append("connectionID=").append(getConnectionID());
+      sb.append("]@").append(Integer.toHexString(System.identityHashCode(this)));
+      return sb.toString();
    }
 
    // FailureListener implementation

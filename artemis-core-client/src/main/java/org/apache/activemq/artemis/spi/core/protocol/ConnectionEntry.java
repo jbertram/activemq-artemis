@@ -44,4 +44,13 @@ public class ConnectionEntry {
 
       this.connectionExecutor = connectionExecutor;
    }
+
+   @Override
+   public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append("ConnectionEntry[");
+      sb.append("connection=").append(connection);
+      sb.append("]@").append(Integer.toHexString(System.identityHashCode(this)));
+      return sb.toString();
+   }
 }

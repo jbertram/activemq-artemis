@@ -142,6 +142,7 @@ public class ActiveMQServerControlImpl extends AbstractControl implements Active
 
    private static final Logger logger = Logger.getLogger(ActiveMQServerControlImpl.class);
 
+   private static final Logger issueLogger = Logger.getLogger("ENTMQBR-5970");
 
    private final PostOffice postOffice;
 
@@ -4477,6 +4478,50 @@ public class ActiveMQServerControlImpl extends AbstractControl implements Active
       Date endScanDate = format.parse(endScan);
 
       server.replay(startScanDate, endScanDate, address, target, filter);
+   }
+
+   @Override
+   public void logOrphanedSessions() {
+      int count = 0;
+      List<String> orphanedSessions = getOrphanedSessions();
+      issueLogger.debugf("Total sessions: %d; orphaned sessions: %d", server.getSessions().size(), orphanedSessions.size());
+      for (String orphan : orphanedSessions) {
+         issueLogger.debugf("orphaned session %d: %s", ++count, server.getSessionByID(orphan));
+      }
+   }
+
+   @Override
+   public int closeOrphanedSessions() throws Exception {
+      int sessionsClosed = 0;
+
+      for (String orphan : getOrphanedSessions()) {
+         server.getSessionByID(orphan).close(true);
+         sessionsClosed++;
+      }
+
+      return sessionsClosed;
+   }
+
+   private List<String> getOrphanedSessions() {
+      List<String> orphans = new ArrayList<>();
+
+      boolean found = false;
+      for (ServerSession session : server.getSessions()) {
+         String connectionIdFromSession = session.getConnectionID().toString();
+         for (RemotingConnection connection : server.getRemotingService().getConnections()) {
+            if (connectionIdFromSession.equals(connection.getID().toString())) {
+               found = true;
+               break;
+            }
+         }
+         if (!found) {
+            orphans.add(session.getName());
+         } else {
+            found = false;
+         }
+      }
+
+      return orphans;
    }
 }
 

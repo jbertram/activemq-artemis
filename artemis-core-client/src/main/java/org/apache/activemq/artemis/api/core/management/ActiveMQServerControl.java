@@ -1971,5 +1971,11 @@ public interface ActiveMQServerControl {
                @Parameter(name = "address", desc = "Name of the address to replay") String address,
                @Parameter(name = "target", desc = "Where the replay data should be sent") String target,
                @Parameter(name = "filter", desc = "Filter to apply on message selection. Null means everything matching the address") String filter) throws Exception;
+
+   @Operation(desc = "list tracked sessions not associated with a valid connection", impact = MBeanOperationInfo.ACTION)
+   void logOrphanedSessions();
+
+   @Operation(desc = "close and stop tracking sessions not associated with a valid connection", impact = MBeanOperationInfo.ACTION)
+   int closeOrphanedSessions() throws Exception;
 }
 
