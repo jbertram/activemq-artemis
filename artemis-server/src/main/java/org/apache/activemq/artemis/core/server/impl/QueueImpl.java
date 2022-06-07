@@ -340,16 +340,6 @@ public class QueueImpl extends CriticalComponentImpl implements Queue {
 
    private volatile long ringSize;
 
-   /* in certain cases we need to redeliver a message directly.
-   * it's useful for usecases last LastValueQueue */
-   protected MessageReference nextDelivery() {
-      return null;
-   }
-
-   protected void repeatNextDelivery(MessageReference reference) {
-
-   }
-
    @Override
    public boolean isSwept() {
       return swept;
@@ -2887,7 +2877,7 @@ public class QueueImpl extends CriticalComponentImpl implements Queue {
       }
    }
 
-   private synchronized void doInternalPoll() {
+   synchronized void doInternalPoll() {
 
       int added = 0;
       MessageReference ref;
@@ -2966,27 +2956,13 @@ public class QueueImpl extends CriticalComponentImpl implements Queue {
       long timeout = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(DELIVERY_TIMEOUT);
       consumers.reset();
       while (true) {
-         if (handled == MAX_DELIVERIES_IN_LOOP) {
-            // Schedule another one - we do this to prevent a single thread getting caught up in this loop for too
-            // long
-
+         if (handled == MAX_DELIVERIES_IN_LOOP || System.nanoTime() - timeout > 0) {
+            // Schedule another one - we do this to prevent a single thread getting caught up in this loop for too long
             deliverAsync(true);
-
-            return false;
-         }
-
-         if (System.nanoTime() - timeout > 0) {
-            if (logger.isTraceEnabled()) {
-               logger.trace("delivery has been running for too long. Scheduling another delivery task now");
-            }
-
-            deliverAsync(true);
-
             return false;
          }
 
          MessageReference ref;
-
          Consumer handledconsumer = null;
 
          synchronized (this) {
@@ -3026,15 +3002,10 @@ public class QueueImpl extends CriticalComponentImpl implements Queue {
                holder.iter = messageReferences.iterator();
             }
 
-            // LVQ support
-            ref = nextDelivery();
-            boolean nextDelivery = false;
-            if (ref != null) {
-               nextDelivery = true;
-            }
-
-            if (ref == null && holder.iter.hasNext()) {
+            if (holder.iter.hasNext()) {
                ref = holder.iter.next();
+            } else {
+               ref = null;
             }
 
             if (ref == null) {
@@ -3084,18 +3055,14 @@ public class QueueImpl extends CriticalComponentImpl implements Queue {
                   handled++;
                   consumers.reset();
                } else if (status == HandleStatus.BUSY) {
-                  if (nextDelivery) {
-                     repeatNextDelivery(ref);
-                  } else {
-                     try {
-                        holder.iter.repeat();
-                     } catch (NoSuchElementException e) {
-                        // this could happen if there was an exception on the queue handling
-                        // and it returned BUSY because of that exception
-                        //
-                        // We will just log it as there's nothing else we can do now.
-                        logger.warn(e.getMessage(), e);
-                     }
+                  try {
+                     holder.iter.repeat();
+                  } catch (NoSuchElementException e) {
+                     // this could happen if there was an exception on the queue handling
+                     // and it returned BUSY because of that exception
+                     //
+                     // We will just log it as there's nothing else we can do now.
+                     logger.warn(e.getMessage(), e);
                   }
 
                   noDelivery++;
@@ -3136,6 +3103,7 @@ public class QueueImpl extends CriticalComponentImpl implements Queue {
 
                noDelivery = 0;
             }
+
          }
 
          if (handledconsumer != null) {

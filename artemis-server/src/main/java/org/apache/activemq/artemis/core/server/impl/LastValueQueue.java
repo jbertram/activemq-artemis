@@ -20,17 +20,17 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.Consumer;
 
 import org.apache.activemq.artemis.api.core.ActiveMQException;
-import org.apache.activemq.artemis.api.core.Message;
 import org.apache.activemq.artemis.api.core.QueueConfiguration;
 import org.apache.activemq.artemis.api.core.RoutingType;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.core.filter.Filter;
+import org.apache.activemq.artemis.core.filter.impl.FilterImpl;
 import org.apache.activemq.artemis.core.paging.PagingStore;
 import org.apache.activemq.artemis.core.paging.cursor.PageSubscription;
 import org.apache.activemq.artemis.core.persistence.StorageManager;
@@ -38,13 +38,13 @@ import org.apache.activemq.artemis.core.postoffice.PostOffice;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.ActiveMQServerLogger;
 import org.apache.activemq.artemis.core.server.MessageReference;
-import org.apache.activemq.artemis.core.server.Queue;
 import org.apache.activemq.artemis.core.server.QueueFactory;
 import org.apache.activemq.artemis.core.server.ServerConsumer;
 import org.apache.activemq.artemis.core.settings.HierarchicalRepository;
 import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
 import org.apache.activemq.artemis.core.transaction.Transaction;
 import org.apache.activemq.artemis.utils.actors.ArtemisExecutor;
+import org.apache.activemq.artemis.utils.collections.LinkedListIterator;
 import org.jboss.logging.Logger;
 
 /**
@@ -59,25 +59,11 @@ import org.jboss.logging.Logger;
 public class LastValueQueue extends QueueImpl {
 
    private static final Logger logger = Logger.getLogger(LastValueQueue.class);
-   private final Map<SimpleString, HolderReference> map = new ConcurrentHashMap<>();
+   private final Map<SimpleString, MessageReference> map = new ConcurrentHashMap<>();
    private final SimpleString lastValueKey;
 
    // only use this within synchronized methods or synchronized(this) blocks
    protected final LinkedList<MessageReference> nextDeliveries = new LinkedList<>();
-
-
-   /* in certain cases we need to redeliver a message */
-   @Override
-   protected MessageReference nextDelivery() {
-      return nextDeliveries.poll();
-   }
-
-   @Override
-   protected void repeatNextDelivery(MessageReference reference) {
-      // put the ref back onto the head of the list so that the next time poll() is called this ref is returned
-      nextDeliveries.addFirst(reference);
-   }
-
 
    @Deprecated
    public LastValueQueue(final long persistenceID,
@@ -165,36 +151,19 @@ public class LastValueQueue extends QueueImpl {
       if (scheduleIfPossible(ref)) {
          return;
       }
-      final SimpleString prop = ref.getLastValueProperty();
+      final SimpleString lastValueProperty = ref.getLastValueProperty();
 
-      if (prop != null) {
-         HolderReference hr = map.get(prop);
+      if (lastValueProperty != null) {
+         MessageReference oldRef = map.get(lastValueProperty);
 
-         if (hr != null) {
-            if (isNonDestructive() && hr.isInDelivery()) {
-               // if the ref is already being delivered we'll do the replace in the postAcknowledge
-               hr.setReplacementRef(ref);
-            } else {
-               // We need to overwrite the old ref with the new one and ack the old one
-               replaceLVQMessage(ref, hr);
-
-               if (isNonDestructive() && hr.isDelivered()) {
-                  hr.resetDelivered();
-                  // since we're replacing a ref that was already delivered we want to trigger a delivery for this new replacement
-                  nextDeliveries.add(hr);
-                  deliverAsync();
-               }
-            }
+         if (oldRef != null) {
+            processOldRef(lastValueProperty, ref, oldRef);
          } else {
-            hr = new HolderReference(prop, ref);
-
-            map.put(prop, hr);
-
-            super.addTail(hr, isNonDestructive() ? false : direct);
+            map.put(lastValueProperty, ref);
          }
-      } else {
-         super.addTail(ref, isNonDestructive() ? false : direct);
       }
+
+      super.addTail(ref, isNonDestructive() ? false : direct);
    }
 
 
@@ -229,49 +198,51 @@ public class LastValueQueue extends QueueImpl {
       }
 
       SimpleString lastValueProp = ref.getLastValueProperty();
+      boolean addHead = true;
 
       if (lastValueProp != null) {
-         HolderReference hr = map.get(lastValueProp);
+         MessageReference existingMessageRef = map.get(lastValueProp);
 
-         if (hr != null) {
+         if (existingMessageRef != null) {
             if (scheduling) {
-               // We need to overwrite the old ref with the new one and ack the old one
-
-               replaceLVQMessage(ref, hr);
+               processOldRef(lastValueProp, ref, existingMessageRef);
             } else {
-               // We keep the current ref and ack the one we are returning
-
-               super.referenceHandled(ref);
-
-               try {
-                  super.acknowledge(ref);
-               } catch (Exception e) {
-                  ActiveMQServerLogger.LOGGER.errorAckingOldReference(e);
+               if (findLastValueMessage(lastValueProp)) {
+                  addHead = false;
                }
             }
          } else {
-            hr = new HolderReference(lastValueProp, ref);
-
-            map.put(lastValueProp, hr);
-
-            super.addHead(hr, scheduling);
+            map.put(lastValueProp, ref);
          }
-      } else {
+      }
+
+      if (addHead) {
          super.addHead(ref, scheduling);
       }
    }
 
-   @Override
-   public void postAcknowledge(final MessageReference ref, AckReason reason) {
-      if (isNonDestructive()) {
-         if (ref instanceof HolderReference) {
-            HolderReference hr = (HolderReference) ref;
-            if (hr.getReplacementRef() != null) {
-               replaceLVQMessage(hr.getReplacementRef(), hr);
+   private boolean findLastValueMessage(SimpleString lastValueProp) {
+      boolean found = false;
+      Filter filter = null;
+      try {
+         filter = FilterImpl.createFilter(String.format("%s = '%s'", getLastValueKey(), lastValueProp));
+      } catch (ActiveMQException e) {
+         e.printStackTrace();
+         return false;
+      }
+      try (LinkedListIterator<MessageReference> iterator = browserIterator()) {
+         try {
+            while (iterator.hasNext()) {
+               if (filter.match(iterator.next().getMessage())) {
+                  found = true;
+                  break;
+               }
             }
+         } catch (NoSuchElementException ignored) {
+            // this could happen through paging browsing
          }
       }
-      super.postAcknowledge(ref, reason);
+      return found;
    }
 
    @Override
@@ -284,21 +255,22 @@ public class LastValueQueue extends QueueImpl {
       return super.getQueueConfiguration().setLastValue(true);
    }
 
-   private void replaceLVQMessage(MessageReference ref, HolderReference hr) {
-      MessageReference oldRef = hr.getReference();
-
-      referenceHandled(oldRef);
-      super.refRemoved(oldRef);
-
+   private void processOldRef(SimpleString lastValueProperty, MessageReference newRef, MessageReference oldRef) {
       try {
+         /*
+          * Make sure all messages are pushed from intermediateMessageReferences to messageReferences so that any
+          * existing last-value messages can be found removed.
+          */
+         doInternalPoll();
+
+         referenceHandled(oldRef);
+         removeReferenceWithID(oldRef.getMessageID());
          oldRef.acknowledge(null, AckReason.REPLACED, null);
       } catch (Exception e) {
          ActiveMQServerLogger.LOGGER.errorAckingOldReference(e);
       }
 
-      hr.setReference(ref);
-      addRefSize(ref);
-      refAdded(ref);
+      map.put(lastValueProperty, newRef);
    }
 
    @Override
@@ -327,16 +299,19 @@ public class LastValueQueue extends QueueImpl {
    }
 
    @Override
-   public synchronized void reload(final MessageReference ref) {
-      // repopulate LVQ map & reload proper HolderReferences
-      SimpleString lastValueProp = ref.getLastValueProperty();
-      if (lastValueProp != null) {
-         HolderReference hr = new HolderReference(lastValueProp, ref);
-         map.put(lastValueProp, hr);
-         super.reload(hr);
-      } else {
-         super.reload(ref);
+   public synchronized void reload(final MessageReference newRef) {
+      SimpleString lastValueProperty = newRef.getLastValueProperty();
+      if (lastValueProperty != null) {
+         MessageReference oldRef = map.get(lastValueProperty);
+
+         if (oldRef != null) {
+            processOldRef(lastValueProperty, newRef, oldRef);
+         }
+
+         map.put(lastValueProperty, newRef);
       }
+
+      super.reload(newRef);
    }
 
    private synchronized void removeIfCurrent(MessageReference ref) {
@@ -361,9 +336,6 @@ public class LastValueQueue extends QueueImpl {
       };
    }
 
-
-
-
    @Override
    public boolean isLastValue() {
       return true;
@@ -376,238 +348,6 @@ public class LastValueQueue extends QueueImpl {
 
    public synchronized Set<SimpleString> getLastValueKeys() {
       return Collections.unmodifiableSet(map.keySet());
-   }
-
-   private static class HolderReference implements MessageReference {
-
-      private final SimpleString prop;
-
-      private volatile boolean delivered = false;
-
-      private volatile MessageReference ref;
-
-      private volatile MessageReference replacementRef;
-
-      private long consumerID;
-
-      private boolean hasConsumerID = false;
-
-
-      public MessageReference getReplacementRef() {
-         return replacementRef;
-      }
-
-      public void setReplacementRef(MessageReference replacementRef) {
-         this.replacementRef = replacementRef;
-      }
-
-      public void resetDelivered() {
-         delivered = false;
-      }
-
-      public boolean isDelivered() {
-         return delivered;
-      }
-
-      HolderReference(final SimpleString prop, final MessageReference ref) {
-         this.prop = prop;
-
-         this.ref = ref;
-      }
-
-      @Override
-      public void onDelivery(Consumer<? super MessageReference> callback) {
-         // HolderReference may be reused among different consumers, so we don't set a callback and won't support Runnables
-      }
-
-      MessageReference getReference() {
-         return ref;
-      }
-
-      @Override
-      public void handled() {
-         delivered = true;
-         // We need to remove the entry from the map just before it gets delivered
-         ref.handled();
-         if (!ref.getQueue().isNonDestructive()) {
-            ((LastValueQueue) ref.getQueue()).removeIfCurrent(this);
-         }
-      }
-
-      @Override
-      public void setInDelivery(boolean inDelivery) {
-         ref.setInDelivery(inDelivery);
-      }
-
-      @Override
-      public boolean isInDelivery() {
-         return ref.isInDelivery();
-      }
-
-      @Override
-      public Object getProtocolData() {
-         return ref.getProtocolData();
-      }
-
-      @Override
-      public void setProtocolData(Object data) {
-         ref.setProtocolData(data);
-      }
-
-      @Override
-      public void setAlreadyAcked() {
-         ref.setAlreadyAcked();
-      }
-
-      @Override
-      public boolean isAlreadyAcked() {
-         return ref.isAlreadyAcked();
-      }
-
-      void setReference(final MessageReference ref) {
-         this.ref = ref;
-      }
-
-      @Override
-      public MessageReference copy(final Queue queue) {
-         return ref.copy(queue);
-      }
-
-      @Override
-      public void decrementDeliveryCount() {
-         ref.decrementDeliveryCount();
-      }
-
-      @Override
-      public int getDeliveryCount() {
-         return ref.getDeliveryCount();
-      }
-
-      @Override
-      public Message getMessage() {
-         return ref.getMessage();
-      }
-
-      @Override
-      public long getMessageID() {
-         return ref.getMessageID();
-      }
-
-      @Override
-      public boolean isDurable() {
-         return getMessage().isDurable();
-      }
-
-      @Override
-      public SimpleString getLastValueProperty() {
-         return prop;
-      }
-
-      @Override
-      public Queue getQueue() {
-         return ref.getQueue();
-      }
-
-      @Override
-      public long getScheduledDeliveryTime() {
-         return ref.getScheduledDeliveryTime();
-      }
-
-      @Override
-      public void incrementDeliveryCount() {
-         ref.incrementDeliveryCount();
-      }
-
-      @Override
-      public void setDeliveryCount(final int deliveryCount) {
-         ref.setDeliveryCount(deliveryCount);
-      }
-
-      @Override
-      public void setScheduledDeliveryTime(final long scheduledDeliveryTime) {
-         ref.setScheduledDeliveryTime(scheduledDeliveryTime);
-      }
-
-      @Override
-      public void acknowledge(Transaction tx) throws Exception {
-         ref.acknowledge(tx);
-      }
-
-      @Override
-      public void acknowledge(Transaction tx, ServerConsumer consumer) throws Exception {
-         ref.acknowledge(tx, consumer);
-      }
-
-      @Override
-      public void acknowledge(Transaction tx, AckReason reason, ServerConsumer consumer) throws Exception {
-         ref.acknowledge(tx, reason, consumer);
-      }
-
-      @Override
-      public void setPersistedCount(int count) {
-         ref.setPersistedCount(count);
-      }
-
-      @Override
-      public int getPersistedCount() {
-         return ref.getPersistedCount();
-      }
-
-      @Override
-      public boolean isPaged() {
-         return false;
-      }
-
-      /* (non-Javadoc)
-       * @see org.apache.activemq.artemis.core.server.MessageReference#acknowledge(org.apache.activemq.artemis.core.server.MessageReference)
-       */
-      @Override
-      public void acknowledge() throws Exception {
-         ref.getQueue().acknowledge(this);
-      }
-
-      /* (non-Javadoc)
-       * @see org.apache.activemq.artemis.core.server.MessageReference#getMessageMemoryEstimate()
-       */
-      @Override
-      public int getMessageMemoryEstimate() {
-         return ref.getMessage().getMemoryEstimate();
-      }
-
-      @Override
-      public void emptyConsumerID() {
-         this.hasConsumerID = false;
-      }
-
-      @Override
-      public void setConsumerId(long consumerID) {
-         this.hasConsumerID = true;
-         this.consumerID = consumerID;
-      }
-
-      @Override
-      public boolean hasConsumerId() {
-         return hasConsumerID;
-      }
-
-      @Override
-      public long getConsumerId() {
-         if (!this.hasConsumerID) {
-            throw new IllegalStateException("consumerID isn't specified: please check hasConsumerId first");
-         }
-         return this.consumerID;
-      }
-
-      @Override
-      public long getPersistentSize() throws ActiveMQException {
-         return ref.getPersistentSize();
-      }
-
-      @Override
-      public String toString() {
-         return new StringBuilder().append("HolderReference").append("@").append(Integer.toHexString(System.identityHashCode(this))).append("[ref=").append(ref).append("]").toString();
-      }
-
    }
 
    @Override
