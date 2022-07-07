@@ -142,7 +142,7 @@ var Artemis;
             { header: 'Protocol', itemField: 'protocol' },
             { header: 'User', itemField: 'user' },
             { header: 'Validated User', name: 'validatedUser'},
-            { header: 'Address', itemField: 'address', templateFn: function(value, item) { return '<a href="#" onclick="selectAddress(' + item.idx + ')">' + $sanitize(value) + '</a>' }},
+            { header: 'Address', itemField: 'address', templateFn: function(value, item) { return '<a href="#" onclick="selectAddress(' + item.idx + ')">' + Core.escapeHtml($sanitize(value)) + '</a>' }},
             { header: 'Remote Address', itemField: 'remoteAddress' },
             { header: 'Local Address', itemField: 'localAddress' }
         ];

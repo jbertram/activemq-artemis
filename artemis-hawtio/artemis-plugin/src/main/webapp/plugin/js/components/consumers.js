@@ -172,10 +172,10 @@ var Artemis;
             { header: 'Client ID', itemField: 'clientID' },
             { header: 'Validated User', itemField: 'validatedUser' },
             { header: 'Protocol', itemField: 'protocol' },
-            { header: 'Queue', itemField: 'queue', templateFn: function(value, item) { return '<a href="#" onclick="selectQueue(' + item.idx + ')">' + $sanitize(value) + '</a>' }},
+            { header: 'Queue', itemField: 'queue', templateFn: function(value, item) { return '<a href="#" onclick="selectQueue(' + item.idx + ')">' + Core.escapeHtml($sanitize(value)) + '</a>' }},
             { header: 'Queue Type', itemField: 'queueType' },
             { header: 'Filter', itemField: 'filter' },
-            { header: 'Address', itemField: 'address' , templateFn: function(value, item) { return '<a href="#" onclick="selectAddress(' + item.idx + ')">' + $sanitize(value) + '</a>' }},
+            { header: 'Address', itemField: 'address' , templateFn: function(value, item) { return '<a href="#" onclick="selectAddress(' + item.idx + ')">' + Core.escapeHtml($sanitize(value)) + '</a>' }},
             { header: 'Remote Address', itemField: 'remoteAddress' },
             { header: 'Local Address', itemField: 'localAddress' },
             { header: 'Creation Time', itemField: 'creationTime' }

@@ -184,10 +184,10 @@ var Artemis;
         ctrl.tableColumns = [
             { header: 'ID', itemField: 'id' },
             { header: 'Name', itemField: 'name',
-              templateFn: function(value, item) { return '<a href="#" onclick="selectQueue(' + item.idx + ')">' + $sanitize(value) + '</a>' }
+              templateFn: function(value, item) { return '<a href="#" onclick="selectQueue(' + item.idx + ')">' + Core.escapeHtml($sanitize(value)) + '</a>' }
             },
             { header: 'Address', itemField: 'address',
-              templateFn: function(value, item) { return '<a href="#" onclick="selectAddress(' + item.idx + ')">' + $sanitize(value) + '</a>' }
+              templateFn: function(value, item) { return '<a href="#" onclick="selectAddress(' + item.idx + ')">' + Core.escapeHtml($sanitize(value)) + '</a>' }
             },
             { header: 'Routing Type', itemField: 'routingType'},
             { header: 'Filter', itemField: 'filter' },
