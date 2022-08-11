@@ -17,11 +17,16 @@
 package org.apache.activemq.artemis.core.settings;
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
+import org.apache.activemq.artemis.api.core.RoutingType;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.core.settings.impl.AddressFullMessagePolicy;
 import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
 import org.apache.activemq.artemis.core.settings.impl.DeletionPolicy;
+import org.apache.activemq.artemis.core.settings.impl.PageFullMessagePolicy;
+import org.apache.activemq.artemis.core.settings.impl.SlowConsumerPolicy;
+import org.apache.activemq.artemis.core.settings.impl.SlowConsumerThresholdMeasurementUnit;
 import org.apache.activemq.artemis.tests.util.ActiveMQTestBase;
+import org.apache.activemq.artemis.utils.RandomUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -165,5 +170,85 @@ public class AddressSettingsTest extends ActiveMQTestBase {
       Assert.assertEquals(addressSettings.getRedeliveryMultiplier(), 1.0, 0.000001);
       Assert.assertEquals(addressSettings.getMaxRedeliveryDelay(), 5000);
       Assert.assertEquals(AddressFullMessagePolicy.DROP, addressSettings.getAddressFullMessagePolicy());
+   }
+
+   @Test
+   public void testJSON() {
+      AddressSettings settings = new AddressSettings()
+         .setDropMessagesWhenFull(RandomUtil.randomBoolean())
+         .setAutoCreateQueues(RandomUtil.randomBoolean())
+         .setAutoDeleteQueues(RandomUtil.randomBoolean())
+         .setAutoDeleteCreatedQueues(RandomUtil.randomBoolean())
+         .setAutoDeleteQueuesDelay(RandomUtil.randomPositiveLong())
+         .setAutoDeleteQueuesSkipUsageCheck(RandomUtil.randomBoolean())
+         .setAutoDeleteQueuesMessageCount(RandomUtil.randomPositiveLong())
+         .setConfigDeleteQueues(DeletionPolicy.getType(RandomUtil.randomInterval(0, 1)))
+         .setAutoCreateAddresses(RandomUtil.randomBoolean())
+         .setAutoDeleteAddresses(RandomUtil.randomBoolean())
+         .setAutoDeleteAddressesDelay(RandomUtil.randomPositiveLong())
+         .setAutoDeleteAddressesSkipUsageCheck(RandomUtil.randomBoolean())
+         .setConfigDeleteAddresses(DeletionPolicy.getType(RandomUtil.randomInterval(0, 1)))
+         .setConfigDeleteDiverts(DeletionPolicy.getType(RandomUtil.randomInterval(0, 1)))
+         .setDefaultMaxConsumers(RandomUtil.randomPositiveInt())
+         .setDefaultConsumersBeforeDispatch(RandomUtil.randomPositiveInt())
+         .setDefaultDelayBeforeDispatch(RandomUtil.randomPositiveLong())
+         .setDefaultPurgeOnNoConsumers(RandomUtil.randomBoolean())
+         .setDefaultQueueRoutingType(RoutingType.getType(RandomUtil.randomBoolean() ? (byte) 1 : 0))
+         .setDefaultAddressRoutingType(RoutingType.getType(RandomUtil.randomBoolean() ? (byte) 1 : 0))
+         .setDefaultLastValueQueue(RandomUtil.randomBoolean())
+         .setDefaultLastValueKey(RandomUtil.randomSimpleString())
+         .setDefaultNonDestructive(RandomUtil.randomBoolean())
+         .setDefaultExclusiveQueue(RandomUtil.randomBoolean())
+         .setAddressFullMessagePolicy(AddressFullMessagePolicy.getType(RandomUtil.randomInterval(0, 3)))
+         .setPageSizeBytes(RandomUtil.randomPositiveInt())
+         .setPageCacheMaxSize(RandomUtil.randomPositiveInt())
+         .setMaxSizeMessages(RandomUtil.randomPositiveLong())
+         .setMaxSizeBytes(RandomUtil.randomPositiveLong())
+         .setMaxReadPageMessages(RandomUtil.randomPositiveInt())
+         .setPrefetchPageMessages(RandomUtil.randomPositiveInt())
+         .setPageLimitBytes(RandomUtil.randomPositiveLong())
+         .setPageLimitMessages(RandomUtil.randomPositiveLong())
+         .setPageFullMessagePolicy(PageFullMessagePolicy.getType(RandomUtil.randomInterval(0, 1)))
+         .setMaxReadPageBytes(RandomUtil.randomPositiveInt())
+         .setPrefetchPageBytes(RandomUtil.randomPositiveInt())
+         .setMaxDeliveryAttempts(RandomUtil.randomPositiveInt())
+         .setMessageCounterHistoryDayLimit(RandomUtil.randomPositiveInt())
+         .setRedeliveryDelay(RandomUtil.randomPositiveLong())
+         .setRedeliveryMultiplier(RandomUtil.randomDouble())
+         .setRedeliveryCollisionAvoidanceFactor(RandomUtil.randomDouble())
+         .setMaxRedeliveryDelay(RandomUtil.randomPositiveLong())
+         .setDeadLetterAddress(RandomUtil.randomSimpleString())
+         .setExpiryAddress(RandomUtil.randomSimpleString())
+         .setAutoCreateExpiryResources(RandomUtil.randomBoolean())
+         .setExpiryQueuePrefix(RandomUtil.randomSimpleString())
+         .setExpiryQueueSuffix(RandomUtil.randomSimpleString())
+         .setExpiryDelay(RandomUtil.randomPositiveLong())
+         .setMinExpiryDelay(RandomUtil.randomPositiveLong())
+         .setMaxExpiryDelay(RandomUtil.randomPositiveLong())
+         .setSendToDLAOnNoRoute(RandomUtil.randomBoolean())
+         .setAutoCreateDeadLetterResources(RandomUtil.randomBoolean())
+         .setDeadLetterQueuePrefix(RandomUtil.randomSimpleString())
+         .setDeadLetterQueueSuffix(RandomUtil.randomSimpleString())
+         .setRedistributionDelay(RandomUtil.randomPositiveLong())
+         .setSlowConsumerThreshold(RandomUtil.randomPositiveLong())
+         .setSlowConsumerThresholdMeasurementUnit(SlowConsumerThresholdMeasurementUnit.MESSAGES_PER_MINUTE)
+         .setSlowConsumerCheckPeriod(RandomUtil.randomPositiveLong())
+         .setSlowConsumerPolicy(SlowConsumerPolicy.getType(RandomUtil.randomInterval(0, 1)))
+         .setManagementBrowsePageSize(RandomUtil.randomPositiveInt())
+         .setQueuePrefetch(RandomUtil.randomPositiveInt())
+         .setMaxSizeBytesRejectThreshold(RandomUtil.randomPositiveLong())
+         .setDefaultConsumerWindowSize(RandomUtil.randomPositiveInt())
+         .setDefaultGroupRebalance(RandomUtil.randomBoolean())
+         .setDefaultGroupRebalancePauseDispatch(RandomUtil.randomBoolean())
+         .setDefaultGroupFirstKey(RandomUtil.randomSimpleString())
+         .setDefaultGroupBuckets(RandomUtil.randomPositiveInt())
+         .setDefaultRingSize(RandomUtil.randomPositiveLong())
+         .setRetroactiveMessageCount(RandomUtil.randomPositiveLong())
+         .setEnableMetrics(RandomUtil.randomBoolean())
+         .setManagementMessageAttributeSizeLimit(RandomUtil.randomPositiveInt())
+         .setEnableIngressTimestamp(RandomUtil.randomBoolean())
+         .setIDCacheSize(RandomUtil.randomPositiveInt());
+
+      assertEquals(settings, AddressSettings.fromJSON(settings.toJSON()));
    }
 }
