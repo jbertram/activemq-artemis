@@ -31,6 +31,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import org.apache.activemq.artemis.api.core.ActiveMQException;
+import org.apache.activemq.artemis.api.core.QueueConfiguration;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.api.core.client.ClientProducer;
@@ -218,6 +219,17 @@ public class LegacyLDAPSecuritySettingPluginListenerTest2 extends AbstractLdapTe
          ctx.bind("cn=write,cn=project3.$,ou=queues,ou=destinations,ou=ActiveMQ,dc=example,dc=com", null, basicAttributes);
       }
 
+      { // add admin permission for match
+         DirContext ctx = getContext();
+         BasicAttributes basicAttributes = new BasicAttributes();
+         basicAttributes.put("uniquemember", "cn=team3,ou=roles,dc=example,dc=com");
+         Attribute objclass = new BasicAttribute("objectclass");
+         objclass.add("top");
+         objclass.add("groupOfUniqueNames");
+         basicAttributes.put(objclass);
+         ctx.bind("cn=admin,cn=project3.$,ou=queues,ou=destinations,ou=ActiveMQ,dc=example,dc=com", null, basicAttributes);
+      }
+
       // authz should succeed
       try {
          ClientSession session = cf.createSession("user3", "secret", false, true, true, false, 0);
@@ -226,6 +238,24 @@ public class LegacyLDAPSecuritySettingPluginListenerTest2 extends AbstractLdapTe
       } catch (ActiveMQException e) {
          e.printStackTrace();
          Assert.fail("Should NOT fail");
+      }
+
+      // authz should succeed
+      try {
+         ClientSession session = cf.createSession("user3", "secret", false, true, true, false, 0);
+         session.createQueue(new QueueConfiguration("project3.foo"));
+      } catch (ActiveMQException e) {
+         e.printStackTrace();
+         Assert.fail("Should NOT fail");
+      }
+
+      // authz should fail
+      try {
+         ClientSession session = cf.createSession("user3", "secret", false, true, true, false, 0);
+         session.createQueue(new QueueConfiguration("project7.test"));
+         Assert.fail("Creating queue here should fail!");
+      } catch (ActiveMQException e) {
+         Assert.assertTrue(e.getMessage().contains("229213")); // authorization exception
       }
 
       // authz should fail
