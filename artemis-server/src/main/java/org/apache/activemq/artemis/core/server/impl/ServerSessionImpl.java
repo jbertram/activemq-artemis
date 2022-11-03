@@ -2230,6 +2230,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener {
          if (!routingContext.isReusable()) {
             routingContext.clear();
          }
+
+         routingContext.setTransaction(null);
       }
       return result;
    }

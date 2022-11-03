@@ -46,6 +46,12 @@ public class MyTest extends ActiveMQTestBase {
 
    @Test
    public void simpleTest() throws Exception {
+      JVMTIInterface jvmtiInterface = new JVMTIInterface();
+      jvmtiInterface.forceGC();
+
+      Object[] objects = jvmtiInterface.getAllObjects("org.apache.activemq.artemis.core.server.impl.RoutingContextImpl");
+      System.out.println("There are " + objects.length + " references");
+
       ConnectionFactory cf = new JmsConnectionFactory("amqp://localhost:61616");
 
       try (Connection producerConnection = cf.createConnection();
@@ -56,7 +62,7 @@ public class MyTest extends ActiveMQTestBase {
          Session consumerSession = consumerConnection.createSession(Session.SESSION_TRANSACTED);
          consumerConnection.start();
 
-         for (int i = 0; i < 1; i++) {
+         for (int i = 0; i < 10; i++) {
             {
                Destination source = producerSession.createQueue("source");
                MessageProducer sourceProducer = producerSession.createProducer(source);
@@ -76,18 +82,32 @@ public class MyTest extends ActiveMQTestBase {
             }
          }
 
-         Thread.sleep(1000);
+      }
 
-         JVMTIInterface jvmtiInterface = new JVMTIInterface();
-         jvmtiInterface.forceGC();
-         Object[] objects = jvmtiInterface.getAllObjects("org.apache.activemq.artemis.protocol.amqp.proton.ProtonServerSenderContext");
-         if (objects == null || objects.length == 0) {
-            System.out.println("no objects!!");
-         }
-         for (Object obj : objects) {
-            System.out.println("References of " + obj);
-            System.out.println(jvmtiInterface.exploreObjectReferences(30, true, obj));
+      Thread.sleep(1500);
+
+      //report("org.apache.activemq.artemis.protocol.amqp.proton.ProtonServerReceiverContext", 30, 4);
+      //report("org.apache.activemq.artemis.protocol.amqp.proton.ProtonServerSenderContext", 30, 4);
+      //report("org.apache.activemq.artemis.core.server.impl.ServerConsumerImpl", 15, 5);
+      report("org.apache.activemq.artemis.core.server.impl.RoutingContextImpl", 15, 5);
+      //report("org.apache.activemq.artemis.protocol.amqp.broker.AMQPSessionCallback", 15, 5);
+   }
+
+   private void report(String clazz, int levels, int maxObjects) throws Exception {
+      JVMTIInterface jvmtiInterface = new JVMTIInterface();
+      Object[] objects;
+      jvmtiInterface.forceGC();
+      objects = jvmtiInterface.getAllObjects(clazz);
+      System.out.println("*******************************************************************************************************************************");
+      System.out.println("There are " + objects.length + " references of " + clazz);
+      System.out.println("*******************************************************************************************************************************");
+
+      for (Object obj : objects) {
+         System.out.println("Refs: " + jvmtiInterface.exploreObjectReferences(levels, true, obj));
+         if (--maxObjects <= 0) {
+            return;
          }
       }
    }
+
 }

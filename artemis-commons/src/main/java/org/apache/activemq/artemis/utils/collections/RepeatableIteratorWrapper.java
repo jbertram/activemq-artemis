@@ -51,6 +51,7 @@ public class RepeatableIteratorWrapper<E> implements RepeatableIterator<E>, Rese
 
    @Override
    public void remove() {
+      last = null;
       iterator.remove();
    }
 
@@ -61,6 +62,7 @@ public class RepeatableIteratorWrapper<E> implements RepeatableIterator<E>, Rese
 
    @Override
    public void reset() {
+      last = null;
       iterator.reset();
    }
 }

@@ -155,6 +155,8 @@ public class RoutingContextImpl implements RoutingContext {
 
       this.internalOnly = null;
 
+      this.transaction = null;
+
       return this;
    }
 

@@ -4171,7 +4171,7 @@ public class QueueImpl extends CriticalComponentImpl implements Queue {
          .setAutoCreated(autoCreated);
    }
 
-   protected static class ConsumerHolder<T extends Consumer> implements PriorityAware {
+   protected class ConsumerHolder<T extends Consumer> implements PriorityAware {
 
       ConsumerHolder(final T consumer) {
          this.consumer = consumer;
@@ -4208,6 +4208,10 @@ public class QueueImpl extends CriticalComponentImpl implements Queue {
       @Override
       public int getPriority() {
          return consumer.getPriority();
+      }
+
+      public String toString() {
+         return "ConsumerHolder(queue=" + QueueImpl.this.getName() + ")";
       }
    }
 
