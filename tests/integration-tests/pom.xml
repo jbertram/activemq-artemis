@@ -256,6 +256,12 @@
          <version>${project.version}</version>
          <scope>test</scope>
       </dependency>
+      <dependency>
+         <groupId>com.dsect</groupId>
+         <artifactId>core</artifactId>
+         <version>1.0-SNAPSHOT</version>
+         <scope>test</scope>
+      </dependency>
 
       <!-- DB Test Deps -->
       <dependency>
@@ -441,12 +447,39 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
                <skipTests>${skipIntegrationTests}</skipTests>
-               <argLine>-Djgroups.bind_addr=::1 ${activemq-surefire-argline} ${its-surefire-extra-args} -Dorg.apache.activemq.SERIALIZABLE_PACKAGES="java.lang,javax.security,java.util,org.apache.activemq,org.fusesource.hawtbuf"</argLine>
+               <argLine>${agent-surefire-argline} -Djgroups.bind_addr=::1 ${activemq-surefire-argline} ${its-surefire-extra-args} -Dorg.apache.activemq.SERIALIZABLE_PACKAGES="java.lang,javax.security,java.util,org.apache.activemq,org.fusesource.hawtbuf"</argLine>
             </configuration>
          </plugin>
       </plugins>
    </build>
    <profiles>
+      <profile>
+         <id>Mac</id>
+         <activation>
+            <os>
+               <family>Mac</family>
+            </os>
+         </activation>
+         <properties>
+            <agent-surefire-argline>
+               -agentpath:${activemq.basedir}/d-sect/lib/darwin/libdsect.dylib
+            </agent-surefire-argline>
+         </properties>
+      </profile>
+      <profile>
+         <id>Linux</id>
+         <activation>
+            <os>
+               <family>Linux</family>
+            </os>
+         </activation>
+         <properties>
+            <agent-surefire-argline>
+               -agentpath:${activemq.basedir}/d-sect/lib/linux-amd64/libdsect.so
+            </agent-surefire-argline>
+         </properties>
+      </profile>
+
       <profile>
          <!-- Quick subset of tests, used on PR checks -->
          <id>fast-tests</id>
