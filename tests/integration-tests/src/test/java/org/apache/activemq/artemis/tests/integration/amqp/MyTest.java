@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.activemq.artemis.tests.integration.amqp;
 
 import javax.jms.Connection;
@@ -39,7 +38,6 @@ public class MyTest extends ActiveMQTestBase {
    @Override
    @Before
    public void setUp() throws Exception {
-
       server = createServer(true, createDefaultConfig(1, true));
       server.start();
    }
@@ -48,14 +46,11 @@ public class MyTest extends ActiveMQTestBase {
    public void simpleTest() throws Exception {
       JVMTIInterface jvmtiInterface = new JVMTIInterface();
       jvmtiInterface.forceGC();
-
-      Object[] objects = jvmtiInterface.getAllObjects("org.apache.activemq.artemis.core.server.impl.RoutingContextImpl");
-      System.out.println("There are " + objects.length + " references");
+      assertMemoryStats(jvmtiInterface);
 
       ConnectionFactory cf = new JmsConnectionFactory("amqp://localhost:61616");
 
-      try (Connection producerConnection = cf.createConnection();
-           Connection consumerConnection = cf.createConnection()) {
+      try (Connection producerConnection = cf.createConnection(); Connection consumerConnection = cf.createConnection()) {
 
          Session producerSession = producerConnection.createSession();
 
@@ -81,33 +76,16 @@ public class MyTest extends ActiveMQTestBase {
                //targetProducer.close(); // this line fixes the leak on the broker
             }
          }
-
       }
-
-      Thread.sleep(1500);
-
-      //report("org.apache.activemq.artemis.protocol.amqp.proton.ProtonServerReceiverContext", 30, 4);
-      //report("org.apache.activemq.artemis.protocol.amqp.proton.ProtonServerSenderContext", 30, 4);
-      //report("org.apache.activemq.artemis.core.server.impl.ServerConsumerImpl", 15, 5);
-      report("org.apache.activemq.artemis.core.server.impl.RoutingContextImpl", 15, 5);
-      //report("org.apache.activemq.artemis.protocol.amqp.broker.AMQPSessionCallback", 15, 5);
-   }
-
-   private void report(String clazz, int levels, int maxObjects) throws Exception {
-      JVMTIInterface jvmtiInterface = new JVMTIInterface();
-      Object[] objects;
       jvmtiInterface.forceGC();
-      objects = jvmtiInterface.getAllObjects(clazz);
-      System.out.println("*******************************************************************************************************************************");
-      System.out.println("There are " + objects.length + " references of " + clazz);
-      System.out.println("*******************************************************************************************************************************");
-
-      for (Object obj : objects) {
-         System.out.println("Refs: " + jvmtiInterface.exploreObjectReferences(levels, true, obj));
-         if (--maxObjects <= 0) {
-            return;
-         }
-      }
+      assertMemoryStats(jvmtiInterface);
    }
 
+   private void assertMemoryStats(JVMTIInterface jvmtiInterface) {
+      assertEquals(0, jvmtiInterface.getAllObjects("org.apache.activemq.artemis.protocol.amqp.proton.ProtonServerSenderContext").length);
+      assertEquals(0, jvmtiInterface.getAllObjects("org.apache.activemq.artemis.protocol.amqp.proton.ProtonServerReceiverContext").length);
+      assertEquals(0, jvmtiInterface.getAllObjects("org.apache.activemq.artemis.protocol.amqp.broker.AMQPSessionCallback").length);
+      assertEquals(0, jvmtiInterface.getAllObjects("org.apache.activemq.artemis.core.server.impl.ServerConsumerImpl").length);
+      assertEquals(0, jvmtiInterface.getAllObjects("org.apache.activemq.artemis.core.server.impl.RoutingContextImpl").length);
+   }
 }

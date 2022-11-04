@@ -1471,6 +1471,7 @@ public class QueueImpl extends CriticalComponentImpl implements Queue {
             this.supportsDirectDeliver = checkConsumerDirectDeliver();
 
             if (consumerRemoved) {
+               consumers.reset();
                consumerRemovedTimestampUpdater.set(this, System.currentTimeMillis());
                if (refCountForConsumers.decrement() == 0) {
                   stopDispatch();
