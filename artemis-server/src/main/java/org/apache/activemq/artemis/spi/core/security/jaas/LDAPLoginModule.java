@@ -48,6 +48,8 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
@@ -57,6 +59,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import org.apache.activemq.artemis.core.server.ActiveMQServerLogger;
+import org.apache.activemq.artemis.utils.ExceptionUtil;
 import org.apache.activemq.artemis.utils.PasswordMaskingUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,7 +95,8 @@ public class LDAPLoginModule implements AuditLoginModule {
       PASSWORD_CODEC("passwordCodec"),
       CONNECTION_POOL("connectionPool"),
       CONNECTION_TIMEOUT("connectionTimeout"),
-      READ_TIMEOUT("readTimeout");
+      READ_TIMEOUT("readTimeout"),
+      NO_CACHE_EXCEPTIONS("noCacheExceptions");
 
       private final String name;
 
@@ -126,6 +130,7 @@ public class LDAPLoginModule implements AuditLoginModule {
    private Subject brokerGssapiIdentity = null;
    private boolean isRoleAttributeSet = false;
    private String roleAttributeName = null;
+   private List<String> noCacheExceptions;
 
    private String codecClass = null;
 
@@ -151,6 +156,12 @@ public class LDAPLoginModule implements AuditLoginModule {
       isRoleAttributeSet = isLoginPropertySet(ConfigKey.ROLE_NAME);
       roleAttributeName = getLDAPPropertyValue(ConfigKey.ROLE_NAME);
       codecClass = getLDAPPropertyValue(ConfigKey.PASSWORD_CODEC);
+      if (isLoginPropertySet(ConfigKey.NO_CACHE_EXCEPTIONS)) {
+         noCacheExceptions = Arrays.asList(getLDAPPropertyValue(ConfigKey.NO_CACHE_EXCEPTIONS).split(","));
+         noCacheExceptions.forEach(String::trim);
+      } else {
+         noCacheExceptions = Collections.emptyList();
+      }
    }
 
    private String getPlainPassword(String password) {
@@ -432,7 +443,11 @@ public class LDAPLoginModule implements AuditLoginModule {
       } catch (NamingException e) {
          closeContext();
          FailedLoginException ex = new FailedLoginException("Error contacting LDAP");
-         ex.initCause(e);
+         if (noCacheExceptions.contains(ExceptionUtil.getRootCause(e).getClass().getName())) {
+            ex.initCause(new NoCacheLoginException());
+         } else {
+            ex.initCause(e);
+         }
          throw ex;
       }
 
@@ -679,7 +694,11 @@ public class LDAPLoginModule implements AuditLoginModule {
          } catch (NamingException e) {
             closeContext();
             ActiveMQServerLogger.LOGGER.failedToOpenContext(e);
-            throw e;
+            if (noCacheExceptions.contains(ExceptionUtil.getRootCause(e).getClass().getName())) {
+               throw new NoCacheLoginException();
+            } else {
+               throw e;
+            }
          }
       }
    }
