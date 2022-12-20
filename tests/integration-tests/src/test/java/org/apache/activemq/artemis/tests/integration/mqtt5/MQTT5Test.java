@@ -19,11 +19,14 @@ package org.apache.activemq.artemis.tests.integration.mqtt5;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.Message;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import io.netty.handler.codec.mqtt.MqttQoS;
+import io.netty.handler.codec.mqtt.MqttTopicSubscription;
 import org.apache.activemq.artemis.api.core.QueueConfiguration;
 import org.apache.activemq.artemis.api.core.RoutingType;
 import org.apache.activemq.artemis.api.core.SimpleString;
@@ -45,6 +48,7 @@ import org.eclipse.paho.mqttv5.client.MqttClient;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptionsBuilder;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
+import org.eclipse.paho.mqttv5.common.MqttSubscription;
 import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 import org.eclipse.paho.mqttv5.common.packet.UserProperty;
 import org.junit.Test;
@@ -82,6 +86,66 @@ public class MQTT5Test extends MQTT5TestSupport {
       context.close();
    }
 
+   @Test(timeout = DEFAULT_TIMEOUT)
+   public void testResumeSubscriptionsAfterRestart() throws Exception {
+      final int SUBSCRIPTION_COUNT = 100;
+      List<String> topicNames = new ArrayList<>(SUBSCRIPTION_COUNT);
+      for (int i = 0; i < SUBSCRIPTION_COUNT; i++) {
+         topicNames.add(RandomUtil.randomString());
+      }
+
+      CountDownLatch latch = new CountDownLatch(SUBSCRIPTION_COUNT);
+      MqttClient consumer = createPahoClient("myConsumerID");
+      consumer.connect();
+      List<MqttSubscription> subs = new ArrayList<>(SUBSCRIPTION_COUNT);
+      for (String subName : topicNames) {
+         subs.add(new MqttSubscription(subName, 1));
+      }
+      consumer.subscribe(subs.toArray(new MqttSubscription[0]));
+      consumer.disconnect();
+
+      MqttClient producer = createPahoClient("myProducerID");
+      MqttConnectionOptions producerOptions = new MqttConnectionOptionsBuilder()
+         .sessionExpiryInterval(0L)
+         .build();
+      producer.connect(producerOptions);
+      for (String subName : topicNames) {
+         producer.publish(subName, new byte[0], 1, false);
+      }
+      producer.disconnect();
+      producer.close();
+
+      Queue sessionStore = server.locateQueue(MQTTUtil.MQTT_SESSION_STORE);
+      assertNotNull(sessionStore);
+      Wait.assertEquals(1L, () -> sessionStore.getMessageCount(), 2000, 100);
+
+      server.stop();
+      server.start();
+
+      Wait.assertEquals(1L, () -> sessionStore.getMessageCount(), 2000, 100);
+      Wait.assertTrue(() -> getSessionStates().get("myConsumerID") != null, 2000, 100);
+      Wait.assertTrue(() -> getSessionStates().get("myProducerID") != null, 2000, 100);
+      consumer.setCallback(new DefaultMqttCallback() {
+         @Override
+         public void messageArrived(String topic, MqttMessage message) {
+            if (topicNames.remove(topic)) {
+               latch.countDown();
+            }
+         }
+      });
+      MqttConnectionOptions options = new MqttConnectionOptionsBuilder()
+         .cleanStart(false)
+         .sessionExpiryInterval(0L)
+         .build();
+      consumer.connect(options);
+      assertTrue(latch.await(2, TimeUnit.SECONDS));
+      consumer.disconnect();
+      consumer.close();
+   }
+
+   /*
+    * Trying to reproduce error from https://issues.apache.org/jira/browse/ARTEMIS-1184
+    */
    @Test(timeout = DEFAULT_TIMEOUT)
    public void testAddressAutoCreation() throws Exception {
       final String DESTINATION = RandomUtil.randomString();

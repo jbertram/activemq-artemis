@@ -16,6 +16,7 @@
  */
 package org.apache.activemq.artemis.core.protocol.mqtt;
 
+import java.lang.invoke.MethodHandles;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,8 @@ import org.apache.activemq.artemis.core.server.Queue;
 import org.apache.activemq.artemis.core.server.ServerConsumer;
 import org.apache.activemq.artemis.core.server.impl.AddressInfo;
 import org.apache.activemq.artemis.utils.CompositeAddress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static io.netty.handler.codec.mqtt.MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER;
 import static org.apache.activemq.artemis.core.protocol.mqtt.MQTTUtil.DOLLAR;
@@ -44,6 +47,8 @@ import static org.apache.activemq.artemis.core.protocol.mqtt.MQTTUtil.SLASH;
 import static org.apache.activemq.artemis.reader.MessageUtil.CONNECTION_ID_PROPERTY_NAME_STRING;
 
 public class MQTTSubscriptionManager {
+
+   private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
    private final MQTTSession session;
 
@@ -73,6 +78,7 @@ public class MQTTSubscriptionManager {
       anyWords = session.getServer().getConfiguration().getWildcardConfiguration().getAnyWords();
 
       consumers = new ConcurrentHashMap<>();
+//      logger.info("Creating new consumers: {}", System.identityHashCode(consumers), new Exception());
       consumerQoSLevels = new ConcurrentHashMap<>();
 
       // Create filter string to ignore certain messages
@@ -130,8 +136,9 @@ public class MQTTSubscriptionManager {
             session.getState().addSubscription(subscription, session.getWildcardConfiguration(), subscriptionIdentifier);
          }
       } catch (Exception e) {
-         // if anything broke during the creation of the consumer (or otherwise) then ensure the subscription queue is removed
+         // if anything broke during the creation of the consumer (or otherwise) then ensure both the subscription queue and persistent subscription state is removed
          q.deleteQueue();
+         session.getSessionStateManager().removeSessionState(session.getState().getClientId());
          throw e;
       }
    }
@@ -235,6 +242,7 @@ public class MQTTSubscriptionManager {
       // for noLocal support we use the MQTT *client id* rather than the connection ID, but we still use the existing property name
       ServerConsumer consumer = session.getServerSession().createConsumer(cid, queue.getName(), noLocal ? SimpleString.toSimpleString(CONNECTION_ID_PROPERTY_NAME_STRING + " <> '" + session.getState().getClientId() + "'") : null, false, false, -1);
 
+      logger.info("Adding consumer for {} to {}: {}", parseTopicName(topic), System.identityHashCode(consumers), consumer);
       ServerConsumer existingConsumer = consumers.put(parseTopicName(topic), consumer);
       if (existingConsumer != null) {
          existingConsumer.setStarted(false);
@@ -273,7 +281,9 @@ public class MQTTSubscriptionManager {
       try {
          session.getState().removeSubscription(topic);
 
+
          ServerConsumer removed = consumers.remove(parseTopicName(topic));
+         logger.info("Removed consumer for {} from {}: {}", parseTopicName(topic), System.identityHashCode(consumers), removed, new Exception());
          if (removed != null) {
             removed.close(false);
             consumerQoSLevels.remove(removed.getID());
@@ -308,7 +318,7 @@ public class MQTTSubscriptionManager {
    }
 
    /**
-    * As per MQTT Spec.  Subscribes this client to a number of MQTT topics.
+    * As per MQTT Spec. Subscribes this client to a number of MQTT topics.
     *
     * @param subscriptions
     * @return An array of integers representing the list of accepted QoS for each topic.

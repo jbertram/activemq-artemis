@@ -16,9 +16,9 @@
  */
 package org.apache.activemq.artemis.core.protocol.mqtt;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,6 +36,7 @@ import org.apache.activemq.artemis.api.core.management.CoreNotificationType;
 import org.apache.activemq.artemis.api.core.management.ManagementHelper;
 import org.apache.activemq.artemis.core.remoting.impl.netty.NettyServerConnection;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
+import org.apache.activemq.artemis.core.server.impl.CleaningActivateCallback;
 import org.apache.activemq.artemis.core.server.management.Notification;
 import org.apache.activemq.artemis.core.server.management.NotificationListener;
 import org.apache.activemq.artemis.spi.core.protocol.AbstractProtocolManager;
@@ -47,7 +48,6 @@ import org.apache.activemq.artemis.spi.core.remoting.Connection;
 import org.apache.activemq.artemis.utils.collections.TypedProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.lang.invoke.MethodHandles;
 
 public class MQTTProtocolManager extends AbstractProtocolManager<MqttMessage, MQTTInterceptor, MQTTConnection, MQTTRoutingHandler> implements NotificationListener {
 
@@ -61,7 +61,6 @@ public class MQTTProtocolManager extends AbstractProtocolManager<MqttMessage, MQ
    private final List<MQTTInterceptor> outgoingInterceptors = new ArrayList<>();
 
    private final Map<String, MQTTConnection> connectedClients  = new ConcurrentHashMap<>();
-   private final Map<String, MQTTSessionState> sessionStates = new ConcurrentHashMap<>();
 
    private int defaultMqttSessionExpiryInterval = -1;
 
@@ -79,13 +78,25 @@ public class MQTTProtocolManager extends AbstractProtocolManager<MqttMessage, MQ
 
    private final MQTTRoutingHandler routingHandler;
 
+//   private static AtomicBoolean sessionStateManagerControl = new AtomicBoolean(true);
+
+   private MQTTSessionStateManager sessionStateManager;
+
    MQTTProtocolManager(ActiveMQServer server,
                        List<BaseInterceptor> incomingInterceptors,
-                       List<BaseInterceptor> outgoingInterceptors) {
+                       List<BaseInterceptor> outgoingInterceptors) throws Exception {
       this.server = server;
       this.updateInterceptors(incomingInterceptors, outgoingInterceptors);
       server.getManagementService().addNotificationListener(this);
       routingHandler = new MQTTRoutingHandler(server);
+      sessionStateManager = MQTTSessionStateManager.getInstance(server);
+      server.registerActivateCallback(new CleaningActivateCallback() {
+         @Override
+         public void deActivate() {
+            MQTTSessionStateManager.removeInstance(server);
+            sessionStateManager = null;
+         }
+      });
    }
 
    public int getDefaultMqttSessionExpiryInterval() {
@@ -93,6 +104,7 @@ public class MQTTProtocolManager extends AbstractProtocolManager<MqttMessage, MQ
    }
 
    public MQTTProtocolManager setDefaultMqttSessionExpiryInterval(int sessionExpiryInterval) {
+      System.out.println("setDefaultMqttSessionExpiryInterval: " + sessionExpiryInterval);
       this.defaultMqttSessionExpiryInterval = sessionExpiryInterval;
       return this;
    }
@@ -195,39 +207,6 @@ public class MQTTProtocolManager extends AbstractProtocolManager<MqttMessage, MQ
 
       this.outgoingInterceptors.clear();
       this.outgoingInterceptors.addAll(getFactory().filterInterceptors(outgoing));
-   }
-
-   public void scanSessions() {
-      List<String> toRemove = new ArrayList();
-      for (Map.Entry<String, MQTTSessionState> entry : sessionStates.entrySet()) {
-         MQTTSessionState state = entry.getValue();
-         logger.debug("Inspecting session: {}", state);
-         int sessionExpiryInterval = getSessionExpiryInterval(state);
-         if (!state.isAttached() && sessionExpiryInterval > 0 && state.getDisconnectedTime() + (sessionExpiryInterval * 1000) < System.currentTimeMillis()) {
-            toRemove.add(entry.getKey());
-         }
-         if (state.isWill() && !state.isAttached() && state.isFailed() && state.getWillDelayInterval() > 0 && state.getDisconnectedTime() + (state.getWillDelayInterval() * 1000) < System.currentTimeMillis()) {
-            state.getSession().sendWillMessage();
-         }
-      }
-
-      for (String key : toRemove) {
-         logger.debug("Removing state for session: {}", key);
-         MQTTSessionState state = removeSessionState(key);
-         if (state != null && state.isWill() && !state.isAttached() && state.isFailed()) {
-            state.getSession().sendWillMessage();
-         }
-      }
-   }
-
-   private int getSessionExpiryInterval(MQTTSessionState state) {
-      int sessionExpiryInterval;
-      if (state.getClientSessionExpiryInterval() == 0) {
-         sessionExpiryInterval = getDefaultMqttSessionExpiryInterval();
-      } else {
-         sessionExpiryInterval = state.getClientSessionExpiryInterval();
-      }
-      return sessionExpiryInterval;
    }
 
    @Override
@@ -380,24 +359,12 @@ public class MQTTProtocolManager extends AbstractProtocolManager<MqttMessage, MQ
       return connectedClients.get(clientId);
    }
 
-   public MQTTSessionState getSessionState(String clientId) {
-      /* [MQTT-3.1.2-4] Attach an existing session if one exists otherwise create a new one. */
-      return sessionStates.computeIfAbsent(clientId, MQTTSessionState::new);
-   }
-
-   public MQTTSessionState removeSessionState(String clientId) {
-      if (clientId == null) {
-         return null;
-      }
-      return sessionStates.remove(clientId);
-   }
-
-   public Map<String, MQTTSessionState> getSessionStates() {
-      return new HashMap<>(sessionStates);
-   }
-
    /** For DEBUG only */
    public Map<String, MQTTConnection> getConnectedClients() {
       return connectedClients;
+   }
+
+   public MQTTSessionStateManager getSessionStateManager() {
+      return sessionStateManager;
    }
 }

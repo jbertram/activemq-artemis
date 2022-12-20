@@ -3114,7 +3114,7 @@ public class ActiveMQServerImpl implements ActiveMQServer {
          ThreadFactory tFactory = AccessController.doPrivileged(new PrivilegedAction<ThreadFactory>() {
             @Override
             public ThreadFactory run() {
-               return new ActiveMQThreadFactory("ActiveMQ-server-" + this.toString(), false, ClientSessionFactoryImpl.class.getClassLoader());
+               return new ActiveMQThreadFactory("ActiveMQ-server-" + System.identityHashCode(this), false, ClientSessionFactoryImpl.class.getClassLoader());
             }
          });
 

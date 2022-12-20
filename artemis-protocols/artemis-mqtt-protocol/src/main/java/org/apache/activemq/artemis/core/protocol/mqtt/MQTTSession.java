@@ -64,6 +64,8 @@ public class MQTTSession {
 
    private MQTTProtocolManager protocolManager;
 
+   private MQTTSessionStateManager sessionStateManager;
+
    private boolean clean;
 
    private WildcardConfiguration wildcardConfiguration;
@@ -80,6 +82,7 @@ public class MQTTSession {
                       WildcardConfiguration wildcardConfiguration) throws Exception {
       this.protocolHandler = protocolHandler;
       this.protocolManager = protocolManager;
+      this.sessionStateManager = protocolManager.getSessionStateManager();
       this.wildcardConfiguration = wildcardConfiguration;
 
       this.connection = connection;
@@ -120,11 +123,9 @@ public class MQTTSession {
             internalServerSession.close(false);
          }
 
-         if (state != null) {
-            state.setAttached(false);
-            state.setDisconnectedTime(System.currentTimeMillis());
-            state.clearTopicAliases();
-         }
+         state.setAttached(false);
+         state.setDisconnectedTime(System.currentTimeMillis());
+         state.clearTopicAliases();
 
          if (getVersion() == MQTTVersion.MQTT_5) {
             if (state.getClientSessionExpiryInterval() == 0) {
@@ -133,9 +134,7 @@ public class MQTTSession {
                   sendWillMessage();
                }
                clean(false);
-               protocolManager.removeSessionState(connection.getClientID());
-            } else {
-               state.setDisconnectedTime(System.currentTimeMillis());
+               sessionStateManager.removeSessionState(connection.getClientID());
             }
          } else {
             if (state.isWill() && failure) {
@@ -143,7 +142,7 @@ public class MQTTSession {
             }
             if (isClean()) {
                clean(false);
-               protocolManager.removeSessionState(connection.getClientID());
+               sessionStateManager.removeSessionState(connection.getClientID());
             }
          }
       }
@@ -226,6 +225,10 @@ public class MQTTSession {
       return protocolManager;
    }
 
+   MQTTSessionStateManager getSessionStateManager() {
+      return sessionStateManager;
+   }
+
    void clean(boolean enforceSecurity) throws Exception {
       subscriptionManager.clean(enforceSecurity);
       mqttPublishManager.clean();
@@ -290,6 +293,9 @@ public class MQTTSession {
 
    @Override
    public String toString() {
-      return "MQTTSession[coreSessionId: " + (serverSession != null ? serverSession.getName() : "null") + "]";
+      return "MQTTSession[" +
+         "coreSessionId: " + (serverSession != null ? serverSession.getName() : "null") + ", " +
+         "clientId: " + state.getClientId() +
+         "]";
    }
 }

@@ -16,6 +16,7 @@
  */
 package org.apache.activemq.artemis.core.protocol.mqtt;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 import io.netty.buffer.ByteBufAllocator;
@@ -27,6 +28,8 @@ import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.ServerSession;
 import org.apache.activemq.artemis.core.server.impl.ServerSessionImpl;
 import org.apache.activemq.artemis.utils.UUIDGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static io.netty.handler.codec.mqtt.MqttProperties.MqttPropertyType.ASSIGNED_CLIENT_IDENTIFIER;
 import static io.netty.handler.codec.mqtt.MqttProperties.MqttPropertyType.AUTHENTICATION_METHOD;
@@ -67,7 +70,7 @@ public class MQTTConnectionManager {
       boolean cleanStart = connect.variableHeader().isCleanSession();
 
       String clientId = session.getConnection().getClientID();
-      boolean sessionPresent = session.getProtocolManager().getSessionStates().containsKey(clientId);
+      boolean sessionPresent = session.getSessionStateManager().getSessionStates().containsKey(clientId);
       MQTTSessionState sessionState = getSessionState(clientId);
       synchronized (sessionState) {
          session.setSessionState(sessionState);
@@ -120,6 +123,7 @@ public class MQTTConnectionManager {
 
             connackProperties = getConnackProperties();
          } else {
+            sessionState.setClientSessionExpiryInterval(session.getProtocolManager().getDefaultMqttSessionExpiryInterval());
             connackProperties = MqttProperties.NO_PROPERTIES;
          }
 
@@ -201,7 +205,7 @@ public class MQTTConnectionManager {
       }
    }
 
-   private synchronized MQTTSessionState getSessionState(String clientId) {
-      return session.getProtocolManager().getSessionState(clientId);
+   private synchronized MQTTSessionState getSessionState(String clientId) throws Exception {
+      return session.getSessionStateManager().getSessionState(clientId);
    }
 }

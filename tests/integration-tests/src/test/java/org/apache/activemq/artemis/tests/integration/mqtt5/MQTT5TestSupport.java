@@ -92,7 +92,7 @@ public class MQTT5TestSupport extends ActiveMQTestBase {
    public static Collection<Object[]> getParams() {
       return Arrays.asList(new Object[][] {
          {TCP},
-         {WS}
+//         {WS}
       });
    }
 
@@ -333,12 +333,12 @@ public class MQTT5TestSupport extends ActiveMQTestBase {
       if (protocolManager == null) {
          return Collections.emptyMap();
       } else {
-         return protocolManager.getSessionStates();
+         return protocolManager.getSessionStateManager().getSessionStates();
       }
    }
 
    public void scanSessions() {
-      getProtocolManager().scanSessions();
+      getProtocolManager().getSessionStateManager().scanSessions();
    }
 
    public MQTTProtocolManager getProtocolManager() {
