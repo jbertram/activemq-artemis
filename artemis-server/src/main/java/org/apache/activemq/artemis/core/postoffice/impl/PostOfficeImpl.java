@@ -1038,8 +1038,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    @Override
    public boolean isAddressBound(final SimpleString address) throws Exception {
-      Bindings bindings = lookupBindingsForAddress(address);
-      return bindings != null && !bindings.getBindings().isEmpty();
+      Collection<Binding> bindings = getDirectBindings(address);
+      return bindings != null && !bindings.isEmpty();
    }
 
    @Override
@@ -1970,15 +1970,15 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
    }
 
-   private static boolean queueWasUsed(Queue queue) {
-      return queue.getMessagesExpired() > 0 || queue.getMessagesAcknowledged() > 0 || queue.getMessagesKilled() > 0 || queue.getConsumerRemovedTimestamp() != -1;
+   private static boolean queueWasUsed(Queue queue, AddressSettings settings) {
+      return queue.getMessagesExpired() > 0 || queue.getMessagesAcknowledged() > 0 || queue.getMessagesKilled() > 0 || queue.getConsumerRemovedTimestamp() != -1 || settings.getAutoDeleteQueuesSkipUsageCheck();
    }
 
    /** To be used by the AddressQueueReaper.
     * It is also exposed for tests through PostOfficeTestAccessor */
    void reapAddresses(boolean initialCheck) {
       getLocalQueues().forEach(queue -> {
-         if (!queue.isInternalQueue() && QueueManagerImpl.isAutoDelete(queue) && QueueManagerImpl.consumerCountCheck(queue) && (initialCheck || QueueManagerImpl.delayCheck(queue)) && QueueManagerImpl.messageCountCheck(queue) && (initialCheck || queueWasUsed(queue))) {
+         if (!queue.isInternalQueue() && QueueManagerImpl.isAutoDelete(queue) && QueueManagerImpl.consumerCountCheck(queue) && (initialCheck || QueueManagerImpl.delayCheck(queue)) && QueueManagerImpl.messageCountCheck(queue) && (initialCheck || queueWasUsed(queue, addressSettingsRepository.getMatch(queue.getAddress().toString())))) {
             if (initialCheck || queue.isSwept()) {
                if (logger.isDebugEnabled()) {
                   if (initialCheck) {

@@ -22,4 +22,8 @@ public class PostOfficeTestAccessor {
       postOffice.reapAddresses(false);
    }
 
+   public static void sweepAndReapAddresses(PostOfficeImpl postOffice) {
+      reapAddresses(postOffice);
+      reapAddresses(postOffice);
+   }
 }

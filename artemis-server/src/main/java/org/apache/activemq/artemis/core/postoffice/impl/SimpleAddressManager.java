@@ -378,7 +378,7 @@ public class SimpleAddressManager implements AddressManager {
    public boolean checkAutoRemoveAddress(SimpleString address,
                                          AddressInfo addressInfo,
                                          AddressSettings settings, boolean ignoreDelay) throws Exception {
-      return settings.isAutoDeleteAddresses() && addressInfo != null && addressInfo.isAutoCreated() && !bindingsFactory.isAddressBound(address) && (ignoreDelay || addressInfo.getBindingRemovedTimestamp() != -1 && (System.currentTimeMillis() - addressInfo.getBindingRemovedTimestamp() >= settings.getAutoDeleteAddressesDelay()));
+      return settings.isAutoDeleteAddresses() && addressInfo != null && addressInfo.isAutoCreated() && !bindingsFactory.isAddressBound(address) && (ignoreDelay || (addressInfo.getBindingRemovedTimestamp() != -1 || settings.getAutoDeleteAddressesSkipUsageCheck()) && (System.currentTimeMillis() - addressInfo.getBindingRemovedTimestamp() >= settings.getAutoDeleteAddressesDelay()));
    }
 
    @Override
