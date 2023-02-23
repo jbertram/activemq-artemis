@@ -107,7 +107,9 @@ public class FederatedQueueConsumerImpl implements FederatedQueueConsumer, Sessi
          try {
             connect();
          } catch (Exception e) {
-            scheduleConnect(FederatedQueueConsumer.getNextDelay(delay, intialConnectDelayMultiplier, intialConnectDelayMax));
+            if (federation.isStarted()) {
+               scheduleConnect(FederatedQueueConsumer.getNextDelay(delay, intialConnectDelayMultiplier, intialConnectDelayMax));
+            }
          }
       }, delay, TimeUnit.SECONDS);
    }
@@ -252,5 +254,25 @@ public class FederatedQueueConsumerImpl implements FederatedQueueConsumer, Sessi
 
    public interface ClientSessionCallback {
       void callback(ClientSession clientSession) throws ActiveMQException;
+   }
+
+   @Override
+   public String toString() {
+      final StringBuffer sb = new StringBuffer("FederatedQueueConsumerImpl{");
+      sb.append("server=").append(server);
+//      sb.append(", federation=").append(federation);
+      sb.append(", key=").append(key);
+      sb.append(", transformer=").append(transformer);
+//      sb.append(", upstream=").append(upstream);
+      sb.append(", count=").append(count);
+      sb.append(", scheduledExecutorService=").append(scheduledExecutorService);
+      sb.append(", intialConnectDelayMultiplier=").append(intialConnectDelayMultiplier);
+      sb.append(", intialConnectDelayMax=").append(intialConnectDelayMax);
+      sb.append(", clientSessionCallback=").append(clientSessionCallback);
+      sb.append(", clientSessionFactory=").append(clientSessionFactory);
+      sb.append(", clientSession=").append(clientSession);
+      sb.append(", clientConsumer=").append(clientConsumer);
+      sb.append('}');
+      return sb.toString();
    }
 }
