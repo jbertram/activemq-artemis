@@ -19,7 +19,9 @@ package org.apache.activemq.artemis.core.server.federation;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.ActiveMQNonExistentQueueException;
@@ -35,13 +37,11 @@ import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.ActiveMQServerLogger;
 import org.apache.activemq.artemis.core.server.LargeServerMessage;
 import org.apache.activemq.artemis.core.server.transformer.Transformer;
-import org.jboss.logging.Logger;
 
 import static org.apache.activemq.artemis.core.client.impl.LargeMessageControllerImpl.LargeData;
 
 public class FederatedQueueConsumerImpl implements FederatedQueueConsumer, SessionFailureListener {
 
-   private static final Logger logger = Logger.getLogger(FederatedQueueConsumerImpl.class);
    private final ActiveMQServer server;
    private final Federation federation;
    private final FederatedConsumerKey key;
@@ -52,6 +52,8 @@ public class FederatedQueueConsumerImpl implements FederatedQueueConsumer, Sessi
    private final int intialConnectDelayMultiplier = 2;
    private final int intialConnectDelayMax = 30;
    private final ClientSessionCallback clientSessionCallback;
+   private AtomicBoolean started = new AtomicBoolean(false);
+   private AtomicLong connectionAttemptTimestamp = new AtomicLong();
 
    private ClientSessionFactoryInternal clientSessionFactory;
    private ClientSession clientSession;
@@ -99,22 +101,24 @@ public class FederatedQueueConsumerImpl implements FederatedQueueConsumer, Sessi
 
    @Override
    public void start() {
+      started.set(true);
       scheduleConnect(0);
    }
 
    private void scheduleConnect(int delay) {
-      scheduledExecutorService.schedule(() -> {
-         try {
-            connect();
-         } catch (Exception e) {
-            if (federation.isStarted()) {
+      if (federation.isStarted() && started.get()) {
+         scheduledExecutorService.schedule(() -> {
+            try {
+               connect();
+            } catch (Exception e) {
                scheduleConnect(FederatedQueueConsumer.getNextDelay(delay, intialConnectDelayMultiplier, intialConnectDelayMax));
             }
-         }
-      }, delay, TimeUnit.SECONDS);
+         }, delay, TimeUnit.SECONDS);
+      }
    }
 
    private void connect() throws Exception {
+      connectionAttemptTimestamp.set(System.currentTimeMillis());
       try {
          if (clientConsumer == null) {
             synchronized (this) {
@@ -149,6 +153,8 @@ public class FederatedQueueConsumerImpl implements FederatedQueueConsumer, Sessi
 
    @Override
    public void close() {
+      started.set(false);
+      connectionAttemptTimestamp.set(0);
       scheduleDisconnect(0);
    }
 
@@ -245,11 +251,16 @@ public class FederatedQueueConsumerImpl implements FederatedQueueConsumer, Sessi
          clientSessionFactory = null;
       } catch (Throwable dontCare) {
       }
-      start();
+      scheduleConnect(0);
    }
 
    @Override
    public void beforeReconnect(ActiveMQException exception) {
+   }
+
+   // used for testing
+   public long getConnectionAttemptTimestamp() {
+      return connectionAttemptTimestamp.get();
    }
 
    public interface ClientSessionCallback {
