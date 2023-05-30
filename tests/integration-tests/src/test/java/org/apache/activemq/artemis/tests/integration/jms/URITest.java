@@ -16,11 +16,15 @@
  */
 package org.apache.activemq.artemis.tests.integration.jms;
 
+import java.util.Map;
+
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 import org.apache.activemq.artemis.core.client.impl.ServerLocatorImpl;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
+import org.apache.activemq.artemis.tests.util.RandomUtil;
+import org.apache.activemq.artemis.utils.uri.URISchema;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -42,4 +46,11 @@ public class URITest {
 
    }
 
+   @Test
+   public void testDoubleDecode() {
+      final String key = RandomUtil.randomString();
+      final String value = "ENC(C2dKkB+LFCubibbFRHjHXA==)";
+      Map<String, String> queryParameters = URISchema.parseQuery(key + "=" + value, null);
+      Assert.assertEquals(value, queryParameters.get(key));
+   }
 }

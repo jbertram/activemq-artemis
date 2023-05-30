@@ -101,16 +101,21 @@ public abstract class URISchema<T, P> {
       BeanSupport.setData(uri, bean, query);
    }
 
-   public static Map<String, String> parseQuery(String uri,
-                                                Map<String, String> propertyOverrides) {
+   /**
+    *
+    * @param query this should be the <b>decoded</b> query (e.g. from <code>java.net.URI#getQuery()</code>)
+    * @param propertyOverrides
+    * @return parsed key/value pairs
+    */
+   public static Map<String, String> parseQuery(String query, Map<String, String> propertyOverrides) {
       Map<String, String> rc = new HashMap<>();
-      if (uri != null && !uri.isEmpty()) {
-         String[] parameters = uri.split("&");
+      if (query != null && !query.isEmpty()) {
+         String[] parameters = query.split("&");
          for (String parameter : parameters) {
             int p = parameter.indexOf("=");
             if (p >= 0) {
-               String name = BeanSupport.decodeURI(parameter.substring(0, p));
-               String value = BeanSupport.decodeURI(parameter.substring(p + 1));
+               String name = parameter.substring(0, p);
+               String value = parameter.substring(p + 1);
                rc.put(name, value);
             } else {
                if (!parameter.trim().isEmpty()) {
