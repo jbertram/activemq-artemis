@@ -221,7 +221,7 @@ public final class BindingsImpl implements Bindings {
          return null;
       }
 
-      logger.trace("Redistributing message {}", message);
+      logger.info("Redistributing message {}", message);
 
       final SimpleString routingName = CompositeAddress.isFullyQualified(message.getAddress()) && originatingQueue.getRoutingType() == RoutingType.ANYCAST ? CompositeAddress.extractAddressName(message.getAddressSimpleString()) : originatingQueue.getName();
 
@@ -270,6 +270,11 @@ public final class BindingsImpl implements Bindings {
          logger.debug("Message {} being copied as {}", message.getMessageID(), copyRedistribute.getMessageID());
       }
       copyRedistribute.setAddress(message.getAddress());
+      for (SimpleString property : copyRedistribute.getPropertyNames()) {
+         if (property.startsWith(Message.HDR_ROUTE_TO_IDS)) {
+            copyRedistribute.removeProperty(property);
+         }
+      }
 
       if (context.getTransaction() == null) {
          context.setTransaction(new TransactionImpl(storageManager));
@@ -632,6 +637,7 @@ public final class BindingsImpl implements Bindings {
          long bindingID = buff.getLong();
 
          Binding binding = bindingsIdMap.get(bindingID);
+         logger.info("Routing message to binding: " + binding.getUniqueName() + "(" + binding.getID() + ") " + message);
          if (binding != null) {
             if (idsToAckList.contains(bindingID)) {
                binding.routeWithAck(message, context);
