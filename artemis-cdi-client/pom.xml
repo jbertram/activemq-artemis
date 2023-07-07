@@ -47,11 +47,6 @@
          <artifactId>slf4j-api</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.apache.logging.log4j</groupId>
-         <artifactId>log4j-slf4j-impl</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
          <groupId>org.apache.activemq</groupId>
          <artifactId>artemis-core-client</artifactId>
          <version>${project.version}</version>
@@ -68,7 +63,7 @@
       </dependency>
       <dependency>
          <groupId>org.apache.activemq</groupId>
-         <artifactId>artemis-jms-server</artifactId>
+         <artifactId>artemis-commons</artifactId>
          <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -99,15 +94,16 @@
          <groupId>org.jboss.shrinkwrap</groupId>
          <artifactId>shrinkwrap-api</artifactId>
          <version>1.2.6</version>
+         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.jboss.arquillian.junit</groupId>
          <artifactId>arquillian-junit-container</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.apache.activemq</groupId>
-         <artifactId>artemis-unit-test-support</artifactId>
-         <version>${project.version}</version>
+         <groupId>org.jboss.arquillian.container</groupId>
+         <artifactId>arquillian-container-test-api</artifactId>
+         <version>${arquillian.version}</version>
          <scope>test</scope>
       </dependency>
 

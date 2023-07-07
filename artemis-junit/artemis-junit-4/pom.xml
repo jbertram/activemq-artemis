@@ -60,11 +60,6 @@
       </dependency>
       <dependency>
          <groupId>org.apache.activemq</groupId>
-         <artifactId>artemis-jms-client</artifactId>
-         <version>${project.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.activemq</groupId>
          <artifactId>artemis-server</artifactId>
          <version>${project.version}</version>
       </dependency>
@@ -84,6 +79,12 @@
          <artifactId>jakarta.jms-api</artifactId>
       </dependency>
 
+      <dependency>
+         <groupId>org.apache.activemq</groupId>
+         <artifactId>artemis-jms-client</artifactId>
+         <version>${project.version}</version>
+         <scope>test</scope>
+      </dependency>
       <dependency>
          <groupId>org.apache.activemq</groupId>
          <artifactId>artemis-unit-test-support</artifactId>
