@@ -1,0 +1,213 @@
+image::images/activemq-logo.png[align=center]
+
+= User Manual for {project-version}
+
+An in-depth manual on all aspects of Apache ActiveMQ Artemis
+
+== Overview
+
+* xref:project-info.adoc[General Project Information]
+* xref:preface.adoc[Why use Apache ActiveMQ Artemis?]
+* xref:messaging-concepts.adoc[Messaging Concepts]
+* xref:architecture.adoc[Broker Architecture]
+* xref:notice.adoc[Legal Notice]
+
+== Protocols & APIs
+
+* xref:protocols-interoperability.adoc[Protocols and Interoperability]
+* xref:amqp.adoc[AMQP]
+* xref:stomp.adoc[STOMP]
+* xref:mqtt.adoc[MQTT]
+* xref:openwire.adoc[OpenWire]
+* xref:core.adoc[Using Core]
+* xref:jms-core-mapping.adoc[Mapping JMS Concepts to the Core API]
+* xref:using-jms.adoc[Using JMS or Jakarta Messaging]
+
+== Upgrading
+
+* xref:versions.adoc[Version History]
+* xref:upgrading.adoc[Basic Upgrade Instructions]
+
+== Getting Started
+
+* xref:using-server.adoc[Using the Server]
+* xref:client-classpath.adoc[JMS & Jakarta Client Classpath]
+
+== Addressing
+
+* xref:address-model.adoc[Address Model]
+* xref:address-settings.adoc[Address Settings]
+* xref:wildcard-syntax.adoc[Wildcard Syntax]
+* xref:wildcard-routing.adoc[Wildcard Routing]
+* xref:diverts.adoc[Splitting and Diverting Message Flow]
+* xref:transformers.adoc[Transforming Messages]
+* xref:filter-expressions.adoc[Filter Expressions]
+
+== Management and Monitoring
+
+* xref:management.adoc[Management]
+* xref:management-console.adoc[Web Management Console]
+* xref:metrics.adoc[Metrics]
+
+== Broker-to-Broker Connectivity
+
+* xref:core-bridges.adoc[Core Bridges]
+* xref:clusters.adoc[Clustering]
+* xref:federation.adoc[Federation]
+** xref:federation-address.adoc[Address Federation]
+** xref:federation-queue.adoc[Queue Federation]
+* xref:ha.adoc[High Availability & Failover]
+* xref:connection-routers.adoc[Routing Connections]
+* xref:amqp-broker-connections.adoc[AMQP Broker Connections]
+* xref:jms-bridge.adoc[JMS Bridge]
+
+== Security
+
+* xref:security.adoc[Authentication & Authorization]
+* xref:masking-passwords.adoc[Masking Passwords]
+* xref:resource-limits.adoc[Limiting Resource Utilization]
+
+== Performance
+
+* xref:perf-tuning.adoc[Tuning]
+* xref:perf-tools.adoc[Tools]
+* xref:thread-pooling.adoc[Thread Pooling]
+
+== Advanced Use-cases
+
+* xref:scheduled-messages.adoc[Scheduled Messages]
+* xref:last-value-queues.adoc[Last-value Queues]
+* xref:non-destructive-queues.adoc[Non-destructive Queues]
+* xref:ring-queues.adoc[Ring Queues]
+* xref:retroactive-addresses.adoc[Retroactive Addresses]
+* xref:exclusive-queues.adoc[Exclusive Queues]
+* xref:message-grouping.adoc[Message Grouping]
+* xref:consumer-priority.adoc[Consumer Priority]
+* xref:message-expiry.adoc[Message Expiry]
+* xref:large-messages.adoc[Large Messages]
+* xref:paging.adoc[Paging]
+* xref:duplicate-detection.adoc[Detecting Duplicate Messages]
+* xref:undelivered-messages.adoc[Message Redelivery and Undelivered Messages]
+
+== Data & Disk
+
+* xref:persistence.adoc[Persistence]
+* xref:data-tools.adoc[Data Tool]
+* xref:libaio.adoc[Libaio Native Libraries]
+
+== Network Connectivity & Configuration
+
+* xref:connection-ttl.adoc[Detecting Dead Connections]
+* xref:configuring-transports.adoc[Configuring Network Transports]
+* xref:flow-control.adoc[Flow Control for Remote Core Clients]
+
+== Customizing Broker Behavior
+
+* xref:broker-plugins.adoc[Broker Plugins]
+* xref:intercepting-operations.adoc[Intercepting Network Operations]
+
+== Miscellaneous
+
+* xref:config-reload.adoc[]
+* xref:slow-consumers.adoc[]
+* xref:network-isolation.adoc[]
+* xref:restart-sequence.adoc[]
+* xref:critical-analysis.adoc[]
+* xref:transaction-config.adoc[]
+* xref:send-guarantees.adoc[]
+* xref:pre-acknowledge.adoc[]
+* xref:client-failover.adoc[]
+* xref:graceful-shutdown.adoc[]
+* xref:web-server.adoc[]
+* xref:logging.adoc[]
+* xref:embedding-activemq.adoc[]
+* xref:karaf.adoc[]
+* xref:tomcat.adoc[]
+* xref:cdi-integration.adoc[]
+* xref:activation-tools.adoc[]
+* xref:maven-plugin.adoc[]
+* xref:unit-testing.adoc[]
+* xref:resource-adapter.adoc[]
+* xref:configuration-index.adoc[]
+* xref:examples.adoc[]
+
+////
+include::_project-info.adoc[leveloffset=1]
+include::_preface.adoc[leveloffset=1]
+include::_messaging-concepts.adoc[leveloffset=1]
+include::_architecture.adoc[leveloffset=1]
+include::_jms-core-mapping.adoc[leveloffset=1]
+include::_protocols-interoperability.adoc[leveloffset=1]
+include::_using-server.adoc[leveloffset=1]
+include::_versions.adoc[leveloffset=1]
+include::_address-model.adoc[leveloffset=1]
+include::_address-settings.adoc[leveloffset=1]
+include::_using-jms.adoc[leveloffset=1]
+include::_client-classpath.adoc[leveloffset=1]
+include::_wildcard-routing.adoc[leveloffset=1]
+include::_wildcard-syntax.adoc[leveloffset=1]
+include::_filter-expressions.adoc[leveloffset=1]
+include::_persistence.adoc[leveloffset=1]
+include::_configuring-transports.adoc[leveloffset=1]
+include::_config-reload.adoc[leveloffset=1]
+include::_connection-ttl.adoc[leveloffset=1]
+include::_slow-consumers.adoc[leveloffset=1]
+include::_network-isolation.adoc[leveloffset=1]
+include::_critical-analysis.adoc[leveloffset=1]
+include::_transaction-config.adoc[leveloffset=1]
+include::_flow-control.adoc[leveloffset=1]
+include::_send-guarantees.adoc[leveloffset=1]
+include::_undelivered-messages.adoc[leveloffset=1]
+include::_message-expiry.adoc[leveloffset=1]
+include::_large-messages.adoc[leveloffset=1]
+include::_paging.adoc[leveloffset=1]
+include::_scheduled-messages.adoc[leveloffset=1]
+include::_last-value-queues.adoc[leveloffset=1]
+include::_non-destructive-queues.adoc[leveloffset=1]
+include::_ring-queues.adoc[leveloffset=1]
+include::_retroactive-addresses.adoc[leveloffset=1]
+include::_exclusive-queues.adoc[leveloffset=1]
+include::_message-grouping.adoc[leveloffset=1]
+include::_consumer-priority.adoc[leveloffset=1]
+include::_pre-acknowledge.adoc[leveloffset=1]
+include::_management.adoc[leveloffset=1]
+include::_management-console.adoc[leveloffset=1]
+include::_metrics.adoc[leveloffset=1]
+include::_security.adoc[leveloffset=1]
+include::_masking-passwords.adoc[leveloffset=1]
+include::_broker-plugins.adoc[leveloffset=1]
+include::_resource-limits.adoc[leveloffset=1]
+include::_jms-bridge.adoc[leveloffset=1]
+include::_client-failover.adoc[leveloffset=1]
+include::_diverts.adoc[leveloffset=1]
+include::_core-bridges.adoc[leveloffset=1]
+include::_transformers.adoc[leveloffset=1]
+include::_duplicate-detection.adoc[leveloffset=1]
+include::_clusters.adoc[leveloffset=1]
+include::_federation.adoc[leveloffset=1]
+include::_ha.adoc[leveloffset=1]
+include::_connection-routers.adoc[leveloffset=1]
+include::_amqp-broker-connections.adoc[leveloffset=1]
+include::_graceful-shutdown.adoc[leveloffset=1]
+include::_libaio.adoc[leveloffset=1]
+include::_thread-pooling.adoc[leveloffset=1]
+include::_web-server.adoc[leveloffset=1]
+include::_logging.adoc[leveloffset=1]
+include::_embedding-activemq.adoc[leveloffset=1]
+include::_karaf.adoc[leveloffset=1]
+include::_tomcat.adoc[leveloffset=1]
+include::_spring-integration.adoc[leveloffset=1]
+include::_cdi-integration.adoc[leveloffset=1]
+include::_intercepting-operations.adoc[leveloffset=1]
+include::_data-tools.adoc[leveloffset=1]
+include::_activation-tools.adoc[leveloffset=1]
+include::_maven-plugin.adoc[leveloffset=1]
+include::_unit-testing.adoc[leveloffset=1]
+include::_perf-tuning.adoc[leveloffset=1]
+include::_perf-tools.adoc[leveloffset=1]
+include::_restart-sequence.adoc[leveloffset=1]
+include::_resource-adapter.adoc[leveloffset=1]
+include::_configuration-index.adoc[leveloffset=1]
+include::_examples.adoc[leveloffset=1]
+include::_notice.adoc[]
+////
