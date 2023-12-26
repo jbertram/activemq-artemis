@@ -2,13 +2,75 @@
 :idprefix:
 :idseparator: -
 
-It is possible that if a primary or backup configured for replication becomes isolated in a network that failover will occur and you will end up with 2 active brokers serving messages. This we call _split brain_.
-There are different configurations you can choose from that will help mitigate this problem.
+A _split brain_ is a condition that occurs when two different brokers are serving the same messages at the same time.
+When this happens instead of client applications all sharing the _same_ broker as they ought, they may become divided between the two brokers.
+This is problematic because it can lead to:
+
+* *Duplicate messages* e.g. when multiple consumers on the same JMS queue split between both brokers and receive the same message(s)
+* *Missed messages* e.g. when multiple consumers on the same JMS topic split between both brokers and producers are only sending messages to one broker
+
+Split brain most commonly happens when a pair of brokers in an HA *replication* configuration lose the replication connection linking them together.
+When this connection is lost the slave assumes that the master has died and therefore activates.
+At this point there are two brokers on the network which are isolated from each other and since the slave has a copy of all the messages from the master they are each serving the same messages.
+
+[IMPORTANT]
+.What about shared store configurations?
+====
+While it is technically possible for split brain to happen with a pair of brokers in an HA _shared store_ configuration it would require a failure in the file-locking mechanism of the storage device which the brokers are sharing.
+
+One of the benefits of using a shared store is that the storage device itself acts as an arbiter to help ensure consistency.
+====
+
+Recovering from a split brain may be as simple as stopping the broker which activated by mistake *if* no client application connected to it and either sent or consumed messages.
+However, the longer client applications are allowed to interact with split brain brokers the more difficult it will be to understand and remediate the resulting problems.
+
+There are several different configurations you can choose from that will help mitigate split brain.
 
 == Quorum Voting
 
-Quorum voting is used by both the primary and the backup to decide what to do if a replication connection is disconnected.
-Basically the server will request each active server in the cluster to vote as to whether it thinks the server it is replicating to or from is still alive.
+Quorum voting is a process by which one node in a cluster can determine whether another node in the cluster is active without directly communicating with that node.
+They key here is that there must be _something_ more than just the two nodes in question to establish a quorum.
+Two types of quorum voting are supported - *native* and *pluggable*.
+
+=== Native Quorum Voting
+
+*Native* quorum voting requires the participation of the other active nodes in the cluster.
+Of course this requires that there are, in fact, other active nodes in the cluster which means native quorum voting won't work with a single HA pair of brokers.
+Furthermore, it also won't work with two HA pairs of brokers either because that's still not enough for a quorum.
+There must be at least three HA pairs to establish a proper quorum with native quorum voting.
+
+For a vote to pass a _majority_ is required.
+For a 3 node cluster it will start if it gets 2 votes back saying that its master server is no longer available.
+For a 4 node cluster this would be 3 votes and so on.
+
+==== Slave Voting
+
+By default, if a slave loses its replication connection to the master it makes a decision whether to start or not with a quorum vote.
+
+The slave will keep voting until it either receives a vote allowing it to start or it detects that the master is still active.
+In the latter case it will then restart as a backup.
+
+==== Master Voting
+
+By default, if the master server loses its replication connection to the slave then it will just carry on and wait for a slave to reconnect and start replicating again.
+However, this may mean that the master remains active even though the slave has activated.
+It is possible to configure the master server to initiate a quorum vote if its replication connection fails.
+In this case if the master server doesn't receive a majority vote then it will shutdown.
+This is done by setting the `vote-on-replication-failure` to `true`.
+
+[,xml]
+----
+<ha-policy>
+   <replication>
+      <master>
+         <vote-on-replication-failure>true</vote-on-replication-failure>
+      </master>
+   </replication>
+</ha-policy>
+----
+
+As in the slave policy it is also possible to statically configure the quorum size.
+
 You can also configure the time for which the quorum manager will wait for the quorum vote response.
 The default time is 30 seconds you can configure like so for primary and also for the backup:
 
@@ -23,111 +85,52 @@ The default time is 30 seconds you can configure like so for primary and also fo
 </ha-policy>
 ----
 
-This being the case the minimum number of live/backup pairs needed is 3.
-If less than 3 pairs are used then the only option is to use a Network Pinger which is explained later in this chapter or choose how you want each server to react which the following details:
+=== Pluggable Quorum Voting
 
-=== Backup Voting
-
-By default if a backup loses its replication connection to its primary it makes a decision as to whether to start or not with a quorum vote.
-This of course requires that there be at least 3 pairs of primary/backup nodes in the cluster.
-For a 3 node cluster it will start if it gets 2 votes back saying that its primary server is no longer available, for 4 nodes this would be 3 votes and so on.
-When a backup loses connection to the primary it will keep voting for a quorum until it either receives a vote allowing it to start or it detects that the primary is still active.
-for the latter it will then restart as a backup.
-How many votes and how long between each vote the backup should wait is configured like so:
-
-[,xml]
-----
-<ha-policy>
-  <replication>
-    <backup>
-       <vote-retries>12</vote-retries>
-       <vote-retry-wait>5000</vote-retry-wait>
-    </backup>
-  </replication>
-</ha-policy>
-----
-
-It's also possible to statically set the quorum size that should be used for the case where the cluster size is known up front, this is done on the Replica Policy like so:
-
-[,xml]
-----
-<ha-policy>
-  <replication>
-    <backup>
-       <quorum-size>2</quorum-size>
-    </backup>
-  </replication>
-</ha-policy>
-----
-
-In this example the quorum size is set to 2 so if you were using a single pair and the backup lost connectivity it would never start.
-
-=== Primary Voting
-
-By default, if the primary server loses its replication connection then it will just carry on and wait for a backup to reconnect and start replicating again.
-In the event of a possible split brain scenario this may mean that the primary stays active even though the backup has been activated.
-It is possible to configure the primary server to vote for a quorum if this happens, in this way if the primary server does not receive a majority vote then it will shutdown.
-This is done by setting the _vote-on-replication-failure_ to `true`.
-
-[,xml]
-----
-<ha-policy>
-  <replication>
-    <primary>
-       <vote-on-replication-failure>true</vote-on-replication-failure>
-       <quorum-size>2</quorum-size>
-    </primary>
-  </replication>
-</ha-policy>
-----
-
-As in the backup policy it is also possible to statically configure the quorum size.
+*Pluggable* quorum voting requires a 3rd party to arbitrate the voting.
 
 == Pinging the network
 
-You may configure one more addresses on the broker.xml that are part of your network topology, that will be pinged through the life cycle of the server.
+You may configure one more addresses in `broker.xml` that that will be pinged throughout the life of the server. The server will stop itself until the network is back on such case.
 
-The server will stop itself until the network is back on such case.
+If you execute the `create` command using the `--ping` argument you will create a default XML that is ready to be used with network checks:
 
-If you execute the create command passing a -ping argument, you will create a default xml that is ready to be used with network checks:
-
+[,console]
 ----
-./artemis create /myDir/myServer --ping 10.0.0.1
+$ ./artemis create /myDir/myServer --ping 10.0.0.1
 ----
 
-This XML part will be added to your broker.xml:
+This XML will be added to your `broker.xml`:
 
 [,xml]
 ----
 <!--
-You can verify the network health of a particular NIC by specifying the <network-check-NIC> element.
- <network-check-NIC>theNicName</network-check-NIC>
--->
+  You can verify the network health of a particular NIC by specifying the <network-check-NIC> element.
+   <network-check-NIC>theNicName</network-check-NIC>
+  -->
 
 <!--
-Use this to use an HTTP server to validate the network
- <network-check-URL-list>http://www.apache.org</network-check-URL-list> -->
+  Use this to use an HTTP server to validate the network
+   <network-check-URL-list>http://www.apache.org</network-check-URL-list> -->
 
 <network-check-period>10000</network-check-period>
 <network-check-timeout>1000</network-check-timeout>
 
 <!-- this is a comma separated list, no spaces, just DNS or IPs
-   it should accept IPV6
+     it should accept IPV6
 
-   Warning: Make sure you understand your network topology as this is meant to check if your network is up.
-            Using IPs that could eventually disappear or be partially visible may defeat the purpose.
-            You can use a list of multiple IPs, any successful ping will make the server OK to continue running -->
+     Warning: Make sure you understand your network topology as this is meant to check if your network is up.
+              Using IPs that could eventually disappear or be partially visible may defeat the purpose.
+              You can use a list of multiple IPs, any successful ping will make the server OK to continue running -->
 <network-check-list>10.0.0.1</network-check-list>
 
 <!-- use this to customize the ping used for ipv4 addresses -->
 <network-check-ping-command>ping -c 1 -t %d %s</network-check-ping-command>
 
-<!-- use this to customize the ping used for ipv addresses -->
+<!-- use this to customize the ping used for ipv6 addresses -->
 <network-check-ping6-command>ping6 -c 1 %2$s</network-check-ping6-command>
 ----
-
-Once you lose connectivity towards 10.0.0.1 on the given example, you will see see this output at the server:
-
+Once you lose connectivity towards `10.0.0.1` on the given example the broker will log something like this:
 ----
 09:49:24,562 WARN  [org.apache.activemq.artemis.core.server.NetworkHealthCheck] Ping Address /10.0.0.1 wasn't reacheable
 09:49:36,577 INFO  [org.apache.activemq.artemis.core.server.NetworkHealthCheck] Network is unhealthy, stopping service ActiveMQServerImpl::serverUUID=04fd5dd8-b18c-11e6-9efe-6a0001921ad0
@@ -151,10 +154,9 @@ Once you lose connectivity towards 10.0.0.1 on the given example, you will see s
 	at java.lang.Thread.run(Thread.java:745) [rt.jar:1.8.0_73]
 ----
 
-Once you re establish your network connections towards the configured check list:
+Once you reestablish your network connections towards the configured check-list:
 
 ----
-
 09:53:23,461 INFO  [org.apache.activemq.artemis.core.server.NetworkHealthCheck] Network is healthy, starting service ActiveMQServerImpl::
 09:53:23,462 INFO  [org.apache.activemq.artemis.core.server] AMQ221000: live Message Broker is starting with configuration Broker Configuration (clustered=false,journalDirectory=./data/journal,bindingsDirectory=./data/bindings,largeMessagesDirectory=./data/large-messages,pagingDirectory=./data/paging)
 09:53:23,462 INFO  [org.apache.activemq.artemis.core.server] AMQ221013: Using NIO Journal
@@ -175,7 +177,7 @@ Once you re establish your network connections towards the configured check list
 09:53:23,556 INFO  [org.apache.activemq.artemis.core.server] AMQ221001: Apache ActiveMQ Artemis Message Broker version 1.6.0 [0.0.0.0, nodeID=04fd5dd8-b18c-11e6-9efe-6a0001921ad0]
 ----
 
-[WARNING]
+[IMPORTANT]
 ====
 Make sure you understand your network topology as this is meant to validate your network.
 Using IPs that could eventually disappear or be partially visible may defeat the purpose.

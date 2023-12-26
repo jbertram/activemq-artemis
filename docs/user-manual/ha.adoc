@@ -82,12 +82,6 @@ This of course means there will be no Backup Strategy and is the default if none
 
 [NOTE]
 ====
-The `ha-policy` configurations replaces any current HA configuration in the root of the `broker.xml` configuration.
-All old configuration is now deprecated although best efforts will be made to honour it if configured this way.
-====
-
-[NOTE]
-====
 Only persistent message data will survive failover.
 Any non persistent message data will not be available after failover.
 ====
@@ -153,24 +147,15 @@ for the classic _backup_ one.
 
 If _replication_ is configured using such new roles some additional element are required to complete configuration as detailed later.
 
-=== IMPORTANT NOTE ON PLUGGABLE QUORUM VOTE FEATURE
-
-This feature is still *EXPERIMENTAL*.
-Extra testing should be done before running this feature into production.
-Please raise issues eventually found to the ActiveMQ Artemis Mail Lists.
-
-It means:
-
-* it's configuration can change until declared as *officially stable*
-
 === Data Replication
 
-When using replication, the primary and the backup servers do not share the same data directories, all data synchronization is done over the network.
-Therefore all (persistent) data received by the primary server will be duplicated to the backup.
+When using replication, the primary and the backup servers do not share the same data directories.
+All data synchronization is done over the network.
+Therefore, all (persistent) data received by the primary server will be duplicated to the backup.
 
 Notice that upon start-up the backup server will first need to synchronize all existing data from the primary server before becoming capable of replacing the primary server should it fail.
-So unlike when using shared storage, a replicating backup will not be a fully operational backup right after start-up, but only after it finishes synchronizing the data with its primary server.
-The time it will take for this to happen will depend on the amount of data to be synchronized and the connection speed.
+Therefore, unlike when using shared storage, a replicating backup will not be a _fully operational_ backup until after it finishes synchronizing the data with its primary server.
+The time it takes for this to happen depends on the amount of data to be synchronized and the connection speed.
 
 [NOTE]
 ====
@@ -192,7 +177,7 @@ Notice that:
 
 * Both primary and backup servers must be part of the same cluster.
 Notice that even a simple primary/backup replicating pair will require a cluster configuration.
-* Their cluster user and password must match.
+* Their `cluster-user` and `cluster-password` configuration in `broker.xml` must match.
 
 Within a cluster, there are two ways that a backup server will locate a primary server to replicate from. These are:
 
@@ -201,7 +186,7 @@ You can specify a group of primary servers that a backup server can connect to.
 This is done by configuring `group-name` in either the `primary` or the `backup` element of the `broker.xml`.
 A backup will only connect to a primary that shares the same node group name.
 
-connecting to any live::
+connecting to any primary::
 This will be the behaviour if `group-name` is not configured allowing a backup server to connect to any primary server.
 
 [NOTE]
@@ -231,9 +216,9 @@ Note that in replication the backup server does not know whether any data it mig
 To activate a replicating backup server using the data it has, the administrator must change its configuration to make it a primary server by changing `backup` to `primary`.
 ====
 
-Much like in the shared-store case, when the primary server stops or crashes, its backup will become active and take over its duties.
+Much like in the shared-store case, when the primary server stops or crashes, it's replicating backup will become active and take over its duties.
 Specifically, the backup will become active when it loses connection to its primary server.
-This can be problematic because it can also happen as the result of temporary network problem.
+This can be problematic because it can also happen as the result of temporary network problem resulting in a xref:network-isolation.adoc#network-isolation-split-brain[split brain].
 
 The issue can be solved in two different ways, depending on which replication roles are configured:
 
@@ -312,7 +297,7 @@ and
 The following table lists all the `ha-policy` configuration elements for HA strategy Replication for `primary`:
 
 check-for-active-server::
-Whether to check the cluster for a (live) server using our own server ID when starting up.
+Whether to check the cluster for an active server using our own server ID when starting up.
 This is an important option to avoid split-brain when failover happens and the primary is restarted.
 Default is `false`.
 
@@ -437,7 +422,7 @@ should be \<= default,  see https://cwiki.apache.org/confluence/display/CURATOR/
 
 Configuration of the https://zookeeper.apache.org/[Apache ZooKeeper] ensemble is the responsibility of the user, but there are few  *suggestions to improve the reliability of the quorum service*:
 
-* broker `session_ms` must be `>= 2 * server tick time` and `+<= 20 * server tick time+` as by  https://zookeeper.apache.org/doc/r3.6.3/zookeeperAdmin.html[ZooKeeper 3.6.3 admin guide]: it directly impacts how fast a backup can failover to an isolated/killed/unresponsive live;
+* broker `session_ms` must be `>= 2 * server tick time` and `+<= 20 * server tick time+` as by  https://zookeeper.apache.org/doc/r3.6.3/zookeeperAdmin.html[ZooKeeper 3.6.3 admin guide]: it directly impacts how fast a backup can failover to an isolated/killed/unresponsive primary;
 the higher, the slower.
 * GC on broker machine should allow keeping GC pauses within 1/3 of `session_ms` in order to let the ZooKeeper heartbeat protocol work reliably.
 If that is not possible, it is better to increase `session_ms`, accepting a slower failover.
@@ -470,7 +455,7 @@ The suggestion is to tune `connection-ttl` low enough to attempt failover as soo
 
 With coordination delegated to the quorum service, roles are less important.
 It is possible to have two peer servers compete for activation;
-the winner activating as live, the looser taking up a backup role.
+the winner activating as primary, the looser taking up a backup role.
 On restart, 'any' peer server with the most up to date journal can activate.
 The instances need to know in advance, what identity they will coordinate on.
 In the replication 'primary' ha policy we can explicitly set the 'coordination-id' to a common value for all peers in a cluster.
