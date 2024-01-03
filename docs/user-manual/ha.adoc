@@ -2,23 +2,25 @@
 :idprefix:
 :idseparator: -
 
-We define high availability as the _ability for the system to continue functioning after failure of one or more of the servers_.
+We define high availability (HA) as the _ability for the system to continue functioning after failure of one or more of the servers_.
 
 A part of high availability is _failover_ which we define as the _ability for client connections to migrate from one server to another in event of server failure so client applications can continue to operate_.
 
 == Terminology
 
-In order to discuss both configuration and runtime behavior consistently we need to define a pair of nouns and adjectives.
+In order to discuss both configuration and runtime behavior consistently we need to define a couple nouns and adjectives.
 These terms will be used throughout the documentation, configuration, source code, and runtime logs.
 
 === Configuration
 
-These nouns identify how the broker is _configured_, e.g. in `broker.xml`.
+These nouns identify how the broker is _configured_, e.g. in `broker.xml`. The configuration allows brokers to be paired together as a _primary/backup_ group (i.e. an _HA pair_ of brokers.
 
 primary::
 This identifies the main broker in the high availability configuration.
 Oftentimes the hardware on this broker will be higher performance than the hardware on the backup broker.
 Typically, this broker is started before the backup and is active most of the time.
+Each primary server can have 1 or more backup servers.
+However, only one backup will take over the primary server's work.
 
 backup::
 This identifies the broker that should take over when the primary broker fails in a high availability configuration.
@@ -40,66 +42,89 @@ For example, consider the scenario where the primary broker was started and then
 The backup broker would be _passive_ since it is not accepting remote connections.
 It is waiting for the primary to fail before it activates and begins accepting remote connections.
 
-== Primary/Backup Groups
+== HA Policies
 
-Apache ActiveMQ Artemis allows servers to be linked together as _primary/backup_ groups where each primary server can have 1 or more backup servers.
-A backup server is owned by only one primary server.
-Backup servers are not operational until failover occurs.
-However, one chosen backup, which will be passive, announces its status and waits to take over the primary server's work.
+Apache ActiveMQ Artemis supports two main policies for backing up a server:
 
-Before failover, only the primary server is active, serving clients while the backup servers remain passive, awaiting to become active when the primary fails.
-When a primary server crashes or is brought down in the correct mode the backup server currently in passive mode will activate.
-If a primary server restarts after a failover then it will be passive and have priority and be the next server to become active when the current active backup server goes down.
-If the active backup server is configured to allow automatic failback then it will detect the primary server coming back up and automatically stop.
+* *shared store*
+* *replication*
 
-=== HA Policies
-
-Apache ActiveMQ Artemis supports two different strategies for backing up a server:
-
-* shared store
-* replication
-
-These are configured via the `ha-policy` configuration element, e.g.:
-
-[,xml]
-----
-<ha-policy>
-   <replication/>
-</ha-policy>
-----
-
-or
-
-[,xml]
-----
-<ha-policy>
-   <shared-store/>
-</ha-policy>
-----
-
-As well as these 2 strategies there is also a 3rd called `primary-only`.
-This of course means there will be no Backup Strategy and is the default if none is provided, however this is used to configure `scale-down` which we will cover in a later chapter.
+These are configured via the `ha-policy` configuration element.
 
 [NOTE]
+.What is Backed Up?
 ====
-Only persistent message data will survive failover.
-Any non persistent message data will not be available after failover.
+Only message data *written to storage* will survive failover.
+Any message data not written to storage will not be available after failover.
 ====
 
-The `ha-policy` type configures which strategy a cluster should use to provide the backing up of a server's data.
-Within this configuration element we configure how a server should behave within the cluster, either as a primary (active), backup (passive) or colocated (both active and passive).
-This would look something like:
+[NOTE]
+.Clustering is Required
+====
+A proper xref:clusters.adoc#clusters[cluster] configuration is required as a pre-requisite for an HA configuration.
+The cluster configuration allows the server to announce its presence to its primary/backup (or any other nodes in the cluster).
+====
+
+There is technically a third policy called `primary-only` which omits the backup entirely.
+This is used to configure xref:#scaling-down[`scale-down`].
+This is the default policy if none is provided.
+
+=== Shared Store
+
+When using a shared store both primary and backup servers share the _same_ entire data directory using a shared file system.
+This includes the paging directory, journal directory, large messages, and bindings journal.
+
+When the primary server fails it will release its lock on the shared journal and allow the backup server to activate.
+The backup will then load the data from the shared file system and accept remote connections from clients.
+
+Typically, this will be some kind of high performance Storage Area Network (SAN).
+Network Attached Storage (NAS), like NFS mounts, is viable but won't provide optimal performance.
+
+One main advantage of a shared store configuration is that no replication occurs between the primary and backup nodes which means it does not suffer any performance penalties due to the overhead of replication during normal operation.
+
+One potentially significant disadvantage of shared store versus replication is that it requires a shared file system, and when the backup server activates it needs to load the journal from the shared store which can take some time depending on the amount of data in the store and the speed of the store.
+
+If you require the highest performance during normal operation then acquire access to a fast SAN and deal with a slightly slower failover (depending on amount of data).
+
+[TIP]
+.What About Split Brain?
+====
+Shared store configurations are naturally immune to xref:network-isolation.adoc#network-isolation-split-brain[split-brain].
+====
+
+==== Shared Store Configuration
+
+Both primary & backup servers must configure the location of journal directories to the _same shared location_ (as explained in xref:persistence.adoc#persistence[persistence documentation]).
+
+===== Primary
+
+The primary broker needs this basic configuration in `broker.xml`:
 
 [,xml]
 ----
 <ha-policy>
-   <replication>
+   <shared-store>
       <primary/>
-   </replication>
+   </shared-store>
 </ha-policy>
 ----
 
-or
+====== Additional parameters
+
+failover-on-shutdown::
+Whether the graceful shutdown of this primary broker will cause the backup to activate.
+Default is `false` which means that only a broker crash or forceful shutdown (e.g. using ctrl-c) will trigger the backup to activate.
+
+wait-for-activation::
+This setting is only for *embedded* use cases where the primary broker has failed, the backup has activated, and the primary has been restarted.
+By default, when `org.apache.activemq.artemis.core.server.ActiveMQServer.start()` is invoked the broker will block until the primary broker actually takes over from the backup (i.e. either via failback or by the backup actually stopping).
+Setting `wait-for-activation` to `false` prevents `start()` from blocking so that control is returned to the caller.
+The caller can use `waitForActivation()` to wait until broker activates or just check the current status using `getState()`.
+Default is `true`.
+
+===== Backup
+
+The backup needs this basic configuration in `broker.xml`:
 
 [,xml]
 ----
@@ -110,88 +135,75 @@ or
 </ha-policy>
 ----
 
-or
+====== Additional parameters
 
-[,xml]
-----
-<ha-policy>
-   <replication>
-      <colocated/>
-   </replication>
-</ha-policy>
-----
+allow-failback::
+Whether this backup will automatically stop when its primary is restarted and requests to take over its place.
+The use case is when a primary server stops and its backup takes over its duties, later the primary server restarts and requests the now-active backup to stop so the primary can take over again.
+Default is `true`.
 
-_Replication_ allows the configuration of two new roles to enable _pluggable quorum_ provider configuration, by using:
+failover-on-shutdown::
+Whether the graceful shutdown of this primary broker will cause the backup to activate.
+Default is `false` which means that only a broker crash or forceful shutdown (e.g. using ctrl-c) will trigger the backup to activate.
+This only applies when this backup has activated due to its primary failing.
 
-[,xml]
-----
-<ha-policy>
-   <replication>
-      <primary/>
-   </replication>
-</ha-policy>
-----
+scale-down::
+If provided then this backup will scale down rather than becoming active after fail over.
+This really only applies to colocated configurations where the backup will scale-down its messages to the primary broker in the same JVM.
 
-to configure the classic _primary_ role, and
+restart-backup::
+Will this backup restart after being stopped due to failback or scaling down.
+Default is `false`.
 
-[,xml]
-----
-<ha-policy>
-   <replication>
-      <backup/>
-   </replication>
-</ha-policy>
-----
-
-for the classic _backup_ one.
-
-If _replication_ is configured using such new roles some additional element are required to complete configuration as detailed later.
-
-=== Data Replication
+=== Replication
 
 When using replication, the primary and the backup servers do not share the same data directories.
 All data synchronization is done over the network.
-Therefore, all (persistent) data received by the primary server will be duplicated to the backup.
+Therefore, all (durable) data received by the primary server will be duplicated to the backup.
 
-Notice that upon start-up the backup server will first need to synchronize all existing data from the primary server before becoming capable of replacing the primary server should it fail.
-Therefore, unlike when using shared storage, a replicating backup will not be a _fully operational_ backup until after it finishes synchronizing the data with its primary server.
+Note that upon start-up the backup server will first need to synchronize all existing data from the primary server before becoming capable of replacing the primary server should it fail.
+Therefore, unlike when using shared storage, a backup will not be _fully operational_ until after it finishes synchronizing the data with its primary server.
 The time it takes for this to happen depends on the amount of data to be synchronized and the connection speed.
 
 [NOTE]
 ====
-In general, synchronization occurs in parallel with current network traffic so this won't cause any blocking on current clients.
+In general, synchronization occurs in parallel with current network traffic so this won't cause any blocking for current clients.
 However, there is a critical moment at the end of this process where the replicating server must complete the synchronization and ensure the replica acknowledges this completion.
 This exchange between the replicating server and replica will block any journal related operations.
 The maximum length of time that this exchange will block is controlled by the `initial-replication-sync-timeout` configuration element.
 ====
 
-Replication will create a copy of the data at the backup.
-One issue to be aware of is: in case of a successful fail-over, the backup's data will be newer than the primary's data.
+Since replication will create a copy of the data at the backup then in case of a successful fail-over, the backup's data will be newer than the primary's data.
 If you configure your backup to allow failback to the primary then when the primary is restarted it will be passive and the active backup will synchronize its data with the passive primary before stopping to allow the passive primary to become active again.
 If both servers are shutdown then the administrator will have to determine which one has the latest data.
 
-The replicating primary and backup pair must be part of a cluster.
-The Cluster Connection also defines how backup servers will find the remote primary servers to pair with.
-Refer to xref:clusters.adoc#clusters[Clusters] for details on how this is done, and how to configure a cluster connection.
-Notice that:
+[NOTE]
+.An Important Difference From Shared Store
+====
+If a shared-store backup *does not* find a primary then it will just activate and service client requests like it is a primary.
 
-* Both primary and backup servers must be part of the same cluster.
-Notice that even a simple primary/backup replicating pair will require a cluster configuration.
-* Their `cluster-user` and `cluster-password` configuration in `broker.xml` must match.
+However, in the replication case, the backup just keeps waiting for a primary to pair with because the backup does not know whether its data is up-to-date.
+It cannot unilaterally decide to activate.
+To activate a replicating backup using its current data the administrator must change its configuration to make it a primary server by changing `backup` to `primary`.
+====
 
-Within a cluster, there are two ways that a backup server will locate a primary server to replicate from. These are:
+==== Split Brain
 
-specifying a node group::
-You can specify a group of primary servers that a backup server can connect to.
-This is done by configuring `group-name` in either the `primary` or the `backup` element of the `broker.xml`.
+"Split Brain" is a potential issue that is important to understand.
+xref:network-isolation.adoc[A whole chapter] has been devoted to explaining what it is and how it can be mitigated at a high level.
+Once you read it you will understand the main differences between **native** and **pluggable** quorum voting which will be referenced later in the configuration sections.
+
+==== Configuration
+
+In a shared-store configuration brokers pair with each other based on their shared storage device.
+However, since replication configurations have no such shared storage device they must find each other another way.
+Servers can be grouped together explicitly using the same `group-name` in both the `primary` or the `backup` elements.
 A backup will only connect to a primary that shares the same node group name.
 
-connecting to any primary::
-This will be the behaviour if `group-name` is not configured allowing a backup server to connect to any primary server.
-
 [NOTE]
+.A `group-name` Example
 ====
-A `group-name` example: suppose you have 5 primary servers and 6 backup servers:
+Suppose you have 5 primary servers and 6 backup servers:
 
 * `primary1`, `primary2`, `primary3`: with `group-name=fish`
 * `primary4`, `primary5`: with `group-name=bird`
@@ -204,155 +216,178 @@ Since there is one backup too many, the `fish` will remain with one spare backup
 The 2 backups with `group-name=bird` (`backup5` and `backup6`) will pair with primary servers `primary4` and `primary5`.
 ====
 
-The backup will search for any primary server that it is configured to connect to.
-It then tries to replicate with each primary server in turn until it finds a primary server that has no current backup configured.
-If no primary server is available it will wait until the cluster topology changes and repeats the process.
-
-[NOTE]
-====
-This is an important distinction from a shared-store backup, if a backup starts and does not find a primary server, the server will just activate and start to serve client requests.
-In the replication case, the backup just keeps waiting for a primary server to pair with.
-Note that in replication the backup server does not know whether any data it might have is up to date, so it really cannot decide to activate automatically.
-To activate a replicating backup server using the data it has, the administrator must change its configuration to make it a primary server by changing `backup` to `primary`.
-====
-
-Much like in the shared-store case, when the primary server stops or crashes, it's replicating backup will become active and take over its duties.
-Specifically, the backup will become active when it loses connection to its primary server.
-This can be problematic because it can also happen as the result of temporary network problem resulting in a xref:network-isolation.adoc#network-isolation-split-brain[split brain].
-
-The issue can be solved in two different ways, depending on which replication roles are configured:
-
-* *non-pluggable replication*: backup will try to determine whether it still can connect to the other servers in the cluster.
-If it can connect to more than half the servers, it will become active. If more than half the servers also disappeared with the primary, the backup will wait and try reconnecting with the primary.
-This avoids a split brain situation.
-* *pluggable replication*: backup relies on a pluggable quorum provider (configurable via `manager` xml element) to detect if there's any active primary.
-
-[NOTE]
-====
-A backup in the *pluggable replication* still needs to carefully configure xref:connection-ttl.adoc#detecting-dead-connections[connection-ttl] in order to promptly send a request to the quorum manager to become active before failing-over.
-====
-
-==== Configuration
-
-To configure a non-pluggable replication's primary and backup servers to be a replicating pair, configure the primary server in ' `broker.xml` to have:
-
-[,xml]
-----
-<ha-policy>
-   <replication>
-      <primary/>
-   </replication>
-</ha-policy>
-...
-<cluster-connections>
-   <cluster-connection name="my-cluster">
-      ...
-   </cluster-connection>
-</cluster-connections>
-----
-
-The backup server must be similarly configured but as a `backup`
-
-[,xml]
-----
-<ha-policy>
-   <replication>
-      <backup/>
-   </replication>
-</ha-policy>
-----
-
-To configure a pluggable quorum replication's primary and backup use:
-
-[,xml]
-----
-<ha-policy>
-   <replication>
-      <primary/>
-   </replication>
-</ha-policy>
-...
-<cluster-connections>
-   <cluster-connection name="my-cluster">
-      ...
-   </cluster-connection>
-</cluster-connections>
-----
-
-and
-
-[,xml]
-----
-<ha-policy>
-   <replication>
-      <backup/>
-   </replication>
-</ha-policy>
-----
-
-==== All Replication Configuration
+If `group-name` is not configured then the backup will search for any primary that it can find the cluster.
+It tries to replicate with each primary until it finds a primary that has no current backup configured.
+If no primary server is available it will wait until the cluster topology changes and repeat the process.
 
 ===== Primary
 
-The following table lists all the `ha-policy` configuration elements for HA strategy Replication for `primary`:
+The primary broker needs this basic configuration in `broker.xml`:
+
+[,xml]
+----
+<ha-policy>
+   <replication>
+      <primary/>
+   </replication>
+</ha-policy>
+----
+
+====== Additional parameters
 
 check-for-active-server::
 Whether to check the cluster for an active server using our own server ID when starting up.
 This is an important option to avoid split-brain when failover happens and the primary is restarted.
 Default is `false`.
+Only applies for native quorum voting.
 
 cluster-name::
-Name of the cluster configuration to use for replication.
+Name of the `cluster-connection` to use for replication.
 This setting is only necessary if you configure multiple cluster connections.
 If configured then the connector configuration of the cluster configuration with this name will be used when connecting to the cluster to discover if an active server is already running, see `check-for-active-server`.
-If unset then the default cluster connections configuration is used (the first one configured).
+If unset then the default cluster connections configuration is used (i.e. the first one configured).
 
 group-name::
-If set, backup servers will only pair with primary servers with matching `group-name`.
+If set, backup servers will only pair with primary servers with matching group-name.
+See above for more details.
 
 initial-replication-sync-timeout::
 The amount of time the replicating server will wait at the completion of the initial replication process for the replica to acknowledge it has received all the necessary data.
-The default is 30,000 milliseconds.
+The default is `30000`; measured in milliseconds.
 +
 NOTE: during this interval any journal related operations will be blocked.
 
+manager::
+The configuration of `class-name` as follows
++
+[,xml]
+----
+<class-name>org.apache.activemq.artemis.quorum.zookeeper.CuratorDistributedPrimitiveManager</class-name>
+----
++
+isn't really needed, because Apache Curator is the default provider, but has been shown for completeness.
++
+The `properties` element:
++
+[,xml]
+----
+<properties>
+   <property key="connect-string" value="127.0.0.1:6666,127.0.0.1:6667,127.0.0.1:6668"/>
+</properties>
+----
++
+[,xml]
+----
+<ha-policy>
+   <replication>
+      <primary>
+         <manager>
+            <class-name>org.apache.activemq.artemis.quorum.zookeeper.CuratorDistributedPrimitiveManager</class-name>
+            <properties>
+               <property key="connect-string" value="127.0.0.1:6666,127.0.0.1:6667,127.0.0.1:6668"/>
+            </properties>
+         </manager>
+      </primary>
+   </replication>
+</ha-policy>
+----
+Only applies for pluggable quorum voting.
+
 ===== Backup
 
-The following table lists all the `ha-policy` configuration elements for HA strategy Replication for `backup`:
+The backup needs this basic configuration in `broker.xml`:
+
+[,xml]
+----
+<ha-policy>
+   <replication>
+      <backup/>
+   </replication>
+</ha-policy>
+----
+
+====== Additional parameters
 
 cluster-name::
-Name of the cluster configuration to use for replication.
+Name of the `cluster-connection` to use for replication.
 This setting is only necessary if you configure multiple cluster connections.
 If configured then the connector configuration of the cluster configuration with this name will be used when connecting to the cluster to discover if an active server is already running, see `check-for-active-server`.
-If unset then the default cluster connections configuration is used (the first one configured).
+If unset then the default cluster connections configuration is used (i.e. the first one configured).
 
 group-name::
-If set, backup servers will only pair with primary servers with matching group-name
+If set, backup servers will only pair with primary servers with matching group-name.
+See above for more details.
 
 max-saved-replicated-journals-size::
 This option specifies how many replication backup directories will be kept  when server starts as replica.
-Every time when server starts as replica all  former data moves to 'oldreplica.\{id}' directory, where id is growing backup index, this parameter sets the maximum number of such directories kept on disk.
+Every time when server starts as replica all  former data moves to `oldreplica.\{id}` directory, where `{id}` is a growing backup index.
+This parameter sets the maximum number of such directories kept on disk.
 
 allow-failback::
-Whether a server will automatically stop when another places a request to take over its place.
-The use case is when the backup has failed over.
+Whether this backup will automatically stop when its primary is restarted and requests to take over its place.
+The use case is when a primary server stops and its backup takes over its duties, later the primary server restarts and requests the now-active backup to stop so the primary can take over again.
+Default is `true`.
 
 initial-replication-sync-timeout::
-After failover and the backup has become active, this is set on the new active server.
-It represents the amount of time the replicating server will wait at the completion of the initial replication process for the replica to acknowledge it has received all the necessary data.
-The default is 30,000 milliseconds.
+After failover when the backup has activated this is enforced when the primary is restarted and connects as a backup (e.g. for failback).
+The amount of time the replicating server will wait at the completion of the initial replication process for the replica to acknowledge it has received all the necessary data.
+The default is `30000`; measured in milliseconds.
 +
-NOTE: During this interval any journal related operations will be blocked.
+NOTE: during this interval any journal related operations will be blocked.
 
-==== Pluggable Quorum Vote Replication configurations
+manager::
 
-Pluggable Quorum Vote replication configuration options are a bit different  from classic replication, mostly because of its customizable nature.
+There are some classic replication configuration options which are no longer needed, i.e.:
 
-https://curator.apache.org/[Apache curator] is used by the default quorum provider.
+* `vote-on-replication-failure`
+* `quorum-vote-wait`
+* `vote-retries`
+* `vote-retries-wait`
+* `check-for-active-server`
++
+The configuration of `class-name` as follows
++
+[,xml]
+----
+<class-name>org.apache.activemq.artemis.quorum.zookeeper.CuratorDistributedPrimitiveManager</class-name>
+----
++
+isn't really needed, because Apache Curator is the default provider, but has been shown for completeness.
++
+The `properties` element:
++
+[,xml]
+----
+<properties>
+   <property key="connect-string" value="127.0.0.1:6666,127.0.0.1:6667,127.0.0.1:6668"/>
+</properties>
+----
++
+[,xml]
+----
+<ha-policy>
+   <replication>
+      <backup>
+         <manager>
+            <class-name>org.apache.activemq.artemis.quorum.zookeeper.CuratorDistributedPrimitiveManager</class-name>
+            <properties>
+               <property key="connect-string" value="127.0.0.1:6666,127.0.0.1:6667,127.0.0.1:6668"/>
+            </properties>
+         </manager>
+         <allow-failback>true</allow-failback>
+      </backup>
+   </replication>
+</ha-policy>
+----
+Only applies for pluggable quorum voting.
 
-Below some example configurations to show how it works.
+==== Apache ZooKeeper Integration
 
-For `primary`:
+The default pluggable quorum voting implementation uses https://curator.apache.org/[Apache Curator] to integrate with https://zookeeper.apache.org/[Apache ZooKeeper].
+
+===== Configuration
+
+Here's a basic configuration example:
 
 [,xml]
 ----
@@ -370,97 +405,64 @@ For `primary`:
 </ha-policy>
 ----
 
-And `backup`:
+====== Available Properties
 
-[,xml]
-----
-<ha-policy>
-   <replication>
-      <backup>
-         <manager>
-            <class-name>org.apache.activemq.artemis.quorum.zookeeper.CuratorDistributedPrimitiveManager</class-name>
-            <properties>
-               <property key="connect-string" value="127.0.0.1:6666,127.0.0.1:6667,127.0.0.1:6668"/>
-            </properties>
-         </manager>
-         <allow-failback>true</allow-failback>
-      </backup>
-   </replication>
-</ha-policy>
-----
+https://curator.apache.org/apidocs/org/apache/curator/framework/CuratorFrameworkFactory.Builder.html#connectString(java.lang.String)[`connect-string`]::
+(no default)
 
-The configuration of `class-name` as follows
+https://curator.apache.org/apidocs/org/apache/curator/framework/CuratorFrameworkFactory.Builder.html#sessionTimeoutMs(int)[`session-ms`]::
+(default is 18000 ms)
 
-[,xml]
-----
-<class-name>org.apache.activemq.artemis.quorum.zookeeper.CuratorDistributedPrimitiveManager</class-name>
-----
+https://curator.apache.org/apidocs/org/apache/curator/framework/CuratorFrameworkFactory.Builder.html#simulatedSessionExpirationPercent(int)[`session-percent`]::
+(default is 33); should be &le; default (see https://cwiki.apache.org/confluence/display/CURATOR/TN14[TN14] for more info)
 
-isn't really needed, because Apache Curator is the default provider, but has been shown for completeness.
+https://curator.apache.org/apidocs/org/apache/curator/framework/CuratorFrameworkFactory.Builder.html#connectionTimeoutMs(int)[`connection-ms`]::
+(default is 8000 ms)
 
-The `properties` element:
+https://curator.apache.org/apidocs/org/apache/curator/retry/RetryNTimes.html#%3Cinit%3E(int,int)[`retries`]::
+(default is 1)
 
-[,xml]
-----
-<properties>
-   <property key="connect-string" value="127.0.0.1:6666,127.0.0.1:6667,127.0.0.1:6668"/>
-</properties>
-----
+https://curator.apache.org/apidocs/org/apache/curator/retry/RetryNTimes.html#%3Cinit%3E(int,int)[`retries-ms`]::
+(default is 1000 ms)
 
-can specify a list of `property` elements in the form of key-value pairs, appropriate to what is supported by the specified `class-name` provider.
+https://curator.apache.org/apidocs/org/apache/curator/framework/CuratorFrameworkFactory.Builder.html#namespace(java.lang.String)[`namespace`]::
+(no default)
 
-Apache Curator's provider allows the following properties:
+===== Improving Reliability
 
-* https://curator.apache.org/apidocs/org/apache/curator/framework/CuratorFrameworkFactory.Builder.html#connectString(java.lang.String)[`connect-string`]: (no default)
-* https://curator.apache.org/apidocs/org/apache/curator/framework/CuratorFrameworkFactory.Builder.html#sessionTimeoutMs(int)[`session-ms`]: (default is 18000 ms)
-* https://curator.apache.org/apidocs/org/apache/curator/framework/CuratorFrameworkFactory.Builder.html#simulatedSessionExpirationPercent(int)[`session-percent`]: (default is 33);
-should be \<= default,  see https://cwiki.apache.org/confluence/display/CURATOR/TN14 for more info
-* https://curator.apache.org/apidocs/org/apache/curator/framework/CuratorFrameworkFactory.Builder.html#connectionTimeoutMs(int)[`connection-ms`]: (default is 8000 ms)
-* https://curator.apache.org/apidocs/org/apache/curator/retry/RetryNTimes.html#%3Cinit%3E(int,int)[`retries`]: (default is 1)
-* https://curator.apache.org/apidocs/org/apache/curator/retry/RetryNTimes.html#%3Cinit%3E(int,int)[`retries-ms`]: (default is 1000 ms)
-* https://curator.apache.org/apidocs/org/apache/curator/framework/CuratorFrameworkFactory.Builder.html#namespace(java.lang.String)[`namespace`]: (no default)
+Configuration of the ZooKeeper ensemble is the responsibility of the user, but here are few  *suggestions to improve the reliability of the quorum service*:
 
-Configuration of the https://zookeeper.apache.org/[Apache ZooKeeper] ensemble is the responsibility of the user, but there are few  *suggestions to improve the reliability of the quorum service*:
-
-* broker `session_ms` must be `>= 2 * server tick time` and `+<= 20 * server tick time+` as by  https://zookeeper.apache.org/doc/r3.6.3/zookeeperAdmin.html[ZooKeeper 3.6.3 admin guide]: it directly impacts how fast a backup can failover to an isolated/killed/unresponsive primary;
-the higher, the slower.
+* Broker `session_ms` must be `&ge; 2 * server tick time` and `&le; 20 * server tick time` as by  https://zookeeper.apache.org/doc/r3.6.3/zookeeperAdmin.html[ZooKeeper 3.6.3 admin guide].
+This directly impacts how fast a backup can failover to an isolated/killed/unresponsive primary.
+The higher, the slower.
 * GC on broker machine should allow keeping GC pauses within 1/3 of `session_ms` in order to let the ZooKeeper heartbeat protocol work reliably.
 If that is not possible, it is better to increase `session_ms`, accepting a slower failover.
-* ZooKeeper must have enough resources to keep GC (and OS) pauses much smaller than server tick time: please consider carefully if  broker and ZooKeeper node should share the same physical machine, depending on the expected load of the broker
-* network isolation protection requires configuring >=3 ZooKeeper nodes
+* ZooKeeper must have enough resources to keep GC (and OS) pauses much smaller than server tick time.
+Please consider carefully if  a broker and ZooKeeper node should share the same physical machine depending on the expected load of the broker.
+* Network isolation protection requires configuring &ge;3 ZooKeeper nodes
 
-.Important Notes on pluggable quorum replication configuration
-****
-There are some classic replication configuration options which are no longer needed, i.e.:
-
-* `vote-on-replication-failure`
-* `quorum-vote-wait`
-* `vote-retries`
-* `vote-retries-wait`
-* `check-for-active-server`
-
-*Regarding replication configuration with the https://curator.apache.org/[Apache curator] quorum provider...*
-
-As noted previously, `session-ms` affects the failover duration. The passive broker can activate after `session-ms` expires or if the active broker voluntary gives up its role e.g. during a fail-back/manual broker stop, it happens immediately.
+As noted previously, `session-ms` affects the failover duration.
+The passive broker can activate after `session-ms` expires or if the active broker voluntary gives up its role (e.g. during a fail-back/manual broker stop, it happens immediately).
 
 For the former case (session expiration with active broker no longer present), the passive broker can detect an unresponsive active broker by using:
 
 . cluster connection PINGs (affected by xref:connection-ttl.adoc#detecting-dead-connections[connection-ttl] tuning)
 . closed TCP connection notification (depends on TCP configuration and networking stack/topology)
 
-The suggestion is to tune `connection-ttl` low enough to attempt failover as soon as possible, while taking in consideration that  the whole fail-over duration cannot last less than the configured `session-ms`.
-****
+The suggestion is to tune `connection-ttl` low enough to attempt failover as soon as possible, while taking in consideration that the whole fail-over duration cannot last less than the configured `session-ms`.
 
-===== Peer or Multi Primary
+[NOTE]
+====
+A backup still needs to carefully configure xref:connection-ttl.adoc#detecting-dead-connections[connection-ttl] in order to promptly send a request to the quorum manager to become active before failing-over.
+====
 
-With coordination delegated to the quorum service, roles are less important.
-It is possible to have two peer servers compete for activation;
-the winner activating as primary, the looser taking up a backup role.
-On restart, 'any' peer server with the most up to date journal can activate.
-The instances need to know in advance, what identity they will coordinate on.
-In the replication 'primary' ha policy we can explicitly set the 'coordination-id' to a common value for all peers in a cluster.
+===== Competing Primary Brokers
 
-For `multi primary`:
+With coordination delegated to the quorum service, roles of primary & backup are less important.
+It is possible to have two brokers _compete_ for activation with the winner activating as primary and the loser taking the backup role.
+On restart, any peer server with the most up-to-date journal can activate.
+The key is that the brokers need to know in advance what identity they will coordinate on.
+In the replication `primary` `ha-policy` we can explicitly set the `coordination-id` to a common value for all peers in a cluster.
 
 [,xml]
 ----
@@ -479,73 +481,13 @@ For `multi primary`:
 </ha-policy>
 ----
 
-NOTE: the string value provided will be converted internally into a 16 byte UUID, so it may not be immediately recognisable or human-readable, however it will ensure that all 'peers' coordinate.
+NOTE: the string value provided will be converted internally into a 16 byte UUID, so it may not be immediately recognisable or human-readable, however it will ensure that all "peers" coordinate.
 
-=== Shared Store
-
-When using a shared store both primary and backup servers share the _same_ entire data directory using a shared file system.
-This means the paging directory, journal directory, large messages and binding journal.
-
-When failover occurs and a backup server takes over, it will load the persistent storage from the shared file system and clients can connect to it.
-
-This style of high availability differs from data replication in that it requires a shared file system which is accessible by both the primary and backup nodes.
-Typically this will be some kind of high performance Storage Area Network (SAN).
-We do not recommend you use Network Attached Storage (NAS), e.g. NFS mounts to store any shared journal (NFS is slow).
-
-The advantage of shared-store high availability is that no replication occurs between the primary and backup nodes. This means it does not suffer any performance penalties due to the overhead of replication during normal operation.
-
-The disadvantage of shared store replication is that it requires a shared file system, and when the backup server activates it needs to load the journal from the shared store which can take some time depending on the amount of data in the store.
-
-If you require the highest performance during normal operation then acquire access to a fast SAN and deal with a slightly slower failover (depending on amount of data).
-
-image::images/ha-shared-store.png[]
-
-==== Configuration
-
-To configure the primary and backup servers to share their store use the `ha-policy` configuration in `broker.xml`:
-
-[,xml]
-----
-<ha-policy>
-   <shared-store>
-      <primary/>
-   </shared-store>
-</ha-policy>
-...
-<cluster-connections>
-   <cluster-connection name="my-cluster">
-      ...
-   </cluster-connection>
-</cluster-connections>
-----
-
-The backup server must also be configured as a backup.
-
-[,xml]
-----
-<ha-policy>
-   <shared-store>
-      <backup/>
-   </shared-store>
-</ha-policy>
-----
-
-In order for primary/backup groups to operate properly with a shared store, both servers must have configured the location of journal directory to point to the _same shared location_ (as explained in xref:persistence.adoc#persistence[Configuring the message journal])
-
-[NOTE]
-====
-todo write something about GFS
-====
-
-Also each node, primary and backups, will need to have a cluster connection defined even if not part of a cluster.
-The Cluster Connection info defines how backup servers announce there presence to its primary server or any other nodes in the cluster.
-Refer to xref:clusters.adoc#clusters[Clusters] for details on how this is done.
-
-=== Failing Back to Primary Server
+== Failing Back to Primary Server
 
 After a primary server has failed and a backup taken has taken over its duties, you may want to restart the primary server and have clients fail back.
 
-==== Shared Store
+=== Shared Store
 
 In case of "shared disk" you have a couple of options:
 
@@ -593,11 +535,11 @@ You can also force the active backup to shutdown when the primary comes back up 
 </ha-policy>
 ----
 
-==== Replication
+=== Replication
 
 As with shared storage the `allow-failback` option can be set for both non-pluggable and pluggable replication.
 
-===== Non-Pluggable
+==== Non-Pluggable
 
 [,xml]
 ----
@@ -635,7 +577,7 @@ Be aware that if you restart a primary server after failover has occurred then `
 If not the primary server will restart and serve the same messages that the backup has already handled causing duplicates.
 ====
 
-===== Pluggable
+==== Pluggable
 
 One key difference between pluggable replication and non-pluggable replication is that with non-pluggable replication if the primary cannot reach any active server with its nodeID then it activates unilaterally.
 With pluggable replication the responsibilities of coordination are delegated to the quorum provider. There are no unilateral decisions.
@@ -659,9 +601,9 @@ Here's an example configuration:
 </ha-policy>
 ----
 
-==== All Shared Store Configuration
+=== All Shared Store Configuration
 
-===== Primary
+==== Primary
 
 The following lists all the `ha-policy` configuration elements for HA strategy shared store for `primary`:
 
@@ -675,7 +617,7 @@ If set to true then server startup will wait until it is activated.
 If set to false then server startup will be done in the background.
 Default is `true`.
 
-===== Backup
+==== Backup
 
 The following lists all the `ha-policy` configuration elements for HA strategy Shared Store for `backup`:
 
@@ -718,7 +660,7 @@ the above example is configured to use replication, in this case the `primary` a
 
 image::images/ha-colocated.png[ActiveMQ Artemis ha-colocated.png]
 
-==== Configuring Connectors and Acceptors
+=== Configuring Connectors and Acceptors
 
 If the HA Policy is `colocated` then `connectors` and `acceptors` will be inherited from the primary server creating it and offset depending on the setting of `backup-port-offset` configuration element.
 If this is set to say 100 (which is the default) and a connector is using port 61616 then this will be set to 61716 for the first server created, 61816 for the second, and so on.
@@ -728,7 +670,7 @@ If this is set to say 100 (which is the default) and a connector is using port 6
 for INVM connectors and Acceptors the id will have `colocated_backup_n` appended, where n is the backup server number.
 ====
 
-==== Remote Connectors
+=== Remote Connectors
 
 It may be that some of the Connectors configured are for external servers and hence should be excluded from the offset.
 for instance a connector used by the cluster connection to do quorum voting for a replicated backup server, these can be omitted from being offset by adding them to the `ha-policy` configuration like so:
@@ -748,7 +690,7 @@ for instance a connector used by the cluster connection to do quorum voting for 
 </ha-policy>
 ----
 
-==== Configuring Directories
+=== Configuring Directories
 
 Directories for the Journal, Large messages and Paging will be set according to what the HA strategy is.
 If shared store the requesting server will notify the target server of which directories to use.
@@ -771,7 +713,7 @@ How many backups a primary server can create
 backup-port-offset::
 The offset to use for the Connectors and Acceptors when creating a new backup server.
 
-=== Scaling Down
+== Scaling Down
 
 An alternative to using primary/backup groups is to configure _scaledown_.
 When configured for scale down a server can copy all its messages and transaction state to another active server.
@@ -812,7 +754,7 @@ It is also possible to use discovery to scale down, this would look like:
 </ha-policy>
 ----
 
-==== Scale Down with groups
+=== Scale Down with groups
 
 It is also possible to configure servers to only scale down to servers that belong in the same group.
 This is done by configuring the group like so:
@@ -831,7 +773,7 @@ This is done by configuring the group like so:
 
 In this scenario only servers that belong to the group `my-group` will be scaled down to
 
-==== Scale Down and Backups
+=== Scale Down and Backups
 
 It is also possible to mix scale down with HA via backup servers.
 If a backup is configured to scale down then after failover has occurred, instead of starting fully the backup server will immediately scale down to another active server.
@@ -871,7 +813,7 @@ A typical configuration would look like:
 </ha-policy>
 ----
 
-==== Scale Down and Clients
+=== Scale Down and Clients
 
 When a server is stopping and preparing to scale down it will send a message to all its clients informing them which server it is scaling down to before disconnecting them.
 At this point the client will reconnect however this will only succeed once the server has completed the scaledown process.
