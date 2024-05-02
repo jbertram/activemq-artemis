@@ -168,7 +168,7 @@
       <junit.version>4.13.2</junit.version>
       <junit5.version>5.10.1</junit5.version>
       <surefire.version>2.22.2</surefire.version>
-      <version.jaxb.runtime>2.3.3</version.jaxb.runtime>
+      <version.jaxb.runtime>4.0.5</version.jaxb.runtime>
       <paho.client.mqtt.version>1.2.5</paho.client.mqtt.version>
       <postgresql.version>42.7.2</postgresql.version>
       <testcontainers.version>1.19.4</testcontainers.version>
