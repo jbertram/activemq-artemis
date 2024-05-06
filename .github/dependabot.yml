@@ -23,5 +23,13 @@ updates:
       - dependency-name: 'jakarta.annotation:jakarta.annotation-api'
         versions: '>= 2'
       - dependency-name: `org.springframework:spring-core`
+        versions: '>= 6' 
+      - dependency-name: `org.springframework:spring-beans`
+        versions: '>= 6' 
+      - dependency-name: `org.springframework:spring-context`
+        versions: '>= 6' 
+      - dependency-name: `org.springframework:spring-jms`
+        versions: '>= 6' 
+      - dependency-name: `org.springframework:spring-test`
         versions: '>= 6'      
     open-pull-requests-limit: 15
