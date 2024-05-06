@@ -21,9 +21,7 @@ updates:
       interval: "daily"
     ignore:
       # Ignore all these until we move to JDK >= 17
-      - dependency-name: 'org.apache.derby:derby'
-        versions: '>= 10.16'
-      - dependency-name: 'org.apache.derby:derbytools'
+      - dependency-name: 'org.apache.derby:*'
         versions: '>= 10.16'
       # Ignore all these until we move to Jakarta
       - dependency-name: 'jakarta.annotation:jakarta.annotation-api'
