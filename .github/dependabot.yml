@@ -20,6 +20,12 @@ updates:
     schedule:
       interval: "daily"
     ignore:
+      # Ignore all these until we move to JDK >= 17
+      - dependency-name: `org.apache.derby:derby`
+        versions: '>= 10.16'
+      - dependency-name: `org.apache.derby:derbytools`
+        versions: '>= 10.16'
+      # Ignore all these until we move to Jakarta
       - dependency-name: 'jakarta.annotation:jakarta.annotation-api'
         versions: '>= 2'
       - dependency-name: `org.springframework:spring-core`
@@ -31,5 +37,45 @@ updates:
       - dependency-name: `org.springframework:spring-jms`
         versions: '>= 6' 
       - dependency-name: `org.springframework:spring-test`
-        versions: '>= 6'      
-    open-pull-requests-limit: 15
+        versions: '>= 6' 
+      - dependency-name: `jakarta.enterprise:jakarta.enterprise.cdi-api`
+        versions: '>= 3'
+      - dependency-name: `jakarta.transaction:jakarta.transaction-api`
+        versions: '>= 2'
+      - dependency-name: `jakarta.json:jakarta.json-api`
+        versions: '>= 2'
+      - dependency-name: `jakarta.jms:jakarta.jms-api`
+        versions: '>= 3'
+      - dependency-name: `jakarta.inject:jakarta.inject-api`
+        versions: '>= 2'
+      - dependency-name: `jakarta.ejb:jakarta.ejb-api`
+        versions: '>= 4'
+      - dependency-name: `jakarta.annotation:jakarta.annotation-api`
+        versions: '>= 2'
+      - dependency-name: `org.apache.openwebbeans:openwebbeans-impl`
+        versions: '>= 4'
+      - dependency-name: `org.apache.openwebbeans:openwebbeans-spi`
+        versions: '>= 4'
+      - dependency-name: `org.apache.openwebbeans:openwebbeans-resource`
+        versions: '>= 4'
+      - dependency-name: `org.apache.openwebbeans-arquillian:owb-arquillian-standalone`
+        versions: '>= 4'
+      - dependency-name: `org.jboss.arquillian.container:arquillian-weld-embedded`
+        versions: '>= 3'
+      - dependency-name: `org.apache.johnzon:johnzon-core`
+        versions: '>= 2'
+      - dependency-name: `org.apache.qpid:qpid-jms-client`
+        versions: '>= 2'
+      - dependency-name: `org.apache.activemq:activemq-client`
+        versions: '>= 6'
+      - dependency-name: `org.eclipse.jetty:jetty-server`
+        versions: '>= 11'
+      - dependency-name: `org.eclipse.jetty:jetty-servlet`
+        versions: '>= 11'
+      - dependency-name: `org.eclipse.jetty:jetty-webapp`
+        versions: '>= 11'
+      - dependency-name: `org.eclipse.jetty:jetty-security`
+        versions: '>= 11'
+      - dependency-name: `org.eclipse.jetty:jetty-util`
+        versions: '>= 11'
+    open-pull-requests-limit: 50
