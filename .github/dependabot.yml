@@ -40,6 +40,8 @@ updates:
         versions: '>= 2'
       - dependency-name: 'jakarta.ejb:jakarta.ejb-api'
         versions: '>= 4'
+      - dependency-name: 'jakarta.xml.bind:jakarta.xml.bind-api'
+        versions: '>= 3'
       - dependency-name: 'jakarta.activation:jakarta.activation-api'
         versions: '>= 2'
       - dependency-name: 'org.apache.openwebbeans:*'
