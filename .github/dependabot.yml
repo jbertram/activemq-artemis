@@ -58,4 +58,5 @@ updates:
         versions: '>= 6'
       - dependency-name: 'org.eclipse.jetty:*'
         versions: '>= 11'
-    open-pull-requests-limit: 500
+    open-pull-requests-limit: 500    
+    prefix: "ARTEMIS-X "
