@@ -291,7 +291,7 @@ public class CoreProtocolManager implements ProtocolManager<Interceptor, ActiveM
             }
 
             // Just send a ping back
-            channel0.send(packet);
+            channel0.send(new Ping(server.getNodeID()));
          } else if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY
             || packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2) {
             SubscribeClusterTopologyUpdatesMessage msg = (SubscribeClusterTopologyUpdatesMessage) packet;

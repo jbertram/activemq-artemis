@@ -34,6 +34,7 @@ import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.core.client.ActiveMQClientLogger;
+import org.apache.activemq.artemis.core.client.ActiveMQClientMessageBundle;
 import org.apache.activemq.artemis.core.protocol.core.Channel;
 import org.apache.activemq.artemis.core.protocol.core.CoreRemotingConnection;
 import org.apache.activemq.artemis.core.protocol.core.Packet;
@@ -42,6 +43,7 @@ import org.apache.activemq.artemis.core.protocol.core.impl.wireformat.Disconnect
 import org.apache.activemq.artemis.core.protocol.core.impl.wireformat.DisconnectMessage;
 import org.apache.activemq.artemis.core.protocol.core.impl.wireformat.DisconnectMessage_V2;
 import org.apache.activemq.artemis.core.protocol.core.impl.wireformat.DisconnectMessage_V3;
+import org.apache.activemq.artemis.core.protocol.core.impl.wireformat.Ping;
 import org.apache.activemq.artemis.core.security.ActiveMQPrincipal;
 import org.apache.activemq.artemis.spi.core.protocol.AbstractRemotingConnection;
 import org.apache.activemq.artemis.spi.core.remoting.Connection;
@@ -79,7 +81,9 @@ public class RemotingConnectionImpl extends AbstractRemotingConnection implement
 
    private final Object failLock = new Object();
 
-   private final SimpleString nodeID;
+   private SimpleString nodeID;
+
+   private SimpleString previousNodeID;
 
    /*
     * Create a client side connection
@@ -148,6 +152,16 @@ public class RemotingConnectionImpl extends AbstractRemotingConnection implement
    @Override
    public int getChannelVersion() {
       return channelVersion;
+   }
+
+   @Override
+   public SimpleString getNodeID() {
+      return nodeID;
+   }
+
+   @Override
+   public void setPreviousNodeID(SimpleString previousNodeID) {
+      this.previousNodeID = previousNodeID;
    }
 
    /**
@@ -408,6 +422,7 @@ public class RemotingConnectionImpl extends AbstractRemotingConnection implement
    }
 
    private void doBufferReceived(final Packet packet) {
+      checkPingNodeID(packet);
       if (ChannelImpl.invokeInterceptors(packet, incomingInterceptors, this) != null) {
          return;
       }
@@ -417,6 +432,21 @@ public class RemotingConnectionImpl extends AbstractRemotingConnection implement
 
          if (channel != null) {
             channel.handlePacket(packet);
+         }
+      }
+   }
+
+   private void checkPingNodeID(Packet packet) {
+      if (client && packet.getType() == PacketImpl.PING) {
+         Ping ping = (Ping) packet;
+         if (ping.getNodeID() != null && nodeID == null) {
+            nodeID = ping.getNodeID();
+         }
+         if (ping.getNodeID() != null && previousNodeID != null && !ping.getNodeID().equals(previousNodeID)) {
+            IllegalStateException e = ActiveMQClientMessageBundle.BUNDLE.unexpectedNodeID(previousNodeID, ping.getNodeID());
+            // TODO make exception meaningful?
+            asyncFail(new ActiveMQException());
+            throw e;
          }
       }
    }

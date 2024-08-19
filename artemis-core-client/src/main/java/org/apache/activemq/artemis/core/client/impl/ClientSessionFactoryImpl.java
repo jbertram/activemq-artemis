@@ -965,6 +965,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             if (oldConnection != null && oldConnection instanceof CoreRemotingConnection) {
                // transferring old connection version into the new connection
                ((CoreRemotingConnection)connection).setChannelVersion(((CoreRemotingConnection)oldConnection).getChannelVersion());
+               ((CoreRemotingConnection)connection).setPreviousNodeID(((CoreRemotingConnection)oldConnection).getNodeID());
             }
             logger.debug("Reconnection successful");
             return count;

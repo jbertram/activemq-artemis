@@ -31,6 +31,7 @@ import org.apache.activemq.artemis.api.core.ActiveMQRoutingException;
 import org.apache.activemq.artemis.api.core.ActiveMQTransactionOutcomeUnknownException;
 import org.apache.activemq.artemis.api.core.ActiveMQTransactionRolledBackException;
 import org.apache.activemq.artemis.api.core.ActiveMQUnBlockedException;
+import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.core.cluster.DiscoveryGroup;
 import org.apache.activemq.artemis.logs.annotation.LogBundle;
 import org.apache.activemq.artemis.logs.annotation.Message;
@@ -240,4 +241,7 @@ public interface ActiveMQClientMessageBundle {
 
    @Message(id = 219068, value = "Connection closed while receiving cluster topology. Group:{}")
    ActiveMQObjectClosedException connectionClosedOnReceiveTopology(DiscoveryGroup discoveryGroup);
+
+   @Message(id = 219069, value = "Expected ping to contain node ID: {}. Actually received node ID: {}")
+   IllegalStateException unexpectedNodeID(SimpleString expected, SimpleString received);
 }

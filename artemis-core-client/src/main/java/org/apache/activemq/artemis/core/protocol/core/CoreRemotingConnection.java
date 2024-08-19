@@ -16,6 +16,7 @@
  */
 package org.apache.activemq.artemis.core.protocol.core;
 
+import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.core.protocol.core.impl.PacketImpl;
 import org.apache.activemq.artemis.core.security.ActiveMQPrincipal;
 import org.apache.activemq.artemis.spi.core.protocol.RemotingConnection;
@@ -170,4 +171,8 @@ public interface CoreRemotingConnection extends RemotingConnection {
     * @throws IllegalStateException if the connection is closed
     */
    boolean blockUntilWritable(long timeout);
+
+   SimpleString getNodeID();
+
+   void setPreviousNodeID(SimpleString previousNodeID);
 }

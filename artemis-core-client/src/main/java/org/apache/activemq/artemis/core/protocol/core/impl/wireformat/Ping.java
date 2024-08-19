@@ -17,6 +17,7 @@
 package org.apache.activemq.artemis.core.protocol.core.impl.wireformat;
 
 import org.apache.activemq.artemis.api.core.ActiveMQBuffer;
+import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.core.protocol.core.impl.PacketImpl;
 import org.apache.activemq.artemis.utils.DataConstants;
 
@@ -27,11 +28,20 @@ import org.apache.activemq.artemis.utils.DataConstants;
 public final class Ping extends PacketImpl {
 
    private long connectionTTL;
+   private SimpleString nodeID;
 
+   // used by clients
    public Ping(final long connectionTTL) {
       super(PING);
 
       this.connectionTTL = connectionTTL;
+   }
+
+   // used by the broker to respond to clients
+   public Ping(final SimpleString nodeID) {
+      super(PING);
+
+      this.nodeID = nodeID;
    }
 
    public Ping() {
@@ -42,14 +52,22 @@ public final class Ping extends PacketImpl {
       return connectionTTL;
    }
 
+   public SimpleString getNodeID() {
+      return nodeID;
+   }
+
    @Override
    public void encodeRest(final ActiveMQBuffer buffer) {
       buffer.writeLong(connectionTTL);
+      buffer.writeNullableSimpleString(nodeID);
    }
 
    @Override
    public void decodeRest(final ActiveMQBuffer buffer) {
       connectionTTL = buffer.readLong();
+      if (buffer.readable()) {
+         nodeID = buffer.readNullableSimpleString();
+      }
    }
 
    @Override
@@ -59,13 +77,14 @@ public final class Ping extends PacketImpl {
 
    @Override
    public int expectedEncodeSize() {
-      return PACKET_HEADERS_SIZE + DataConstants.SIZE_LONG;
+      return PACKET_HEADERS_SIZE + DataConstants.SIZE_LONG + 1 + (nodeID != null ? nodeID.sizeof() : 0);
    }
 
    @Override
    protected String getPacketString() {
       StringBuffer buf = new StringBuffer(super.getPacketString());
       buf.append(", connectionTTL=" + connectionTTL);
+      buf.append(", nodeId=" + nodeID);
       return buf.toString();
    }
 
@@ -74,6 +93,7 @@ public final class Ping extends PacketImpl {
       final int prime = 31;
       int result = super.hashCode();
       result = prime * result + (int) (connectionTTL ^ (connectionTTL >>> 32));
+      result = prime * result + nodeID.hashCode();
       return result;
    }
 
@@ -90,6 +110,13 @@ public final class Ping extends PacketImpl {
       }
       Ping other = (Ping) obj;
       if (connectionTTL != other.connectionTTL) {
+         return false;
+      }
+      if (nodeID == null) {
+         if (other.nodeID != null) {
+            return false;
+         }
+      } else if (!nodeID.equals(other.nodeID)) {
          return false;
       }
       return true;
