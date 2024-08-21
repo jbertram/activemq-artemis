@@ -112,13 +112,6 @@
          </dependency>
 
          <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections-testframework</artifactId>
-            <version>${commons.collections.version}</version>
-            <!-- License: Apache 2.0 -->
-         </dependency>
-
-         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
@@ -266,8 +259,8 @@
             <!-- License: EPL 2.0 -->
          </dependency>
          <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
             <version>${commons.collections.version}</version>
             <!-- License: Apache 2.0 -->
          </dependency>
@@ -537,6 +530,12 @@
             <artifactId>commons-beanutils</artifactId>
             <version>${commons.beanutils.version}</version>
             <!-- License: Apache 2.0 -->
+            <exclusions>
+               <exclusion>
+                  <groupId>commons-collections</groupId>
+                  <artifactId>commons-collections</artifactId>
+               </exclusion>
+            </exclusions>
          </dependency>
 
          <!-- needed by commons-beanutils-->

@@ -51,7 +51,6 @@
 		<feature>transaction</feature>
 		<feature>netty-core</feature>
 		<bundle dependency="true">mvn:commons-beanutils/commons-beanutils/${commons.beanutils.version}</bundle>
-		<bundle dependency="true">mvn:commons-collections/commons-collections/${commons.collections.version}</bundle>
 
 		<bundle dependency="true">wrap:mvn:org.jgroups/jgroups/${jgroups.version}$Import-Package=org.jboss.byteman.*;resolution:=&quot;optional&quot;</bundle>
 	</feature>

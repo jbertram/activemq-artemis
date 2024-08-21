@@ -17,6 +17,7 @@
 package org.apache.activemq.artemis.core.persistence.impl.journal;
 
 import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
@@ -29,9 +30,8 @@ import org.apache.activemq.artemis.core.journal.impl.SimpleWaitIOCallback;
 import org.apache.activemq.artemis.core.persistence.OperationContext;
 import org.apache.activemq.artemis.core.server.ActiveMQServerLogger;
 import org.apache.activemq.artemis.utils.ExecutorFactory;
-import org.apache.commons.collections.Buffer;
-import org.apache.commons.collections.BufferUtils;
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
+import org.apache.commons.collections4.queue.SynchronizedQueue;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 /**
  * Each instance of OperationContextImpl is associated with an executor (usually an ordered Executor).
@@ -133,8 +133,8 @@ public class OperationContextImpl implements OperationContext {
    private static int maxDebugTrackers = Integer.parseInt(
       System.getProperty("ARTEMIS_OPCONTEXT_MAX_DEBUG_TRACKERS", "0"));
 
-   private Buffer debugTrackers = OperationContextImpl.maxDebugTrackers > 0 ?
-      BufferUtils.synchronizedBuffer(new CircularFifoBuffer(OperationContextImpl.maxDebugTrackers)) : null;
+   private Queue debugTrackers = OperationContextImpl.maxDebugTrackers > 0 ?
+      SynchronizedQueue.synchronizedQueue(new CircularFifoQueue(OperationContextImpl.maxDebugTrackers)) : null;
 
    protected static int getMaxDebugTrackers() {
       return OperationContextImpl.maxDebugTrackers;
@@ -144,7 +144,7 @@ public class OperationContextImpl implements OperationContext {
       OperationContextImpl.maxDebugTrackers = maxDebugTrackers;
    }
 
-   protected Buffer getDebugTrackers() {
+   protected Queue getDebugTrackers() {
       return debugTrackers;
    }
 

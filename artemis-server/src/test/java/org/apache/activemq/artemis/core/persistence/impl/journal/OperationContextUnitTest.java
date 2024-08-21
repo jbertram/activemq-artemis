@@ -593,13 +593,13 @@ public class OperationContextUnitTest extends ServerTestBase {
 
          context.storeLineUp();
          assertEquals(1, context.getDebugTrackers().size());
-         assertEquals("storeLineUp", ((Exception)context.getDebugTrackers().get()).getStackTrace()[0].getMethodName());
-         assertEquals("testContextWithDebugTrackers", ((Exception)context.getDebugTrackers().get()).getStackTrace()[1].getMethodName());
+         assertEquals("storeLineUp", ((Exception)context.getDebugTrackers().peek()).getStackTrace()[0].getMethodName());
+         assertEquals("testContextWithDebugTrackers", ((Exception)context.getDebugTrackers().peek()).getStackTrace()[1].getMethodName());
 
          context.done();
          assertEquals(1, context.getDebugTrackers().size());
-         assertEquals("done", ((Exception)context.getDebugTrackers().get()).getStackTrace()[0].getMethodName());
-         assertEquals("testContextWithDebugTrackers", ((Exception)context.getDebugTrackers().get()).getStackTrace()[1].getMethodName());
+         assertEquals("done", ((Exception)context.getDebugTrackers().peek()).getStackTrace()[0].getMethodName());
+         assertEquals("testContextWithDebugTrackers", ((Exception)context.getDebugTrackers().peek()).getStackTrace()[1].getMethodName());
       } finally {
          OperationContextImpl.setMaxDebugTrackers(maxStoreOperationTrackers);
       }
