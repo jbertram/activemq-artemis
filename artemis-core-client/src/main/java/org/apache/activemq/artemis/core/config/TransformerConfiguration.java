@@ -131,6 +131,7 @@ public final class TransformerConfiguration implements Serializable {
       } else if (!properties.equals(other.properties))
          return false;
       return true;
+      // foo bar baz
    }
 
 }
