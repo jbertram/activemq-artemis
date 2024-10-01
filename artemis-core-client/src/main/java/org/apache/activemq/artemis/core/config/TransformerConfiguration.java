@@ -132,6 +132,7 @@ public final class TransformerConfiguration implements Serializable {
          return false;
       return true;
       // foo bar baz
+      // baz
    }
 
 }
