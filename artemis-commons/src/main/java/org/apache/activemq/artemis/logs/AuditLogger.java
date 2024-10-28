@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * Logger Codes 600000 - 609999
  */
-@LogBundle(projectCode = "AMQ", regexID = "60[0-9]{4}")
+@LogBundle(projectCode = "AMQ", regexID = "60[0-9]{4}", retiredIDs = {601268})
 public interface AuditLogger {
 
    AuditLogger BASE_LOGGER = BundleFactory.newBundle(AuditLogger.class, "org.apache.activemq.audit.base");

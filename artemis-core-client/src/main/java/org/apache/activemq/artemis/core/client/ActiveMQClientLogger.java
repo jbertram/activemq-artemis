@@ -28,7 +28,7 @@ import org.w3c.dom.Node;
 /**
  * Logger Codes 210000 - 218999
  */
-@LogBundle(projectCode = "AMQ", regexID = "21[0-8][0-9]{3}", retiredIDs = {214029})
+@LogBundle(projectCode = "AMQ", regexID = "21[0-8][0-9]{3}", retiredIDs = {212006, 212029, 212078, 214029})
 public interface ActiveMQClientLogger {
 
    ActiveMQClientLogger LOGGER = BundleFactory.newBundle(ActiveMQClientLogger.class, ActiveMQClientLogger.class.getPackage().getName());

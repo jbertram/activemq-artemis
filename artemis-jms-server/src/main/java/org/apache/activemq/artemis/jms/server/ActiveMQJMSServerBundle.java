@@ -26,7 +26,7 @@ import org.apache.activemq.artemis.logs.BundleFactory;
 /**
  * Logger Codes 129000 - 129999
  */
-@LogBundle(projectCode = "AMQ", regexID = "129[0-9]{3}")
+@LogBundle(projectCode = "AMQ", regexID = "129[0-9]{3}", retiredIDs = {129001, 129002})
 public interface ActiveMQJMSServerBundle {
 
    ActiveMQJMSServerBundle BUNDLE = BundleFactory.newBundle(ActiveMQJMSServerBundle.class);
