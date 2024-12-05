@@ -33,6 +33,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -97,8 +98,8 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.ThreadPool;
-import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.jetty.webapp.WebInfConfiguration;
+import org.eclipse.jetty.ee8.webapp.WebAppContext;
+import org.eclipse.jetty.ee8.webapp.WebInfConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -164,7 +165,7 @@ public class WebServerComponentTest extends ArtemisTestCase {
       }
       WebServerComponent webServerComponent = new WebServerComponent();
       assertFalse(webServerComponent.isStarted());
-      webServerComponent.configure(webServerDTO, "./src/test/resources/", "./src/test/resources/");
+      webServerComponent.configure(webServerDTO, "src/test/resources/", "src/test/resources/");
       testedComponents.add(webServerComponent);
       webServerComponent.start();
       final int port = webServerComponent.getPort();
@@ -227,7 +228,7 @@ public class WebServerComponentTest extends ArtemisTestCase {
       webServerDTO.webContentEnabled = true;
       WebServerComponent webServerComponent = new WebServerComponent();
       assertFalse(webServerComponent.isStarted());
-      webServerComponent.configure(webServerDTO, "./src/test/resources/", "./src/test/resources/");
+      webServerComponent.configure(webServerDTO, "src/test/resources/", "src/test/resources/");
       webServerComponent.start();
       // Make the connection attempt.
       verifyConnection(webServerComponent.getPort());
@@ -241,6 +242,18 @@ public class WebServerComponentTest extends ArtemisTestCase {
       assertFalse(webServerComponent.isStarted());
    }
 
+   public static String convertToAbsolutePath(String relativePath) {
+      // Create a Path object from the relative path
+      Path path = Paths.get(relativePath);
+
+      // Convert to absolute path
+      Path absolutePath = path.toAbsolutePath();
+
+      // Return the absolute path as a String
+      System.out.println(absolutePath);
+      return absolutePath.toString();
+   }
+
    @Test
    public void testComponentStopStartBehavior() throws Exception {
       BindingDTO bindingDTO = new BindingDTO();
@@ -251,7 +264,7 @@ public class WebServerComponentTest extends ArtemisTestCase {
       webServerDTO.webContentEnabled = true;
       WebServerComponent webServerComponent = new WebServerComponent();
       assertFalse(webServerComponent.isStarted());
-      webServerComponent.configure(webServerDTO, "./src/test/resources/", "./src/test/resources/");
+      webServerComponent.configure(webServerDTO, "src/test/resources/", "src/test/resources/");
       webServerComponent.start();
       // Make the connection attempt.
       verifyConnection(webServerComponent.getPort());
@@ -305,7 +318,7 @@ public class WebServerComponentTest extends ArtemisTestCase {
 
       WebServerComponent webServerComponent = new WebServerComponent();
       assertFalse(webServerComponent.isStarted());
-      webServerComponent.configure(webServerDTO, "./src/test/resources/", "./src/test/resources/");
+      webServerComponent.configure(webServerDTO, "src/test/resources/", "src/test/resources/");
       testedComponents.add(webServerComponent);
       webServerComponent.start();
 
@@ -660,7 +673,7 @@ public class WebServerComponentTest extends ArtemisTestCase {
 
       WebServerComponent webServerComponent = new WebServerComponent();
       assertFalse(webServerComponent.isStarted());
-      webServerComponent.configure(webServerDTO, "./src/test/resources/", "./src/test/resources/");
+      webServerComponent.configure(webServerDTO, "src/test/resources/", "src/test/resources/");
       testedComponents.add(webServerComponent);
       webServerComponent.start();
       final int port = webServerComponent.getPort();
