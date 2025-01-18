@@ -38,7 +38,6 @@ public class ActiveMQTextMessageTest extends ActiveMQMessageTest {
    @Override
    protected void populateObject(Object object) throws Exception {
       super.populateObject(object);
-      ActiveMQTextMessage info = (ActiveMQTextMessage) object;
 
    }
 }

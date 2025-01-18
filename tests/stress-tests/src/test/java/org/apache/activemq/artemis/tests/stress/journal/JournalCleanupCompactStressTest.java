@@ -260,11 +260,10 @@ public class JournalCleanupCompactStressTest extends ActiveMQTestBase {
       ArrayList<PreparedTransactionInfo> preparedTransactions = new ArrayList<>();
       journal.load(committedRecords, preparedTransactions, (transactionID, records, recordsToDelete) -> { });
 
-      long appends = 0, updates = 0;
+      long appends = 0;
 
       for (RecordInfo record : committedRecords) {
          if (record.isUpdate) {
-            updates++;
          } else {
             appends++;
          }

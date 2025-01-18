@@ -40,7 +40,6 @@ public class ActiveMQBytesMessageTest extends ActiveMQMessageTest {
    @Override
    protected void populateObject(Object object) throws Exception {
       super.populateObject(object);
-      ActiveMQBytesMessage info = (ActiveMQBytesMessage) object;
 
    }
 }

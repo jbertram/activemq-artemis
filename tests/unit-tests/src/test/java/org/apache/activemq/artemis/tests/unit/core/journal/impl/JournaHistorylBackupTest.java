@@ -125,10 +125,10 @@ public class JournaHistorylBackupTest extends ActiveMQTestBase {
       String withBKP = withoutBkp + ".bkp";
       // I was actually born at 4:30 :) but I need all numbers lower than 2 digits on the test
       assertEquals(withoutBkp, journal.removeBackupExtension(withBKP));
-      assertEquals(withoutBkp, journal.removeBackupExtension(withoutBkp)); // it should be possible to do it
-
-      String withoutBKP = "jrn-1.data";
+      assertEquals(withoutBkp, journal.removeBackupExtension(withoutBkp));
    }
+
+   // it should be possible to do it
 
    @Test
    public void testFileID() throws Throwable {

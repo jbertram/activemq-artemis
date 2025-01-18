@@ -41,7 +41,6 @@ public class LastPartialCommandTest extends PartialCommandTest {
    @Override
    protected void populateObject(Object object) throws Exception {
       super.populateObject(object);
-      LastPartialCommand info = (LastPartialCommand) object;
 
    }
 }

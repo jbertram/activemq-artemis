@@ -424,8 +424,6 @@ public class PagingTest extends ParameterDBTestBase {
       server = createServer(true, config, PAGE_SIZE, PAGE_MAX);
       server.start();
 
-      final int numberOfBytes = 200 * 1024;
-
       final int NUMBER_OF_MESSAGES = 50;
 
       locator.setBlockOnNonDurableSend(false).setBlockOnDurableSend(false).setBlockOnAcknowledge(false);

@@ -32,7 +32,6 @@ public abstract class TransactionIdTestSupport extends DataFileGeneratorTestSupp
    @Override
    protected void populateObject(Object object) throws Exception {
       super.populateObject(object);
-      TransactionId info = (TransactionId) object;
 
    }
 }

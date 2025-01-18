@@ -40,7 +40,6 @@ public class ActiveMQStreamMessageTest extends ActiveMQMessageTest {
    @Override
    protected void populateObject(Object object) throws Exception {
       super.populateObject(object);
-      ActiveMQStreamMessage info = (ActiveMQStreamMessage) object;
 
    }
 }

@@ -345,14 +345,11 @@ public class MessageImplTest extends ActiveMQTestBase {
             }
          }
       }
-
-      final String bigString;
       {
          StringBuffer buffer = new StringBuffer();
          for (int i = 0; i < 500; i++) {
             buffer.append(" ");
          }
-         bigString = buffer.toString();
       }
 
       class T2 extends Thread {

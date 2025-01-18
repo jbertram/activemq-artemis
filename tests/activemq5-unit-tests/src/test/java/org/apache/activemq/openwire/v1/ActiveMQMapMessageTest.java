@@ -40,7 +40,6 @@ public class ActiveMQMapMessageTest extends ActiveMQMessageTest {
    @Override
    protected void populateObject(Object object) throws Exception {
       super.populateObject(object);
-      ActiveMQMapMessage info = (ActiveMQMapMessage) object;
 
    }
 }

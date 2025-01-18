@@ -38,7 +38,6 @@ public class ActiveMQTempQueueTest extends ActiveMQTempDestinationTestSupport {
    @Override
    protected void populateObject(Object object) throws Exception {
       super.populateObject(object);
-      ActiveMQTempQueue info = (ActiveMQTempQueue) object;
 
    }
 }

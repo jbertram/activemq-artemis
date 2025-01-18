@@ -40,7 +40,6 @@ public class FlushCommandTest extends BaseCommandTestSupport {
    @Override
    protected void populateObject(Object object) throws Exception {
       super.populateObject(object);
-      FlushCommand info = (FlushCommand) object;
 
    }
 }

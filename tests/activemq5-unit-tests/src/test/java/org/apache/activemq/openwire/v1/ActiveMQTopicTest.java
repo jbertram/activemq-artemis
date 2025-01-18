@@ -38,7 +38,6 @@ public class ActiveMQTopicTest extends ActiveMQDestinationTestSupport {
    @Override
    protected void populateObject(Object object) throws Exception {
       super.populateObject(object);
-      ActiveMQTopic info = (ActiveMQTopic) object;
 
    }
 }

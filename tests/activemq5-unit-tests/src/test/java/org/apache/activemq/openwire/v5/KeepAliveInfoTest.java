@@ -41,7 +41,6 @@ public class KeepAliveInfoTest extends BaseCommandTestSupport {
    @Override
    protected void populateObject(Object object) throws Exception {
       super.populateObject(object);
-      KeepAliveInfo info = (KeepAliveInfo) object;
 
    }
 }

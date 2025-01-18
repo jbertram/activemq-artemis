@@ -38,7 +38,6 @@ public class ActiveMQQueueTest extends ActiveMQDestinationTestSupport {
    @Override
    protected void populateObject(Object object) throws Exception {
       super.populateObject(object);
-      ActiveMQQueue info = (ActiveMQQueue) object;
 
    }
 }

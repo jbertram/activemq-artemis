@@ -40,7 +40,6 @@ public class ShutdownInfoTest extends BaseCommandTestSupport {
    @Override
    protected void populateObject(Object object) throws Exception {
       super.populateObject(object);
-      ShutdownInfo info = (ShutdownInfo) object;
 
    }
 }
