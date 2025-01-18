@@ -287,9 +287,6 @@ public class QueueImpl extends CriticalComponentImpl implements Queue {
 
    private ScheduledFuture<?> redistributorFuture;
 
-   // This is used by an AtomicFieldUpdater
-   private volatile long consumerRemovedTimestamp = -1;
-
    private final QueueConsumers<ConsumerHolder<? extends Consumer>> consumers = new QueueConsumersImpl<>();
 
    private volatile boolean groupRebalance;

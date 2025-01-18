@@ -51,11 +51,6 @@ public class JournalFileImpl implements JournalFile {
    private static final AtomicIntegerFieldUpdater<JournalFileImpl> addRecordUpdate = AtomicIntegerFieldUpdater.newUpdater(JournalFileImpl.class, "addRecordField");
    private static final AtomicIntegerFieldUpdater<JournalFileImpl> liveBytesUpdater = AtomicIntegerFieldUpdater.newUpdater(JournalFileImpl.class, "liveBytesField");
 
-   private volatile int replaceableCountField = 0;
-   private volatile int posCountField = 0;
-   private volatile int addRecordField = 0;
-   private volatile int liveBytesField = 0;
-
    // Flags to be used by determine if the journal file can be reclaimed
    private boolean posReclaimCriteria = false;
    private boolean negReclaimCriteria = false;

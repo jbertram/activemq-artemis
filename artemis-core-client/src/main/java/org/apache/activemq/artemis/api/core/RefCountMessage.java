@@ -131,12 +131,6 @@ public class RefCountMessage {
 
    private volatile HashMap userContext;
 
-   private volatile int durableRefCount = 0;
-
-   private volatile int refCount = 0;
-
-   private volatile int usageCount = 0;
-
    private volatile boolean released = false;
 
    private volatile boolean errorCheck = true;

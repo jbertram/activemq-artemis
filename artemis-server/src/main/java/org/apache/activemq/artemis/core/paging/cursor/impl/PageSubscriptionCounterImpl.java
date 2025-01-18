@@ -46,13 +46,7 @@ public class PageSubscriptionCounterImpl extends BasePagingCounter {
 
    // the journal record id that is holding the current value
    private long recordID = -1;
-
-   /** while we rebuild the counters, we will use the recordedValues */
-   private volatile long recordedValue = -1;
    private static final AtomicLongFieldUpdater<PageSubscriptionCounterImpl> recordedValueUpdater = AtomicLongFieldUpdater.newUpdater(PageSubscriptionCounterImpl.class, "recordedValue");
-
-   /** while we rebuild the counters, we will use the recordedValues */
-   private volatile long recordedSize = -1;
    private static final AtomicLongFieldUpdater<PageSubscriptionCounterImpl> recordedSizeUpdater = AtomicLongFieldUpdater.newUpdater(PageSubscriptionCounterImpl.class, "recordedSize");
 
    private PageSubscription subscription;
@@ -60,17 +54,9 @@ public class PageSubscriptionCounterImpl extends BasePagingCounter {
    private PagingStore pagingStore;
 
    private final StorageManager storage;
-
-   private volatile long value;
    private static final AtomicLongFieldUpdater<PageSubscriptionCounterImpl> valueUpdater = AtomicLongFieldUpdater.newUpdater(PageSubscriptionCounterImpl.class, "value");
-
-   private volatile long persistentSize;
    private static final AtomicLongFieldUpdater<PageSubscriptionCounterImpl> persistentSizeUpdater = AtomicLongFieldUpdater.newUpdater(PageSubscriptionCounterImpl.class, "persistentSize");
-
-   private volatile long added;
    private static final AtomicLongFieldUpdater<PageSubscriptionCounterImpl> addedUpdater = AtomicLongFieldUpdater.newUpdater(PageSubscriptionCounterImpl.class, "added");
-
-   private volatile long addedPersistentSize;
    private static final AtomicLongFieldUpdater<PageSubscriptionCounterImpl> addedPersistentSizeUpdater = AtomicLongFieldUpdater.newUpdater(PageSubscriptionCounterImpl.class, "addedPersistentSize");
 
    private LinkedList<PendingCounter> loadList;

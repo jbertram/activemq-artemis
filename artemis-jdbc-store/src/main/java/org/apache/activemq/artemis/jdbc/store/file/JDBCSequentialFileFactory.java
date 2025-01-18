@@ -45,8 +45,6 @@ public class JDBCSequentialFileFactory implements SequentialFileFactory, ActiveM
 
    private JDBCSequentialFileFactoryDriver dbDriver;
 
-   private volatile int countOpen = 0;
-
    private static final AtomicIntegerFieldUpdater<JDBCSequentialFileFactory> countOpenUpdater = AtomicIntegerFieldUpdater.newUpdater(JDBCSequentialFileFactory.class, "countOpen");
 
    private final IOCriticalErrorListener criticalErrorListener;

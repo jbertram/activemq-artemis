@@ -63,8 +63,6 @@ public final class PageTransactionInfoImpl implements PageTransactionInfo {
 
    private volatile int numberOfMessages = 0;
 
-   private volatile int numberOfPersistentMessages = 0;
-
    private List<LateDelivery> lateDeliveries;
 
    /** To be used during by the RebuildManager.

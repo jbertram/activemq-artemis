@@ -50,8 +50,6 @@ public class JournalTransaction implements IOCallback {
 
    private JournalFile lastFile = null;
 
-   private volatile int counter;
-
    private static final AtomicIntegerFieldUpdater<JournalTransaction> counterUpdater = AtomicIntegerFieldUpdater.newUpdater(JournalTransaction.class, "counter");
 
    private volatile String errorMessage = null;
@@ -59,7 +57,6 @@ public class JournalTransaction implements IOCallback {
    private volatile int errorCode = 0;
 
    private static final AtomicIntegerFieldUpdater<JournalTransaction> upUpdater = AtomicIntegerFieldUpdater.newUpdater(JournalTransaction.class, "up");
-   private volatile int up;
 
    private int done = 0;
 

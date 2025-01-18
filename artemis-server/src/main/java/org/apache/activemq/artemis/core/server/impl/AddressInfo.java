@@ -70,11 +70,7 @@ public class AddressInfo {
 
    private boolean internal = false;
 
-   private volatile long routedMessageCount = 0;
-
    private static final AtomicLongFieldUpdater<AddressInfo> routedMessageCountUpdater = AtomicLongFieldUpdater.newUpdater(AddressInfo.class, "routedMessageCount");
-
-   private volatile long unRoutedMessageCount = 0;
 
    private static final AtomicLongFieldUpdater<AddressInfo> unRoutedMessageCountUpdater = AtomicLongFieldUpdater.newUpdater(AddressInfo.class, "unRoutedMessageCount");
 

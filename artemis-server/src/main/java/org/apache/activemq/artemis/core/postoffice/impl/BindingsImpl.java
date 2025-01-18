@@ -84,11 +84,6 @@ public final class BindingsImpl implements Bindings {
 
    private static final AtomicInteger sequenceVersion = new AtomicInteger(Integer.MIN_VALUE);
 
-   /**
-    * This has a version about adds and removes
-    */
-   private volatile int version;
-
    private static final AtomicIntegerFieldUpdater<BindingsImpl> VERSION_UPDATER = AtomicIntegerFieldUpdater
       .newUpdater(BindingsImpl.class, "version");
 

@@ -1627,15 +1627,9 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener {
        */
       private static final AtomicLongFieldUpdater<ServerConsumerMetrics> messagesInTransitSizeUpdater = AtomicLongFieldUpdater.newUpdater(ServerConsumerMetrics.class, "messagesInTransitSize");
 
-      private volatile long messagesInTransitSize = 0;
-
       private static final AtomicIntegerFieldUpdater<ServerConsumerMetrics> messagesAcknowledgedAwaitingCommitUpdater = AtomicIntegerFieldUpdater.newUpdater(ServerConsumerMetrics.class, "messagesAcknowledgedAwaitingCommit");
 
-      private volatile int messagesAcknowledgedAwaitingCommit = 0;
-
       private static final AtomicLongFieldUpdater<ServerConsumerMetrics>messagesDeliveredSizeUpdater = AtomicLongFieldUpdater.newUpdater(ServerConsumerMetrics.class, "messagesDeliveredSize");
-
-      private volatile long messagesDeliveredSize = 0;
 
       private volatile long lastDeliveredTime = 0;
 
@@ -1643,11 +1637,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener {
 
       private static final AtomicLongFieldUpdater<ServerConsumerMetrics>messagesDeliveredUpdater = AtomicLongFieldUpdater.newUpdater(ServerConsumerMetrics.class, "messagesDelivered");
 
-      private volatile long messagesDelivered = 0;
-
       private static final AtomicLongFieldUpdater<ServerConsumerMetrics> messagesAcknowledgedUpdater = AtomicLongFieldUpdater.newUpdater(ServerConsumerMetrics.class, "messagesAcknowledged");
-
-      private volatile long messagesAcknowledged = 0;
 
 
       public long getMessagesInTransitSize() {
