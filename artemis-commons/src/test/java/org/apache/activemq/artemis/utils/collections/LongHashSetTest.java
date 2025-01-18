@@ -24,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -327,7 +326,7 @@ public class LongHashSetTest {
       final LongHashSet other = new LongHashSet(100);
 
       assertTrue(testSet.containsAll(other));
-      assertTrue(testSet.containsAll((Collection<?>) other));
+      assertTrue(testSet.containsAll(other));
    }
 
    @Test
@@ -339,7 +338,7 @@ public class LongHashSetTest {
       subset.add(1L);
 
       assertTrue(testSet.containsAll(subset));
-      assertTrue(testSet.containsAll((Collection<?>) subset));
+      assertTrue(testSet.containsAll(subset));
    }
 
    @Test
@@ -352,7 +351,7 @@ public class LongHashSetTest {
       other.add(1002L);
 
       assertFalse(testSet.containsAll(other));
-      assertFalse(testSet.containsAll((Collection<?>) other));
+      assertFalse(testSet.containsAll(other));
    }
 
    @Test
@@ -365,7 +364,7 @@ public class LongHashSetTest {
       superset.add(15L);
 
       assertFalse(testSet.containsAll(superset));
-      assertFalse(testSet.containsAll((Collection<?>) superset));
+      assertFalse(testSet.containsAll(superset));
    }
 
    @Test
