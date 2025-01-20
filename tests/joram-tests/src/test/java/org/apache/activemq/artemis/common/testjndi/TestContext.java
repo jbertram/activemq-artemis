@@ -84,7 +84,7 @@ public class TestContext implements Context, Serializable {
       treeBindings = new HashMap<>();
    }
 
-   public TestContext(Hashtable env) {
+   public TestContext(Map env) {
       if (env == null) {
          this.environment = new Hashtable<>();
       } else {
@@ -94,7 +94,7 @@ public class TestContext implements Context, Serializable {
       this.treeBindings = Collections.emptyMap();
    }
 
-   public TestContext(Hashtable environment, Map<String, Object> bindings) {
+   public TestContext(Map environment, Map<String, Object> bindings) {
       if (environment == null) {
          this.environment = new Hashtable<>();
       } else {
@@ -114,18 +114,18 @@ public class TestContext implements Context, Serializable {
       frozen = true;
    }
 
-   public TestContext(Hashtable environment, Map<String, Object> bindings, String nameInNamespace) {
+   public TestContext(Map environment, Map<String, Object> bindings, String nameInNamespace) {
       this(environment, bindings);
       this.nameInNamespace = nameInNamespace;
    }
 
-   protected TestContext(TestContext clone, Hashtable env) {
+   protected TestContext(TestContext clone, Map env) {
       this.bindings = clone.bindings;
       this.treeBindings = clone.treeBindings;
       this.environment = new Hashtable<>(env);
    }
 
-   protected TestContext(TestContext clone, Hashtable<String, Object> env, String nameInNamespace) {
+   protected TestContext(TestContext clone, Map<String, Object> env, String nameInNamespace) {
       this(clone, env);
       this.nameInNamespace = nameInNamespace;
    }

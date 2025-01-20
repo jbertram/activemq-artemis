@@ -78,7 +78,7 @@ public class ReadOnlyContext implements Context, Serializable {
       treeBindings = new HashMap<>();
    }
 
-   public ReadOnlyContext(Hashtable env) {
+   public ReadOnlyContext(Map env) {
       if (env == null) {
          this.environment = new Hashtable<>();
       } else {
@@ -88,7 +88,7 @@ public class ReadOnlyContext implements Context, Serializable {
       this.treeBindings = Collections.emptyMap();
    }
 
-   public ReadOnlyContext(Hashtable environment, Map<String, Object> bindings) {
+   public ReadOnlyContext(Map environment, Map<String, Object> bindings) {
       if (environment == null) {
          this.environment = new Hashtable<>();
       } else {
@@ -108,18 +108,18 @@ public class ReadOnlyContext implements Context, Serializable {
       frozen = true;
    }
 
-   public ReadOnlyContext(Hashtable environment, Map<String, Object> bindings, String nameInNamespace) {
+   public ReadOnlyContext(Map environment, Map<String, Object> bindings, String nameInNamespace) {
       this(environment, bindings);
       this.nameInNamespace = nameInNamespace;
    }
 
-   protected ReadOnlyContext(ReadOnlyContext clone, Hashtable env) {
+   protected ReadOnlyContext(ReadOnlyContext clone, Map env) {
       this.bindings = clone.bindings;
       this.treeBindings = clone.treeBindings;
       this.environment = new Hashtable<>(env);
    }
 
-   protected ReadOnlyContext(ReadOnlyContext clone, Hashtable<String, Object> env, String nameInNamespace) {
+   protected ReadOnlyContext(ReadOnlyContext clone, Map<String, Object> env, String nameInNamespace) {
       this(clone, env);
       this.nameInNamespace = nameInNamespace;
    }
