@@ -109,11 +109,11 @@ public class TestContextFactory implements InitialContextFactory {
    // Implementation methods
    // -------------------------------------------------------------------------
 
-   protected Context createContext(Hashtable<?, ?> environment, Map<String, Object> data) {
+   protected Context createContext(Map<?, ?> environment, Map<String, Object> data) {
       return new TestContext(environment, data);
    }
 
-   protected void createQueues(Map<String, Object> data, Hashtable<?, ?> environment) {
+   protected void createQueues(Map<String, Object> data, Map<?, ?> environment) {
       for (Map.Entry<?, ?> entry : environment.entrySet()) {
          String key = entry.getKey().toString();
          if (key.startsWith(queuePrefix)) {
@@ -123,7 +123,7 @@ public class TestContextFactory implements InitialContextFactory {
       }
    }
 
-   protected void createTopics(Map<String, Object> data, Hashtable<?, ?> environment) {
+   protected void createTopics(Map<String, Object> data, Map<?, ?> environment) {
       for (Map.Entry<?, ?> entry : environment.entrySet()) {
          String key = entry.getKey().toString();
          if (key.startsWith(topicPrefix)) {
