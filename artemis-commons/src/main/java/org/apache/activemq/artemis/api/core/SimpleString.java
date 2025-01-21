@@ -395,8 +395,7 @@ public final class SimpleString implements CharSequence, Serializable, Comparabl
          return true;
       }
 
-      if (other instanceof SimpleString) {
-         SimpleString s = (SimpleString) other;
+      if (other instanceof SimpleString s) {
 
          return ByteUtil.equals(data, s.data);
       } else {

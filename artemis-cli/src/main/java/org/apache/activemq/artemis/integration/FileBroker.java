@@ -91,8 +91,8 @@ public class FileBroker implements Broker {
       ActiveMQComponent[] mqComponents = new ActiveMQComponent[components.size()];
       components.values().toArray(mqComponents);
       for (int i = mqComponents.length - 1; i >= 0; i--) {
-         if (mqComponents[i] instanceof ServiceComponent) {
-            ((ServiceComponent) mqComponents[i]).stop(isShutdown);
+         if (mqComponents[i] instanceof ServiceComponent component) {
+            component.stop(isShutdown);
          } else {
             mqComponents[i].stop();
          }

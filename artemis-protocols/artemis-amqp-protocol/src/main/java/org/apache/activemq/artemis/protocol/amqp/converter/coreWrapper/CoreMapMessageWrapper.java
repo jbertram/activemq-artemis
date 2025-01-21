@@ -64,8 +64,8 @@ public final class CoreMapMessageWrapper extends CoreMessageWrapper {
       while (names.hasMoreElements()) {
          String key = names.nextElement();
          Object value = message.getObject(key);
-         if (value instanceof byte[]) {
-            value = new Binary((byte[]) value);
+         if (value instanceof byte[] bytes) {
+            value = new Binary(bytes);
          }
          map.put(key, value);
       }
@@ -128,14 +128,14 @@ public final class CoreMapMessageWrapper extends CoreMessageWrapper {
    public void setObject(final String name, final Object value) throws ActiveMQPropertyConversionException {
       // primitives and String
       Object val = value;
-      if (value instanceof UnsignedInteger) {
-         val = ((UnsignedInteger) value).intValue();
-      } else if (value instanceof UnsignedShort) {
-         val = ((UnsignedShort) value).shortValue();
-      } else if (value instanceof UnsignedByte) {
-         val = ((UnsignedByte) value).byteValue();
-      } else if (value instanceof UnsignedLong) {
-         val = ((UnsignedLong) value).longValue();
+      if (value instanceof UnsignedInteger integer) {
+         val = integer.intValue();
+      } else if (value instanceof UnsignedShort short1) {
+         val = short1.shortValue();
+      } else if (value instanceof UnsignedByte byte1) {
+         val = byte1.byteValue();
+      } else if (value instanceof UnsignedLong long1) {
+         val = long1.longValue();
       }
       TypedProperties.setObjectProperty(SimpleString.of(name), val, map);
    }
@@ -188,8 +188,8 @@ public final class CoreMapMessageWrapper extends CoreMessageWrapper {
    public Object getObject(final String name) {
       Object val = map.getProperty(SimpleString.of(name));
 
-      if (val instanceof SimpleString) {
-         val = ((SimpleString) val).toString();
+      if (val instanceof SimpleString string) {
+         val = string.toString();
       }
 
       return val;

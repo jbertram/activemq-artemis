@@ -228,8 +228,7 @@ public class ActiveMQRAConnectionRequestInfo implements ConnectionRequestInfo {
          return false;
       }
 
-      if (obj instanceof ActiveMQRAConnectionRequestInfo) {
-         ActiveMQRAConnectionRequestInfo you = (ActiveMQRAConnectionRequestInfo) obj;
+      if (obj instanceof ActiveMQRAConnectionRequestInfo you) {
          return ActiveMQRaUtils.compare(userName, you.getUserName()) && ActiveMQRaUtils.compare(password, you.getPassword()) &&
             ActiveMQRaUtils.compare(clientID, you.getClientID()) &&
             type == you.getType() &&

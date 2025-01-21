@@ -520,9 +520,7 @@ public class JournalStorageManager extends AbstractJournalStorageManager {
       // Check durable large massage size before to allocate resources if it can't be stored
       if (largeMessage.toMessage().isDurable()) {
          final long maxRecordSize = getMaxRecordSize();
-         if (largeMessage instanceof LargeServerMessageImpl) {
-            // the following check only applies to Core
-            LargeServerMessageImpl coreLarge = (LargeServerMessageImpl)largeMessage;
+         if (largeMessage instanceof LargeServerMessageImpl coreLarge) {
             final int messageEncodeSize = coreLarge.getEncodeSize();
 
             if (messageEncodeSize > maxRecordSize) {

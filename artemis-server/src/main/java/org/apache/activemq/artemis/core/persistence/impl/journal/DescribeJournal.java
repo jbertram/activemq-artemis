@@ -551,8 +551,7 @@ public final class DescribeJournal {
          return "** null **";
       }
       if (safe && !isSafe(obj)) {
-         if (obj instanceof MessageDescribe) {
-            MessageDescribe describe = (MessageDescribe)obj;
+         if (obj instanceof MessageDescribe describe) {
             try {
                return describe.getMsg().getClass().getSimpleName() + "(safe data, size=" + describe.getMsg().getPersistentSize() + ")";
             } catch (Throwable e) {

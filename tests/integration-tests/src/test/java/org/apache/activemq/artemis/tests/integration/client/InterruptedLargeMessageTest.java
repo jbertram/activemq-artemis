@@ -736,8 +736,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase {
 
       @Override
       public boolean intercept(Packet packet, RemotingConnection connection) throws ActiveMQException {
-         if (packet instanceof SessionContinuationMessage) {
-            SessionContinuationMessage msg = (SessionContinuationMessage) packet;
+         if (packet instanceof SessionContinuationMessage msg) {
             if (!msg.isContinues() && intMessages) {
                logger.debug("Ignored a message");
                latch.countDown();

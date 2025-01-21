@@ -55,8 +55,7 @@ public class DummyInterceptor implements Interceptor {
          throw new ActiveMQInternalErrorException();
       }
       if (changeMessage) {
-         if (packet instanceof SessionReceiveMessage) {
-            SessionReceiveMessage deliver = (SessionReceiveMessage) packet;
+         if (packet instanceof SessionReceiveMessage deliver) {
             logger.debug("msg = {}", deliver.getMessage().getClass().getName());
             deliver.getMessage().putStringProperty(SimpleString.of("DummyInterceptor"), SimpleString.of("was here"));
          }

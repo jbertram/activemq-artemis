@@ -415,16 +415,16 @@ public class ActiveMQMessageProducer implements MessageProducer, QueueSender, To
       if (!(jmsMessage instanceof ActiveMQMessage)) {
          // JMS 1.1 Sect. 3.11.4: A provider must be prepared to accept, from a client,
          // a message whose implementation is not one of its own.
-         if (jmsMessage instanceof BytesMessage) {
-            activeMQJmsMessage = new ActiveMQBytesMessage((BytesMessage) jmsMessage, clientSession);
-         } else if (jmsMessage instanceof MapMessage) {
-            activeMQJmsMessage = new ActiveMQMapMessage((MapMessage) jmsMessage, clientSession);
-         } else if (jmsMessage instanceof ObjectMessage) {
-            activeMQJmsMessage = new ActiveMQObjectMessage((ObjectMessage) jmsMessage, clientSession, options);
-         } else if (jmsMessage instanceof StreamMessage) {
-            activeMQJmsMessage = new ActiveMQStreamMessage((StreamMessage) jmsMessage, clientSession);
-         } else if (jmsMessage instanceof TextMessage) {
-            activeMQJmsMessage = new ActiveMQTextMessage((TextMessage) jmsMessage, clientSession);
+         if (jmsMessage instanceof BytesMessage message) {
+            activeMQJmsMessage = new ActiveMQBytesMessage(message, clientSession);
+         } else if (jmsMessage instanceof MapMessage message) {
+            activeMQJmsMessage = new ActiveMQMapMessage(message, clientSession);
+         } else if (jmsMessage instanceof ObjectMessage message) {
+            activeMQJmsMessage = new ActiveMQObjectMessage(message, clientSession, options);
+         } else if (jmsMessage instanceof StreamMessage message) {
+            activeMQJmsMessage = new ActiveMQStreamMessage(message, clientSession);
+         } else if (jmsMessage instanceof TextMessage message) {
+            activeMQJmsMessage = new ActiveMQTextMessage(message, clientSession);
          } else {
             activeMQJmsMessage = new ActiveMQMessage(jmsMessage, clientSession);
          }
@@ -524,16 +524,16 @@ public class ActiveMQMessageProducer implements MessageProducer, QueueSender, To
 
       @Override
       public void sendAcknowledged(org.apache.activemq.artemis.api.core.Message clientMessage) {
-         if (jmsMessage instanceof StreamMessage) {
+         if (jmsMessage instanceof StreamMessage message) {
             try {
-               ((StreamMessage) jmsMessage).reset();
+               message.reset();
             } catch (JMSException e) {
                logger.debug("ignoring exception", e);
             }
          }
-         if (jmsMessage instanceof BytesMessage) {
+         if (jmsMessage instanceof BytesMessage message) {
             try {
-               ((BytesMessage) jmsMessage).reset();
+               message.reset();
             } catch (JMSException e) {
                logger.debug("ignoring exception", e);
             }
@@ -549,16 +549,16 @@ public class ActiveMQMessageProducer implements MessageProducer, QueueSender, To
 
       @Override
       public void sendFailed(org.apache.activemq.artemis.api.core.Message clientMessage, Exception exception) {
-         if (jmsMessage instanceof StreamMessage) {
+         if (jmsMessage instanceof StreamMessage message) {
             try {
-               ((StreamMessage) jmsMessage).reset();
+               message.reset();
             } catch (JMSException e) {
                // HORNETQ-1209 XXX ignore?
             }
          }
-         if (jmsMessage instanceof BytesMessage) {
+         if (jmsMessage instanceof BytesMessage message) {
             try {
-               ((BytesMessage) jmsMessage).reset();
+               message.reset();
             } catch (JMSException e) {
                // HORNETQ-1209 XXX ignore?
             }
@@ -566,10 +566,10 @@ public class ActiveMQMessageProducer implements MessageProducer, QueueSender, To
 
          try {
             producer.connection.getThreadAwareContext().setCurrentThread(true);
-            if (exception instanceof ActiveMQException) {
-               exception = JMSExceptionHelper.convertFromActiveMQException((ActiveMQException) exception);
-            } else if (exception instanceof ActiveMQInterruptedException) {
-               exception = JMSExceptionHelper.convertFromActiveMQException((ActiveMQInterruptedException) exception);
+            if (exception instanceof ActiveMQException qException) {
+               exception = JMSExceptionHelper.convertFromActiveMQException(qException);
+            } else if (exception instanceof ActiveMQInterruptedException interruptedException) {
+               exception = JMSExceptionHelper.convertFromActiveMQException(interruptedException);
             }
             completionListener.onException(jmsMessage, exception);
          } finally {

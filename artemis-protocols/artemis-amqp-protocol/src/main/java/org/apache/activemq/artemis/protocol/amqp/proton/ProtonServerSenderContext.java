@@ -486,9 +486,9 @@ public class ProtonServerSenderContext extends ProtonInitializable implements Pr
       // Preserve for hasCredits to check for busy state and possible abort on close
       this.messageWriter = messageWriter;
 
-      if (messageReference instanceof Runnable && consumer.allowReferenceCallback()) {
+      if (messageReference instanceof Runnable runnable && consumer.allowReferenceCallback()) {
          messageReference.onDelivery(messageWriter);
-         connection.runNow((Runnable) messageReference);
+         connection.runNow(runnable);
       } else {
          connection.runNow(() -> messageWriter.accept(messageReference));
       }

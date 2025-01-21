@@ -384,11 +384,11 @@ public class ClusteredBridgeReconnectTest extends ClusterTestBase {
       boolean localBindingPaused = false;
       boolean remoteBindingPaused = true;
       for (Binding bd : bindings0.getBindings()) {
-         if (bd instanceof LocalQueueBinding) {
-            localBindingPaused = ((LocalQueueBinding)bd).getQueue().isPaused();
+         if (bd instanceof LocalQueueBinding binding) {
+            localBindingPaused = binding.getQueue().isPaused();
          }
-         if (bd instanceof RemoteQueueBinding) {
-            remoteBindingPaused = ((RemoteQueueBinding)bd).getQueue().isPaused();
+         if (bd instanceof RemoteQueueBinding binding) {
+            remoteBindingPaused = binding.getQueue().isPaused();
          }
       }
       assertTrue(localBindingPaused);

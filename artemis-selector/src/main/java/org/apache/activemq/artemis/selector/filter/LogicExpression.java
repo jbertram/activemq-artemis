@@ -76,8 +76,7 @@ public abstract class LogicExpression implements BooleanExpression {
    }
 
    public static BooleanExpression createOR(BooleanExpression lvalue, BooleanExpression rvalue) {
-      if (lvalue instanceof ORExpression) {
-         ORExpression orExpression = (ORExpression) lvalue;
+      if (lvalue instanceof ORExpression orExpression) {
          orExpression.addExpression(rvalue);
          return orExpression;
       } else {
@@ -86,8 +85,7 @@ public abstract class LogicExpression implements BooleanExpression {
    }
 
    public static BooleanExpression createAND(BooleanExpression lvalue, BooleanExpression rvalue) {
-      if (lvalue instanceof ANDExpression) {
-         ANDExpression orExpression = (ANDExpression) lvalue;
+      if (lvalue instanceof ANDExpression orExpression) {
          orExpression.addExpression(rvalue);
          return orExpression;
       } else {

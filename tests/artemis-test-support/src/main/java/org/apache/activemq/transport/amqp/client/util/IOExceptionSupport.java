@@ -31,8 +31,8 @@ public class IOExceptionSupport {
     * @return an IOException instance.
     */
    public static IOException create(Throwable cause) {
-      if (cause instanceof IOException) {
-         return (IOException) cause;
+      if (cause instanceof IOException exception) {
+         return exception;
       }
 
       String message = cause.getMessage();

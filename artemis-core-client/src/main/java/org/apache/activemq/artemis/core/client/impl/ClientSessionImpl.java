@@ -1783,10 +1783,10 @@ public final class ClientSessionImpl implements ClientSessionInternal, FailureLi
       if (xares == null) {
          return null;
       }
-      if (xares instanceof ClientSessionInternal) {
-         return (ClientSessionInternal) xares;
-      } else if (xares instanceof ActiveMQXAResource) {
-         return getSessionInternalFromXAResource(((ActiveMQXAResource) xares).getResource());
+      if (xares instanceof ClientSessionInternal internal) {
+         return internal;
+      } else if (xares instanceof ActiveMQXAResource resource) {
+         return getSessionInternalFromXAResource(resource.getResource());
       }
       return null;
    }

@@ -2907,8 +2907,8 @@ public class QueueImpl extends CriticalComponentImpl implements Queue {
                if (originalMessageQueue != null && !originalMessageQueue.equals(originalMessageAddress)) {
                   targetQueue = queues.get(originalMessageQueue);
                   if (targetQueue == null) {
-                     if (binding instanceof LocalQueueBinding) {
-                        targetQueue = ((LocalQueueBinding) binding).getID();
+                     if (binding instanceof LocalQueueBinding queueBinding) {
+                        targetQueue = queueBinding.getID();
                         queues.put(originalMessageQueue, targetQueue);
                      }
                   }
@@ -3714,8 +3714,8 @@ public class QueueImpl extends CriticalComponentImpl implements Queue {
       Message copyMessage = makeCopy(ref, reason == AckReason.EXPIRED, address);
 
       Object originalRoutingType = ref.getMessage().getBrokerProperty(Message.HDR_ORIG_ROUTING_TYPE);
-      if (originalRoutingType != null && originalRoutingType instanceof Byte) {
-         copyMessage.setRoutingType(RoutingType.getType((Byte) originalRoutingType));
+      if (originalRoutingType != null && originalRoutingType instanceof Byte byte1) {
+         copyMessage.setRoutingType(RoutingType.getType(byte1));
       }
 
       if (queueID != null) {
@@ -3767,8 +3767,8 @@ public class QueueImpl extends CriticalComponentImpl implements Queue {
       Message copyMessage = makeCopy(ref, false, false, address);
 
       Object originalRoutingType = ref.getMessage().getBrokerProperty(Message.HDR_ORIG_ROUTING_TYPE);
-      if (originalRoutingType != null && originalRoutingType instanceof Byte) {
-         copyMessage.setRoutingType(RoutingType.getType((Byte) originalRoutingType));
+      if (originalRoutingType != null && originalRoutingType instanceof Byte byte1) {
+         copyMessage.setRoutingType(RoutingType.getType(byte1));
       }
 
       RoutingStatus routingStatus;
@@ -4917,8 +4917,7 @@ public class QueueImpl extends CriticalComponentImpl implements Queue {
 
          for (ConsumerHolder consumerHolder : consumers) {
             Consumer consumer = consumerHolder.consumer();
-            if (consumer instanceof ServerConsumerImpl) {
-               ServerConsumerImpl serverConsumer = (ServerConsumerImpl) consumer;
+            if (consumer instanceof ServerConsumerImpl serverConsumer) {
                float consumerRate = serverConsumer.getRate();
                if (consumerRate < thresholdInMsgPerSecond || (consumerRate == 0 && thresholdInMsgPerSecond == 0)) {
                   RemotingConnection connection = null;
