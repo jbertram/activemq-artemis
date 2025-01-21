@@ -275,26 +275,26 @@ public final class CoreStreamMessageWrapper extends CoreMessageWrapper {
    }
 
    public void writeObject(final Object value) throws ConversionException {
-      if (value instanceof String) {
-         writeString((String) value);
-      } else if (value instanceof Boolean) {
-         writeBoolean((Boolean) value);
-      } else if (value instanceof Byte) {
-         writeByte((Byte) value);
-      } else if (value instanceof Short) {
-         writeShort((Short) value);
-      } else if (value instanceof Integer) {
-         writeInt((Integer) value);
-      } else if (value instanceof Long) {
-         writeLong((Long) value);
-      } else if (value instanceof Float) {
-         writeFloat((Float) value);
-      } else if (value instanceof Double) {
-         writeDouble((Double) value);
-      } else if (value instanceof byte[]) {
-         writeBytes((byte[]) value);
-      } else if (value instanceof Character) {
-         writeChar((Character) value);
+      if (value instanceof String string) {
+         writeString(string);
+      } else if (value instanceof Boolean boolean1) {
+         writeBoolean(boolean1);
+      } else if (value instanceof Byte byte1) {
+         writeByte(byte1);
+      } else if (value instanceof Short short1) {
+         writeShort(short1);
+      } else if (value instanceof Integer integer) {
+         writeInt(integer);
+      } else if (value instanceof Long long1) {
+         writeLong(long1);
+      } else if (value instanceof Float float1) {
+         writeFloat(float1);
+      } else if (value instanceof Double double1) {
+         writeDouble(double1);
+      } else if (value instanceof byte[] bytes) {
+         writeBytes(bytes);
+      } else if (value instanceof Character character) {
+         writeChar(character);
       } else if (value == null) {
          writeString(null);
       } else {

@@ -43,8 +43,8 @@ public class FakeFilter implements Filter {
       if (headerName != null) {
          Object value = message.getObjectProperty(headerName);
 
-         if (value instanceof SimpleString) {
-            value = ((SimpleString) value).toString();
+         if (value instanceof SimpleString string) {
+            value = string.toString();
          }
 
          if (value != null && headerValue.equals(value)) {

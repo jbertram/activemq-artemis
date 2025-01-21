@@ -116,11 +116,11 @@ public abstract class ActiveMQAbstractView<T> {
          try {
             Object leftValue = getField(left, sortField);
             Object rightValue = getField(right, sortField);
-            if (leftValue instanceof Comparable && rightValue instanceof Comparable) {
+            if (leftValue instanceof Comparable comparable && rightValue instanceof Comparable comparable1) {
                if (sortOrder.equalsIgnoreCase(DESCENDING)) {
-                  return ((Comparable) rightValue).compareTo(leftValue);
+                  return comparable1.compareTo(leftValue);
                } else {
-                  return ((Comparable) leftValue).compareTo(rightValue);
+                  return comparable.compareTo(rightValue);
                }
             }
             return 0;

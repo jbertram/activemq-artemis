@@ -501,8 +501,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    @Override
    public void failed(Throwable t) {
-      if (t instanceof ActiveMQException) {
-         connectionFailed((ActiveMQException) t, false);
+      if (t instanceof ActiveMQException exception) {
+         connectionFailed(exception, false);
       } else {
          ActiveMQException exception = new ActiveMQException(t.getMessage());
          exception.initCause(t);

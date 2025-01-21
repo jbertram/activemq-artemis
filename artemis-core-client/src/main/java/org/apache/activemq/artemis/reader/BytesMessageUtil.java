@@ -138,26 +138,26 @@ public class BytesMessageUtil extends MessageUtil {
       if (value == null) {
          throw new NullPointerException("Attempt to write a null value");
       }
-      if (value instanceof String) {
-         bytesWriteUTF(message, (String) value);
-      } else if (value instanceof Boolean) {
-         bytesWriteBoolean(message, (Boolean) value);
-      } else if (value instanceof Character) {
-         bytesWriteChar(message, (Character) value);
-      } else if (value instanceof Byte) {
-         bytesWriteByte(message, (Byte) value);
-      } else if (value instanceof Short) {
-         bytesWriteShort(message, (Short) value);
-      } else if (value instanceof Integer) {
-         bytesWriteInt(message, (Integer) value);
-      } else if (value instanceof Long) {
-         bytesWriteLong(message, (Long) value);
-      } else if (value instanceof Float) {
-         bytesWriteFloat(message, (Float) value);
-      } else if (value instanceof Double) {
-         bytesWriteDouble(message, (Double) value);
-      } else if (value instanceof byte[]) {
-         bytesWriteBytes(message, (byte[]) value);
+      if (value instanceof String string) {
+         bytesWriteUTF(message, string);
+      } else if (value instanceof Boolean boolean1) {
+         bytesWriteBoolean(message, boolean1);
+      } else if (value instanceof Character character) {
+         bytesWriteChar(message, character);
+      } else if (value instanceof Byte byte1) {
+         bytesWriteByte(message, byte1);
+      } else if (value instanceof Short short1) {
+         bytesWriteShort(message, short1);
+      } else if (value instanceof Integer integer) {
+         bytesWriteInt(message, integer);
+      } else if (value instanceof Long long1) {
+         bytesWriteLong(message, long1);
+      } else if (value instanceof Float float1) {
+         bytesWriteFloat(message, float1);
+      } else if (value instanceof Double double1) {
+         bytesWriteDouble(message, double1);
+      } else if (value instanceof byte[] bytes) {
+         bytesWriteBytes(message, bytes);
       } else {
          return false;
       }

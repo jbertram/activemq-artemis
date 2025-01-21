@@ -221,8 +221,8 @@ public class AMQPSessionContext extends ProtonInitializable {
          } catch (ActiveMQException e) {
             final ActiveMQAMQPException cause;
 
-            if (e instanceof ActiveMQAMQPException) {
-               cause = (ActiveMQAMQPException) e;
+            if (e instanceof ActiveMQAMQPException exception) {
+               cause = exception;
             } else {
                cause = new ActiveMQAMQPInternalErrorException(e.getMessage());
             }
@@ -420,8 +420,8 @@ public class AMQPSessionContext extends ProtonInitializable {
          } catch (ActiveMQException e) {
             final ActiveMQAMQPException cause;
 
-            if (e instanceof ActiveMQAMQPException) {
-               cause = (ActiveMQAMQPException) e;
+            if (e instanceof ActiveMQAMQPException exception) {
+               cause = exception;
             } else {
                cause = new ActiveMQAMQPInternalErrorException(e.getMessage());
             }
@@ -466,8 +466,8 @@ public class AMQPSessionContext extends ProtonInitializable {
          } catch (ActiveMQException e) {
             final ActiveMQAMQPException cause;
 
-            if (e instanceof ActiveMQAMQPException) {
-               cause = (ActiveMQAMQPException) e;
+            if (e instanceof ActiveMQAMQPException exception) {
+               cause = exception;
             } else {
                cause = new ActiveMQAMQPInternalErrorException(e.getMessage());
             }

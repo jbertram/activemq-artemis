@@ -30,8 +30,7 @@ final class ByteArray {
 
    @Override
    public boolean equals(final Object other) {
-      if (other instanceof ByteArray) {
-         ByteArray s = (ByteArray) other;
+      if (other instanceof ByteArray s) {
 
          return ByteUtil.equals(bytes, s.bytes);
       } else {

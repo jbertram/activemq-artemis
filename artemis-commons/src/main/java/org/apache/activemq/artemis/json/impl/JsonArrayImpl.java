@@ -112,8 +112,8 @@ public class JsonArrayImpl extends JsonValueImpl implements JsonArray {
 
    @Override
    public boolean contains(Object o) {
-      if (o instanceof JsonValueImpl) {
-         return rawArray.contains(((JsonValueImpl)o).getRawValue());
+      if (o instanceof JsonValueImpl impl) {
+         return rawArray.contains(impl.getRawValue());
       } else {
          return rawArray.contains(o);
       }

@@ -291,11 +291,11 @@ public class ServerPacketDecoder extends ClientPacketDecoder {
 
       packet.decode(in);
 
-      if (packet instanceof MessagePacketI) {
-         Message message = ((MessagePacketI)packet).getMessage();
-         if (message instanceof LargeServerMessage) {
+      if (packet instanceof MessagePacketI packetI) {
+         Message message = packetI.getMessage();
+         if (message instanceof LargeServerMessage serverMessage) {
             assert storageManager != null;
-            ((LargeServerMessage) message).setStorageManager(storageManager);
+            serverMessage.setStorageManager(storageManager);
          }
       }
 

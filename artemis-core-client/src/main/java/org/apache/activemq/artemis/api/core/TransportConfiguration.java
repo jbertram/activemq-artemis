@@ -328,18 +328,18 @@ public class TransportConfiguration implements Serializable {
 
          Object val = entry.getValue();
 
-         if (val instanceof Boolean) {
+         if (val instanceof Boolean boolean1) {
             buffer.writeByte(TransportConfiguration.TYPE_BOOLEAN);
-            buffer.writeBoolean((Boolean) val);
-         } else if (val instanceof Integer) {
+            buffer.writeBoolean(boolean1);
+         } else if (val instanceof Integer integer) {
             buffer.writeByte(TransportConfiguration.TYPE_INT);
-            buffer.writeInt((Integer) val);
-         } else if (val instanceof Long) {
+            buffer.writeInt(integer);
+         } else if (val instanceof Long long1) {
             buffer.writeByte(TransportConfiguration.TYPE_LONG);
-            buffer.writeLong((Long) val);
-         } else if (val instanceof String) {
+            buffer.writeLong(long1);
+         } else if (val instanceof String string) {
             buffer.writeByte(TransportConfiguration.TYPE_STRING);
-            buffer.writeString((String) val);
+            buffer.writeString(string);
          } else {
             throw ActiveMQClientMessageBundle.BUNDLE.invalidEncodeType(val);
          }

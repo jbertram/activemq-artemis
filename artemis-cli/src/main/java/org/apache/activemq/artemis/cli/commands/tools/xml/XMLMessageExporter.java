@@ -84,10 +84,10 @@ public class XMLMessageExporter {
       LargeBodyReader encoder = null;
 
       try {
-         if (message instanceof LargeServerMessage) {
-            encoder = ((LargeServerMessage)message).toMessage().toCore().getLargeBodyReader();
-         } else if (message instanceof ClientLargeMessageImpl) {
-            encoder = ((ClientLargeMessageImpl)message).getLargeBodyReader();
+         if (message instanceof LargeServerMessage serverMessage) {
+            encoder = serverMessage.toMessage().toCore().getLargeBodyReader();
+         } else if (message instanceof ClientLargeMessageImpl impl) {
+            encoder = impl.getLargeBodyReader();
          } else {
             throw new RuntimeException("Unrecognized message implementation: " + message.getClass().getName());
          }

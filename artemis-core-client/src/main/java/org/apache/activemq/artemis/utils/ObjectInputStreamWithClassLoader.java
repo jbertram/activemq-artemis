@@ -193,14 +193,14 @@ public class ObjectInputStreamWithClassLoader extends ObjectInputStream {
 
    private RuntimeException unwrapException(PrivilegedActionException e) throws IOException, ClassNotFoundException {
       Throwable c = e.getCause();
-      if (c instanceof IOException) {
-         throw (IOException) c;
-      } else if (c instanceof ClassNotFoundException) {
-         throw (ClassNotFoundException) c;
-      } else if (c instanceof RuntimeException) {
-         throw (RuntimeException) c;
-      } else if (c instanceof Error) {
-         throw (Error) c;
+      if (c instanceof IOException exception) {
+         throw exception;
+      } else if (c instanceof ClassNotFoundException exception) {
+         throw exception;
+      } else if (c instanceof RuntimeException exception) {
+         throw exception;
+      } else if (c instanceof Error error) {
+         throw error;
       } else {
          throw new RuntimeException(c);
       }

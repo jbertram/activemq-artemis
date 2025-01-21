@@ -41,8 +41,7 @@ public abstract class ArithmeticExpression extends BinaryExpression {
       return new ArithmeticExpression(left, right) {
          @Override
          protected Object evaluate(Object lvalue, Object rvalue) {
-            if (lvalue instanceof String) {
-               String text = (String) lvalue;
+            if (lvalue instanceof String text) {
                String answer = text + rvalue;
                return answer;
             } else {
@@ -172,11 +171,10 @@ public abstract class ArithmeticExpression extends BinaryExpression {
    }
 
    protected Number asNumber(Object value) {
-      if (value instanceof Number) {
-         return (Number) value;
+      if (value instanceof Number number) {
+         return number;
       } else {
-         if (convertStringExpressions && value instanceof String) {
-            String v = (String) value;
+         if (convertStringExpressions && value instanceof String v) {
             try {
                if (v.contains(".")) {
                   return Double.valueOf(v);
