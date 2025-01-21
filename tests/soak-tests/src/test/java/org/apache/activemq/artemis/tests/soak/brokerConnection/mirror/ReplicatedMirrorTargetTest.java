@@ -187,11 +187,13 @@ public class ReplicatedMirrorTargetTest extends SoakTestBase {
 
    private static void replaceLogs(File serverLocation) throws Exception {
       File log4j = new File(serverLocation, "/etc/log4j2.properties");
-      assertTrue(FileUtil.findReplace(log4j, "logger.artemis_utils.level=INFO", "logger.artemis_utils.level=INFO\n" +
-         "\n" + "logger.endpoint.name=org.apache.activemq.artemis.core.replication.ReplicationEndpoint\n"
-         + "logger.endpoint.level=DEBUG\n"
-         + "appender.console.filter.threshold.type = ThresholdFilter\n"
-         + "appender.console.filter.threshold.level = info"));
+      assertTrue(FileUtil.findReplace(log4j, "logger.artemis_utils.level=INFO", """
+         logger.artemis_utils.level=INFO
+
+         logger.endpoint.name=org.apache.activemq.artemis.core.replication.ReplicationEndpoint
+         logger.endpoint.level=DEBUG
+         appender.console.filter.threshold.type = ThresholdFilter
+         appender.console.filter.threshold.level = info"""));
    }
 
    private static void createBackupServer(String serverName,

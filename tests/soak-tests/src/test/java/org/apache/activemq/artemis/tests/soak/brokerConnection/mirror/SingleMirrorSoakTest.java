@@ -167,19 +167,21 @@ public class SingleMirrorSoakTest extends SoakTestBase {
 
       if (TRACE_LOGS) {
          File log4j = new File(serverLocation, "/etc/log4j2.properties");
-         assertTrue(FileUtil.findReplace(log4j, "logger.artemis_utils.level=INFO", "logger.artemis_utils.level=INFO\n" +
-            "\n" + "logger.ack.name=org.apache.activemq.artemis.protocol.amqp.connect.mirror.AckManager\n"
-            + "logger.ack.level=TRACE\n"
-            + "logger.config.name=org.apache.activemq.artemis.core.config.impl.ConfigurationImpl\n"
-            + "logger.config.level=TRACE\n"
-            + "logger.counter.name=org.apache.activemq.artemis.core.paging.cursor.impl.PageSubscriptionCounterImpl\n"
-            + "logger.counter.level=DEBUG\n"
-            + "logger.queue.name=org.apache.activemq.artemis.core.server.impl.QueueImpl\n"
-            + "logger.queue.level=DEBUG\n"
-            + "logger.rebuild.name=org.apache.activemq.artemis.core.paging.cursor.impl.PageCounterRebuildManager\n"
-            + "logger.rebuild.level=DEBUG\n"
-            + "appender.console.filter.threshold.type = ThresholdFilter\n"
-            + "appender.console.filter.threshold.level = info"));
+         assertTrue(FileUtil.findReplace(log4j, "logger.artemis_utils.level=INFO", """
+            logger.artemis_utils.level=INFO
+
+            logger.ack.name=org.apache.activemq.artemis.protocol.amqp.connect.mirror.AckManager
+            logger.ack.level=TRACE
+            logger.config.name=org.apache.activemq.artemis.core.config.impl.ConfigurationImpl
+            logger.config.level=TRACE
+            logger.counter.name=org.apache.activemq.artemis.core.paging.cursor.impl.PageSubscriptionCounterImpl
+            logger.counter.level=DEBUG
+            logger.queue.name=org.apache.activemq.artemis.core.server.impl.QueueImpl
+            logger.queue.level=DEBUG
+            logger.rebuild.name=org.apache.activemq.artemis.core.paging.cursor.impl.PageCounterRebuildManager
+            logger.rebuild.level=DEBUG
+            appender.console.filter.threshold.type = ThresholdFilter
+            appender.console.filter.threshold.level = info"""));
       }
 
    }

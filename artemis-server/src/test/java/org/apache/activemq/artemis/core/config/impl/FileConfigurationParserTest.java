@@ -130,10 +130,13 @@ public class FileConfigurationParserTest extends ServerTestBase {
    @Test
    public void testParsingClusterConnectionURIs() throws Exception {
       FileConfigurationParser parser = new FileConfigurationParser();
+      String middlePart = """
+         <cluster-connections>
+            <cluster-connection-uri name="my-cluster" address="multicast://my-discovery-group?messageLoadBalancingType=STRICT;retryInterval=333;connectorName=netty-connector;maxHops=1"/>
+         </cluster-connections>
+         """;
 
-      String configStr = firstPart + "<cluster-connections>\n" +
-         "   <cluster-connection-uri name=\"my-cluster\" address=\"multicast://my-discovery-group?messageLoadBalancingType=STRICT;retryInterval=333;connectorName=netty-connector;maxHops=1\"/>\n" +
-         "</cluster-connections>\n" + lastPart;
+      String configStr = firstPart + middlePart + lastPart;
       ByteArrayInputStream input = new ByteArrayInputStream(configStr.getBytes(StandardCharsets.UTF_8));
 
       Configuration config = parser.parseMainConfig(input);
@@ -233,8 +236,7 @@ public class FileConfigurationParserTest extends ServerTestBase {
 
       clusterPasswordPart = "<cluster-password>" + mask + "</cluster-password>";
 
-      String codecPart = "<password-codec>" + "org.apache.activemq.artemis.utils.DefaultSensitiveStringCodec" +
-         ";key=newkey</password-codec>";
+      String codecPart = "<password-codec>org.apache.activemq.artemis.utils.DefaultSensitiveStringCodec;key=newkey</password-codec>";
 
       configStr = firstPart + clusterPasswordPart + maskPasswordPart + codecPart + lastPart;
 
@@ -287,8 +289,7 @@ public class FileConfigurationParserTest extends ServerTestBase {
 
       clusterPasswordPart = "<cluster-password>" + PasswordMaskingUtil.wrap(mask) + "</cluster-password>";
 
-      String codecPart = "<password-codec>" + "org.apache.activemq.artemis.utils.DefaultSensitiveStringCodec" +
-              ";key=newkey</password-codec>";
+      String codecPart = "<password-codec>org.apache.activemq.artemis.utils.DefaultSensitiveStringCodec;key=newkey</password-codec>";
 
       configStr = firstPart + clusterPasswordPart + codecPart + lastPart;
 
@@ -523,20 +524,22 @@ public class FileConfigurationParserTest extends ServerTestBase {
       assertTrue(valid, "Exception expected");
    }
 
-   private static String bridgePart = "<bridges>\n" +
-           "            <bridge name=\"my-bridge\">\n" +
-           "               <queue-name>sausage-factory</queue-name>\n" +
-           "               <forwarding-address>mincing-machine</forwarding-address>\n" +
-           "               <filter string=\"name='aardvark'\"/>\n" +
-           "               <transformer-class-name>org.apache.activemq.artemis.jms.example.HatColourChangeTransformer</transformer-class-name>\n" +
-           "               <reconnect-attempts>-1</reconnect-attempts>\n" +
-           "               <user>bridge-user</user>" +
-           "               <password>ENC(5aec0780b12bf225a13ab70c6c76bc8e)</password>" +
-           "               <static-connectors>\n" +
-           "                  <connector-ref>remote-connector</connector-ref>\n" +
-           "               </static-connectors>\n" +
-           "            </bridge>\n" +
-           "</bridges>\n";
+   private static String bridgePart = """
+      <bridges>
+         <bridge name="my-bridge">
+            <queue-name>sausage-factory</queue-name>
+            <forwarding-address>mincing-machine</forwarding-address>
+            <filter string="name='aardvark'"/>
+            <transformer-class-name>org.apache.activemq.artemis.jms.example.HatColourChangeTransformer</transformer-class-name>
+            <reconnect-attempts>-1</reconnect-attempts>
+            <user>bridge-user</user>
+            <password>ENC(5aec0780b12bf225a13ab70c6c76bc8e)</password>
+            <static-connectors>
+               <connector-ref>remote-connector</connector-ref>
+            </static-connectors>
+         </bridge>
+      </bridges>
+      """;
 
    @Test
    public void testParsingAddressSettings() throws Exception {
@@ -777,59 +780,67 @@ public class FileConfigurationParserTest extends ServerTestBase {
       assertFalse(configuration.isLargeMessageSync());
    }
 
-   private static String firstPart = "<core xmlns=\"urn:activemq:core\">" + "\n" +
-      "<name>ActiveMQ.main.config</name>" + "\n" +
-      "<log-delegate-factory-class-name>org.apache.activemq.artemis.integration.logging.Log4jLogDelegateFactory</log-delegate-factory-class-name>" + "\n" +
-      "<bindings-directory>${jboss.server.data.dir}/activemq/bindings</bindings-directory>" + "\n" +
-      "<journal-directory>${jboss.server.data.dir}/activemq/journal</journal-directory>" + "\n" +
-      "<journal-min-files>10</journal-min-files>" + "\n" +
-      "<large-messages-directory>${jboss.server.data.dir}/activemq/largemessages</large-messages-directory>" + "\n" +
-      "<paging-directory>${jboss.server.data.dir}/activemq/paging</paging-directory>" + "\n" +
-      "<connectors>" + "\n" +
-      "<connector name=\"netty\">tcp://localhost:61616</connector>" + "\n" +
-      "<connector name=\"netty-throughput\">tcp://localhost:5545</connector>" + "\n" +
-      "<connector name=\"in-vm\">vm://0</connector>" + "\n" +
-      "</connectors>" + "\n" +
-      "<acceptors>" + "\n" +
-      "<acceptor name=\"netty\">tcp://localhost:5545</acceptor>" + "\n" +
-      "<acceptor name=\"netty-throughput\">tcp://localhost:5545</acceptor>" + "\n" +
-      "<acceptor name=\"in-vm\">vm://0</acceptor>" + "\n" +
-      "</acceptors>" + "\n" +
-      "<security-settings>" + "\n" +
-      "<security-setting match=\"#\">" + "\n" +
-      "<permission type=\"createNonDurableQueue\" roles=\"guest\"/>" + "\n" +
-      "<permission type=\"deleteNonDurableQueue\" roles=\"guest\"/>" + "\n" +
-      "<permission type=\"createDurableQueue\" roles=\"guest\"/>" + "\n" +
-      "<permission type=\"deleteDurableQueue\" roles=\"guest\"/>" + "\n" +
-      "<permission type=\"consume\" roles=\"guest\"/>" + "\n" +
-      "<permission type=\"send\" roles=\"guest\"/>" + "\n" +
-      "</security-setting>" + "\n" +
-      "</security-settings>" + "\n" +
-      "<address-settings>" + "\n" +
-      "<address-setting match=\"#\">" + "\n" + "<dead-letter-address>DLQ\n</dead-letter-address>" + "\n" + "<expiry-address>ExpiryQueue\n</expiry-address>" + "\n" + "<redelivery-delay>0\n</redelivery-delay>" + "\n" + "<max-size-bytes>10485760\n</max-size-bytes>" + "\n" + "<message-counter-history-day-limit>10</message-counter-history-day-limit>" + "\n" + "<address-full-policy>BLOCK</address-full-policy>" + "\n" +
-      "</address-setting>" + "\n" +
-      "</address-settings>" + "\n";
+   private static String firstPart = """
+      <core xmlns="urn:activemq:core">
+         <name>ActiveMQ.main.config</name>
+         <log-delegate-factory-class-name>org.apache.activemq.artemis.integration.logging.Log4jLogDelegateFactory</log-delegate-factory-class-name>
+         <bindings-directory>${jboss.server.data.dir}/activemq/bindings</bindings-directory>
+         <journal-directory>${jboss.server.data.dir}/activemq/journal</journal-directory>
+         <journal-min-files>10</journal-min-files>
+         <large-messages-directory>${jboss.server.data.dir}/activemq/largemessages</large-messages-directory>
+         <paging-directory>${jboss.server.data.dir}/activemq/paging</paging-directory>
+         <connectors>
+            <connector name="netty">tcp://localhost:61616</connector>
+            <connector name="netty-throughput">tcp://localhost:5545</connector>
+            <connector name="in-vm">vm://0</connector>
+         </connectors>
+         <acceptors>
+            <acceptor name="netty">tcp://localhost:5545</acceptor>
+            <acceptor name="netty-throughput">tcp://localhost:5545</acceptor>
+            <acceptor name="in-vm">vm://0</acceptor>
+         </acceptors>
+         <security-settings>
+            <security-setting match="#">
+               <permission type="createNonDurableQueue" roles="guest"/>
+               <permission type="deleteNonDurableQueue" roles="guest"/>
+               <permission type="createDurableQueue" roles="guest"/>
+               <permission type="deleteDurableQueue" roles="guest"/>
+               <permission type="consume" roles="guest"/>
+               <permission type="send" roles="guest"/>
+            </security-setting>
+         </security-settings>
+         <address-settings>
+            <address-setting match="#">
+               <dead-letter-address>DLQ</dead-letter-address>
+               <expiry-address>ExpiryQueue</expiry-address>
+               <redelivery-delay>0</redelivery-delay>
+               <max-size-bytes>10485760</max-size-bytes>
+               <message-counter-history-day-limit>10</message-counter-history-day-limit>
+               <address-full-policy>BLOCK</address-full-policy>
+            </address-setting>
+         </address-settings>
+      """;
 
    private static String lastPart = "</core>";
 
    @Test
    public void testParseQueueMatchInFederationConfiguration() throws Exception {
-      String configStr = firstPart +
-                         "<federations>" +
-                          "<federation name=\"server-1-federation\">" +
-                           "<upstream name=\"upstream\">" +
-                            "<static-connectors>" +
-                             "<connector-ref>server-connector</connector-ref>" +
-                            "</static-connectors>" +
-                            "<policy ref=\"queue-federation\"/>" +
-                           "</upstream>" +
-                           "" +
-                           "<queue-policy name=\"queue-federation\">" +
-                            "<include queue-match=\"myQueue\" address-match=\"#\"/>" +
-                           "</queue-policy>" +
-                          "</federation>" +
-                         "</federations>" +
-                         lastPart;
+      String middlePart = """
+         <federations>
+            <federation name="server-1-federation">
+               <upstream name="upstream">
+                  <static-connectors>
+                     <connector-ref>server-connector</connector-ref>
+                  </static-connectors>
+                  <policy ref="queue-federation"/>
+               </upstream>
+               <queue-policy name="queue-federation">
+                  <include queue-match="myQueue" address-match="#"/>
+               </queue-policy>
+            </federation>
+         </federations>
+         """;
+      String configStr = firstPart + middlePart + lastPart;
 
       final FileConfigurationParser parser = new FileConfigurationParser();
       final ByteArrayInputStream input = new ByteArrayInputStream(configStr.getBytes(StandardCharsets.UTF_8));

@@ -49,22 +49,28 @@ public class KubernetesLoginModuleTest {
    private static final String TOKEN = "the_token";
 
    public static final String USERNAME = "system:serviceaccounts:some-ns:kermit";
-   public static final String AUTH_JSON = "{\"status\": {"
-         + "\"authenticated\": true, "
-         + "\"user\": {"
-         + "  \"username\": \"" + USERNAME + "\""
-         + "}}}";
+   public static final String AUTH_JSON = String.format("""
+                                                              {"status": {\
+                                                              "authenticated": true,\
+                                                              "user": {\
+                                                              "username": "%s"\
+                                                              }}}
+                                                           """, USERNAME);
 
-   public static final String AUTH_JSON_WITH_GROUPS = "{\"status\": {"
-      + "\"authenticated\": true, "
-      + "\"user\": {"
-      + "  \"username\": \"" + USERNAME + "\","
-      + "  \"groups\": [\"developers\", \"qa\"]"
-      + "}}}";
+   public static final String AUTH_JSON_WITH_GROUPS = String.format("""
+                                                                       {"status": {\
+                                                                       "authenticated": true,\
+                                                                       "user": {\
+                                                                       "username": "%s",\
+                                                                       "groups": ["developers", "qa"]\
+                                                                       }}}
+                                                                       """, USERNAME);
 
-   public static final String UNAUTH_JSON = "{\"status\": {"
-         + "\"authenticated\": false "
-         + "}}";
+   public static final String UNAUTH_JSON = """
+      {"status": {\
+      "authenticated": false \
+      }}
+      """;
 
    @Test
    public void testBasicLogin() throws LoginException {
