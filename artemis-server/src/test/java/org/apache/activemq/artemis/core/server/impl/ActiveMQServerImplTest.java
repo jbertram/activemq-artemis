@@ -89,12 +89,7 @@ public class ActiveMQServerImplTest extends ServerTestBase {
       server.start();
 
       // if this is converted to a lambda or method references the test will fail
-      Runnable scheduledRunnable = new Runnable() {
-         @Override
-         public void run() {
-            fail();
-         }
-      };
+      Runnable scheduledRunnable = () -> fail();
       WeakReference<Runnable> scheduledRunnableRef = new WeakReference<>(scheduledRunnable);
 
       ScheduledExecutorService scheduledPool = server.getScheduledPool();
