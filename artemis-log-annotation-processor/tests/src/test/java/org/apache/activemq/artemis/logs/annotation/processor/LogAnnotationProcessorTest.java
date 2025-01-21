@@ -43,59 +43,59 @@ public class LogAnnotationProcessorTest {
    @Test
    @Resource("org/apache/activemq/artemis/logs/annotation/processor/cases/LAPTCase1_InvalidIDForRegex.java")
    public void testIDInvalidForGivenRegex(Results results) {
-      final String expectedMessage = "org.apache.activemq.artemis.logs.annotation.processor.cases.LAPTCase1_InvalidIDForRegex: "
-                                    + "Code 100 does not match regular expression specified on the LogBundle: [0-9]{1}";
-
-      doCheckFailureErrorMessageTestImpl(results, expectedMessage);
+      doCheckFailureErrorMessageTestImpl(results, """
+         org.apache.activemq.artemis.logs.annotation.processor.cases.LAPTCase1_InvalidIDForRegex: \
+         Code 100 does not match regular expression specified on the LogBundle: [0-9]{1}\
+         """);
    }
 
    @Test
    @Resource("org/apache/activemq/artemis/logs/annotation/processor/cases/LAPTCase2_InvalidIDReused.java")
    public void testIDInvalidReused(Results results) {
-      final String expectedMessage = "org.apache.activemq.artemis.logs.annotation.processor.cases.LAPTCase2_InvalidIDReused: "
-                                    + "ID 3 with message 'reusedID' was previously used already, to define message 'initialIDuse'. "
-                                    + "Consider trying ID 5 which is the next unused value.";
-
-      doCheckFailureErrorMessageTestImpl(results, expectedMessage);
+      doCheckFailureErrorMessageTestImpl(results, """
+         org.apache.activemq.artemis.logs.annotation.processor.cases.LAPTCase2_InvalidIDReused: \
+         ID 3 with message 'reusedID' was previously used already, to define message 'initialIDuse'. \
+         Consider trying ID 5 which is the next unused value.\
+         """);
    }
 
    @Test
    @Resource("org/apache/activemq/artemis/logs/annotation/processor/cases/LAPTCase3_InvalidIDRetired.java")
    public void testIDInvalidRetired(Results results) {
-      final String expectedMessage = "org.apache.activemq.artemis.logs.annotation.processor.cases.LAPTCase3_InvalidIDRetired: "
-                                    + "ID 2 was previously retired, another ID must be used. "
-                                    + "Consider trying ID 7 which is the next unused value.";
-
-      doCheckFailureErrorMessageTestImpl(results, expectedMessage);
+      doCheckFailureErrorMessageTestImpl(results, """
+         org.apache.activemq.artemis.logs.annotation.processor.cases.LAPTCase3_InvalidIDRetired: \
+         ID 2 was previously retired, another ID must be used. \
+         Consider trying ID 7 which is the next unused value.\
+         """);
    }
 
    @Test
    @Resource("org/apache/activemq/artemis/logs/annotation/processor/cases/LAPTCase4_InvalidIDRetiredWithGap.java")
    public void testIDInvalidRetiredWithGap(Results results) {
-      final String expectedMessage = "org.apache.activemq.artemis.logs.annotation.processor.cases.LAPTCase4_InvalidIDRetiredWithGap: "
-                                    + "ID 2 was previously retired, another ID must be used. "
-                                    + "Consider trying ID 4 which is the next unused value.";
-
-      doCheckFailureErrorMessageTestImpl(results, expectedMessage);
+      doCheckFailureErrorMessageTestImpl(results, """
+         org.apache.activemq.artemis.logs.annotation.processor.cases.LAPTCase4_InvalidIDRetiredWithGap: \
+         ID 2 was previously retired, another ID must be used. \
+         Consider trying ID 4 which is the next unused value.\
+         """);
    }
 
    @Test
    @Resource("org/apache/activemq/artemis/logs/annotation/processor/cases/LAPTCase5_InvalidRetiredID.java")
    public void testInvalidRetiredID(Results results) {
-      final String expectedMessage = "org.apache.activemq.artemis.logs.annotation.processor.cases.LAPTCase5_InvalidRetiredID: "
-                                    + "The retiredIDs elements must each match the configured regexID. "
-                                    + "The ID 10 does not match: [0-9]{1}";
-
-      doCheckFailureErrorMessageTestImpl(results, expectedMessage);
+      doCheckFailureErrorMessageTestImpl(results, """
+         org.apache.activemq.artemis.logs.annotation.processor.cases.LAPTCase5_InvalidRetiredID: \
+         The retiredIDs elements must each match the configured regexID. \
+         The ID 10 does not match: [0-9]{1}\
+         """);
    }
 
    @Test
    @Resource("org/apache/activemq/artemis/logs/annotation/processor/cases/LAPTCase6_UnsortedRetiredID.java")
    public void testUnsortedRetiredIDs(Results results) {
-      final String expectedMessage = "org.apache.activemq.artemis.logs.annotation.processor.cases.LAPTCase6_UnsortedRetiredID: "
-                                    + "The retiredIDs value must be sorted. Try using: {2, 4, 5}";
-
-      doCheckFailureErrorMessageTestImpl(results, expectedMessage);
+      doCheckFailureErrorMessageTestImpl(results, """
+         org.apache.activemq.artemis.logs.annotation.processor.cases.LAPTCase6_UnsortedRetiredID: \
+         The retiredIDs value must be sorted. Try using: {2, 4, 5}\
+         """);
    }
 
    private void doCheckFailureErrorMessageTestImpl(Results results, String expectedMessage) {
