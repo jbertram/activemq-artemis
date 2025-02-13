@@ -99,28 +99,30 @@ import org.slf4j.Logger;
 import static org.apache.activemq.artemis.core.journal.impl.Reclaimer.scan;
 
 /**
- * <p>A circular log implementation.</p>
- * <p>Look at {@link JournalImpl#load(LoaderCallback)} for the file layout
+ * A circular log implementation.
+ * <p>
+ * Look at {@link JournalImpl#load(LoaderCallback)} for the file layout
  */
 public class JournalImpl extends JournalBase implements TestableJournal, JournalRecordProvider {
    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-
    /**
     * this is a factor where when you have more than UPDATE_FACTOR updates for every ADD.
-    *
+    * <p>
     * When this happens we should issue a compacting event.
-    *
-    * I don't foresee users needing to configure this value. However if this ever happens we would have a system property aligned for this.
-    *
-    * With that being said, if you needed this, please raise an issue on why you needed to use this, so we may eventually add it to broker.xml when a real
-    * use case would determine the configuration exposed in there.
-    *
-    * To update this value, define a System Property org.apache.activemq.artemis.core.journal.impl.JournalImpl.UPDATE_FACTOR=YOUR VALUE
-    *
-    * We only calculate this against replaceable updates, on this case for redelivery counts and rescheduled redelivery in artemis server
-    *
-    * */
+    * <p>
+    * I don't foresee users needing to configure this value. However if this ever happens we would have a system
+    * property aligned for this.
+    * <p>
+    * With that being said, if you needed this, please raise an issue on why you needed to use this, so we may
+    * eventually add it to broker.xml when a real use case would determine the configuration exposed in there.
+    * <p>
+    * To update this value, define a System Property
+    * org.apache.activemq.artemis.core.journal.impl.JournalImpl.UPDATE_FACTOR=YOUR VALUE
+    * <p>
+    * We only calculate this against replaceable updates, on this case for redelivery counts and rescheduled redelivery
+    * in artemis server
+    */
    public static final double UPDATE_FACTOR;
    private static final String BKP_EXTENSION = "bkp";
    public static final String BKP = "." + BKP_EXTENSION;
@@ -332,7 +334,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    ByteObjectHashMap<Boolean> replaceableRecords;
 
 
-   /** This will declare a record type as being replaceable on updates.
+   /**
+    * This will declare a record type as being replaceable on updates.
     * Certain update records only need the last value, and they could be replaceable during compacting.
     * */
    @Override
@@ -517,8 +520,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    }
 
    /**
-    * this method is used internally only however tools may use it to maintenance.
-    * It won't be part of the interface as the tools should be specific to the implementation
+    * this method is used internally only however tools may use it to maintenance. It won't be part of the interface as
+    * the tools should be specific to the implementation
     */
    public List<JournalFile> orderFiles() throws Exception {
       List<String> fileNames = fileFactory.listFiles(filesRepository.getFileExtension());
@@ -1382,14 +1385,13 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    }
 
    /**
-    * <p>If the system crashed after a prepare was called, it should store information that is required to bring the transaction
+    * <p>If the system crashed after a prepare was called, it should store information that is required to bring the
+    * transaction
     * back to a state it could be committed. </p>
     * <p> transactionData allows you to store any other supporting user-data related to the transaction</p>
     * <p> This method also uses the same logic applied on {@link JournalImpl#appendCommitRecord(long, boolean)}
     *
-    * @param txID
     * @param transactionData extra user data for the prepare
-    * @throws Exception
     */
    @Override
    public void appendPrepareRecord(final long txID,
@@ -1739,13 +1741,11 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    }
 
    /**
-    * Note: This method can't be called from the main executor, as it will invoke other methods
-    * depending on it.
-    *
-    * Note: only synchronized methods on journal are methods responsible for the life-cycle such as
-    * stop, start records will still come as this is being executed
+    * Note: This method can't be called from the main executor, as it will invoke other methods depending on it.
+    * <p>
+    * Note: only synchronized methods on journal are methods responsible for the life-cycle such as stop, start records
+    * will still come as this is being executed
     */
-
    public synchronized void compact() {
 
       if (compactor != null) {
@@ -1885,7 +1885,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    }
 
-   /** this private method will return a list of data files that need to be cleaned up.
+   /**
+    * this private method will return a list of data files that need to be cleaned up.
     *  It will get the list, and replace it on the journal structure, while a separate thread would be able
     *  to read it, and append to a new list that will be replaced on the journal. */
    private List<JournalFile> getDataListToCompact() throws Exception {
@@ -1978,11 +1979,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    }
 
    /**
-    * @param loadManager
-    * @param changeData
     * @param replicationSync {@code true} will place
-    * @return
-    * @throws Exception
     */
    private synchronized JournalLoadInformation load(final LoaderCallback loadManager,
                                                     final boolean changeData,
@@ -2377,7 +2374,9 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       }
    }
 
-   /** With the exception of initialization, this has to be always called within the compactorExecutor */
+   /**
+    * With the exception of initialization, this has to be always called within the compactorExecutor
+    */
    @Override
    public void processBackup() {
       if (this.journalRetentionFolder == null) {
@@ -2678,8 +2677,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    }
 
    /**
-    * Method for use on testcases.
-    * It will call waitComplete on every transaction, so any assertions on the file system will be correct after this
+    * Method for use on testcases. It will call waitComplete on every transaction, so any assertions on the file system
+    * will be correct after this
     */
    @Override
    public void debugWait() throws InterruptedException {
@@ -2703,8 +2702,6 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    /**
     * The max size record that can be stored in the journal
-    *
-    * @return
     */
    @Override
    public long getMaxRecordSize() {
@@ -2984,30 +2981,28 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    }
 
-   /**
-    * @param name
-    * @return
-    */
    protected static String renameExtensionFile(String name, final String extension) {
       name = name.substring(0, name.lastIndexOf(extension));
       return name;
    }
 
    /**
-    * This is an interception point for testcases, when the compacted files are written, before replacing the data structures
+    * This is an interception point for testcases, when the compacted files are written, before replacing the data
+    * structures
     */
    protected void onCompactStart() throws Exception {
    }
 
    /**
-    * This is an interception point for testcases, when the compacted files are written, to be called
-    * as soon as the compactor gets a writeLock
+    * This is an interception point for testcases, when the compacted files are written, to be called as soon as the
+    * compactor gets a writeLock
     */
    protected void onCompactLockingTheJournal() throws Exception {
    }
 
    /**
-    * This is an interception point for testcases, when the compacted files are written, before replacing the data structures
+    * This is an interception point for testcases, when the compacted files are written, before replacing the data
+    * structures
     */
    protected void onCompactDone() {
    }
@@ -3016,18 +3011,11 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    // -----------------------------------------------------------------------------
 
    /**
-    * <br>
     * Checks for holes on the transaction (a commit written but with an incomplete transaction).
-    * <br>
-    * This method will validate if the transaction (PREPARE/COMMIT) is complete as stated on the
-    * COMMIT-RECORD.
-    * <br>
+    * <p>
+    * This method will validate if the transaction (PREPARE/COMMIT) is complete as stated on the COMMIT-RECORD.
+    * <p>
     * For details see {@link JournalCompleteRecordTX} about how the transaction-summary is recorded.
-    *
-    * @param journalTransaction
-    * @param orderedFiles
-    * @param numberOfRecords
-    * @return
     */
    private boolean checkTransactionHealth(final JournalFile currentFile,
                                           final JournalTransaction journalTransaction,
@@ -3073,11 +3061,6 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       }
    }
 
-   /**
-    * @param file
-    * @return
-    * @throws Exception
-    */
    public JournalFileImpl readFileHeader(final SequentialFile file) throws Exception {
       ByteBuffer bb = fileFactory.newBuffer(JournalImpl.SIZE_HEADER);
 
@@ -3114,11 +3097,6 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       return new JournalFileImpl(file, fileID, journalVersion);
    }
 
-   /**
-    * @param fileID
-    * @param sequentialFile
-    * @throws Exception
-    */
    public static int initFileHeader(final SequentialFileFactory fileFactory,
                                     final SequentialFile sequentialFile,
                                     final int userVersion,
@@ -3145,11 +3123,6 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       }
    }
 
-   /**
-    * @param buffer
-    * @param userVersion
-    * @param fileID
-    */
    public static void writeHeader(final ActiveMQBuffer buffer, final int userVersion, final long fileID) {
       buffer.writeInt(JournalImpl.FORMAT_VERSION);
 
@@ -3159,9 +3132,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    }
 
    /**
-    * @param completeTransaction If the appendRecord is for a prepare or commit, where we should
-    *                            update the number of pendingTransactions on the current file
-    * @throws Exception
+    * @param completeTransaction If the appendRecord is for a prepare or commit, where we should update the number of
+    *                            pendingTransactions on the current file
     */
    private JournalFile appendRecord(final JournalInternalRecord encoder,
                                     final boolean completeTransaction,
@@ -3264,9 +3236,6 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       }
    }
 
-   /**
-    * @throws Exception
-    */
    private void checkControlFile(AtomicReference<ByteBuffer> wholeFileBufferRef) throws Exception {
       List<String> dataFiles = new ArrayList<>();
       List<String> newFiles = new ArrayList<>();
@@ -3311,9 +3280,6 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       return;
    }
 
-   /**
-    * @throws Exception
-    */
    private void cleanupTmpFiles(final String extension) throws Exception {
       List<String> leftFiles = fileFactory.listFiles(getFileExtension() + extension);
 
@@ -3378,13 +3344,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    }
 
    /**
-    * Returns Map with a {@link JournalFile} for all existing files.
-    *
-    * These are the files needed to be sent to a backup in order to synchronize it.
-    *
-    * @param fileIds
-    * @return map with the IDs and corresponding {@link JournalFile}s
-    * @throws Exception
+    * {@return map with the IDs and corresponding {@link JournalFile}s; these are the files needed to be sent to a
+    * backup in order to synchronize it}
     */
    @Override
    public synchronized Map<Long, JournalFile> createFilesForBackupSync(long[] fileIds) throws Exception {
@@ -3408,11 +3369,6 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       return fileFactory;
    }
 
-   /**
-    * @param lastDataPos
-    * @return
-    * @throws Exception
-    */
    protected JournalFile setUpCurrentFile(int lastDataPos) throws Exception {
       // Create any more files we need
 
@@ -3436,11 +3392,6 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       return currentFile;
    }
 
-   /**
-    * @param size
-    * @return
-    * @throws Exception
-    */
    protected JournalFile switchFileIfNecessary(int size) throws Exception {
 
       // We take into account the fileID used on the Header

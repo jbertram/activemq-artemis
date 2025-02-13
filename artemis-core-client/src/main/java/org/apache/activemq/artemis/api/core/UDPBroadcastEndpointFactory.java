@@ -92,8 +92,8 @@ public final class UDPBroadcastEndpointFactory implements BroadcastEndpointFacto
    }
 
    /**
-    * <p> This is the member discovery implementation using direct UDP. It was extracted as a refactoring from
-    * {@link org.apache.activemq.artemis.core.cluster.DiscoveryGroup}</p>
+    * This is the member discovery implementation using direct UDP. It was extracted as a refactoring from
+    * {@link org.apache.activemq.artemis.core.cluster.DiscoveryGroup}
     */
    private static class UDPBroadcastEndpoint implements BroadcastEndpoint {
 

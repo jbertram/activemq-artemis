@@ -27,14 +27,7 @@ import java.io.Serializable;
 import org.apache.activemq.artemis.jms.tests.util.ProxyAssertSupport;
 import org.junit.jupiter.api.Test;
 
-/**
- * A MessageWithReadResolveTest
- * <br>
- * See http://jira.jboss.com/jira/browse/JBMESSAGING-442
- */
 public class MessageWithReadResolveTest extends JMSTestCase {
-
-
    @Test
    public void testSendReceiveMessage() throws Exception {
       Connection conn = createConnection();

@@ -2491,9 +2491,6 @@ public class ActiveMQServerControlImpl extends AbstractControl implements Active
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.apache.activemq.artemis.api.core.management.ActiveMQServerControl#listProducersInfoAsJSON()
-    */
    @Override
    public String listProducersInfoAsJSON() throws Exception {
       if (AuditLogger.isBaseLoggingEnabled()) {

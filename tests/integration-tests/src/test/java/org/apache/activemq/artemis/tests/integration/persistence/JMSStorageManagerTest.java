@@ -216,9 +216,6 @@ public class JMSStorageManagerTest extends ActiveMQTestBase {
    }
 
 
-   /**
-    * @throws Exception
-    */
    protected void createJMSStorage() throws Exception {
       jmsJournal = new JMSJournalStorageManagerImpl(null, new TimeAndCounterIDGenerator(), createDefaultInVMConfig(), null);
       runAfter(jmsJournal::stop);

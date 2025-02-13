@@ -46,8 +46,9 @@ public class ActiveMQDestination extends JNDIStorable implements Destination, Se
    public static final String TEMP_QUEUE_QUALIFED_PREFIX = DestinationUtil.TEMP_QUEUE_QUALIFED_PREFIX;
    public static final String TEMP_TOPIC_QUALIFED_PREFIX = DestinationUtil.TEMP_TOPIC_QUALIFED_PREFIX;
 
-   /** createQueue and createTopic from {@link ActiveMQSession} may change the name
-    *  in case Prefix usage */
+   /**
+    * {@code createQueue} and {@code createTopic} from {@link ActiveMQSession} may change the name in case Prefix usage
+    */
    void setName(String name) {
       this.name = name;
    }
@@ -398,7 +399,7 @@ public class ActiveMQDestination extends JNDIStorable implements Destination, Se
          }
 
          try {
-            /**
+            /*
              * The status of the session used to create the temporary destination is uncertain, but the JMS spec states
              * that the lifetime of the temporary destination is tied to the connection so even if the originating
              * session is closed the temporary destination should still be deleted. Therefore, just create a new one

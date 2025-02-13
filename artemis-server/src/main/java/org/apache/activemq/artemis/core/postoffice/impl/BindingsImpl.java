@@ -67,8 +67,8 @@ public final class BindingsImpl implements Bindings {
    private final Map<Long, Binding> bindingsIdMap = new ConcurrentHashMap<>();
 
    /**
-    * This is the same as bindingsIdMap but indexed on the binding's uniqueName rather than ID. Two maps are
-    * maintained to speed routing, otherwise we'd have to loop through the bindingsIdMap when routing to an FQQN.
+    * This is the same as bindingsIdMap but indexed on the binding's uniqueName rather than ID. Two maps are maintained
+    * to speed routing, otherwise we'd have to loop through the bindingsIdMap when routing to an FQQN.
     */
    private final Map<String, Binding> bindingsNameMap = new ConcurrentHashMap<>();
 
@@ -431,9 +431,8 @@ public final class BindingsImpl implements Bindings {
    /**
     * This code has a race on the assigned value to routing names.
     * <p>
-    * This is not that much of an issue because<br>
-    * Say you have the same queue name bound into two servers. The routing will load balance between
-    * these two servers. This will eventually send more messages to one server than the other
+    * This is not that much of an issue because say you have the same queue name bound into two servers. The routing
+    * will load balance between these two servers. This will eventually send more messages to one server than the other
     * (depending if you are using multi-thread), and not lose messages.
     */
    private Binding getNextBinding(final Message message,
@@ -679,7 +678,6 @@ public final class BindingsImpl implements Bindings {
 
    /**
     * debug method: used just for tests!!
-    * @return
     */
    public Map<SimpleString, List<Binding>> getRoutingNameBindingMap() {
       return routingNameBindingMap.copyAsMap();

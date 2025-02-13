@@ -34,9 +34,6 @@ import org.apache.activemq.test.TestSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- *
- */
 public class JmsTopicRequestReplyTest extends TestSupport implements MessageListener {
 
    private static final Logger LOG = LoggerFactory.getLogger(JmsTopicRequestReplyTest.class);

@@ -359,8 +359,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    }
 
    /**
-    * The cluster manager needs to use the same executor to close the serverLocator, otherwise the stop will break.
-    * This method is intended to expose this executor to the ClusterManager
+    * The cluster manager needs to use the same executor to close the serverLocator, otherwise the stop will break. This
+    * method is intended to expose this executor to the ClusterManager
     */
    public Executor getExecutor() {
       return executor;
@@ -518,8 +518,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       return beforeForwardingNoCopy(message, forwardingAddress);
    }
 
-   /** ClusterConnectionBridge already makes a copy of the message.
-    * So I needed I hook where the message is not copied. */
+   /**
+    * ClusterConnectionBridge already makes a copy of the message. So I needed I hook where the message is not copied.
+    */
    protected Message beforeForwardingNoCopy(Message message, SimpleString forwardingAddress) {
       if (configuration.isUseDuplicateDetection()) {
          // We keep our own DuplicateID for the Bridge, so bouncing back and forth will work fine

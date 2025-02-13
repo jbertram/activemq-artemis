@@ -27,7 +27,8 @@ public class Waiter {
       boolean result();
    }
 
-   /** This method will wait for the condition.result to be true or a timeout has ocurred.
+   /**
+    * This method will wait for the condition.result to be true or a timeout has ocurred.
     *  it will return the last result. */
    public static boolean waitFor(Condition condition, TimeUnit unit, long timeout, TimeUnit parkUnit, long parkTime) {
       long timeoutNanos = unit.toNanos(timeout);

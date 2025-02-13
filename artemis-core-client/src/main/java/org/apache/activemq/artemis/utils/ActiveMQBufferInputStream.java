@@ -130,9 +130,6 @@ public class ActiveMQBufferInputStream extends InputStream {
       return false;
    }
 
-   /**
-    * @return
-    */
    private int remainingBytes() {
       return bb.writerIndex() - bb.readerIndex();
    }

@@ -24,9 +24,6 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.Topic;
 
-/**
- *
- */
 public class JmsCreateConsumerInOnMessageTest extends TestSupport implements MessageListener {
 
    private Connection connection;
@@ -67,8 +64,6 @@ public class JmsCreateConsumerInOnMessageTest extends TestSupport implements Mes
 
    /**
     * Tests if a consumer can be created asynchronusly
-    *
-    * @throws Exception
     */
    public void testCreateConsumer() throws Exception {
       Message msg = super.createMessage();
@@ -83,8 +78,6 @@ public class JmsCreateConsumerInOnMessageTest extends TestSupport implements Mes
 
    /**
     * Use the asynchronous subscription mechanism
-    *
-    * @param message
     */
    @Override
    public void onMessage(Message message) {

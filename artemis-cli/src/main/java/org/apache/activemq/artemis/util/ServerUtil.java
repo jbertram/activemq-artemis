@@ -41,12 +41,10 @@ public class ServerUtil {
    }
 
    /**
-    * @param artemisInstance
-    * @param serverName      it will be used on logs
-    * @param id              it will be used to add on the port
-    * @param timeout
-    * @return
-    * @throws Exception
+    * Start the server.
+    *
+    * @param serverName it will be used on logs
+    * @param id         it will be used to add on the port
     */
    public static Process startServer(String artemisInstance, String serverName, int id, int timeout) throws Exception {
       return startServer(artemisInstance, serverName, id, timeout, null);

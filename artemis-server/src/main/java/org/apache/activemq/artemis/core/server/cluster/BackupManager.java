@@ -74,7 +74,8 @@ public class BackupManager implements ActiveMQComponent {
       this.clusterManager = clusterManager;
    }
 
-   /** This is meant for testing and assertions, please don't do anything stupid with it!
+   /**
+    * This is meant for testing and assertions, please don't do anything stupid with it!
     *  I mean, please don't use it outside of testing context */
    public List<BackupConnector> getBackupConnectors() {
       return backupConnectors;
@@ -107,9 +108,9 @@ public class BackupManager implements ActiveMQComponent {
       started = true;
    }
 
-   /*
-   * stop all the connectors
-   * */
+   /**
+    * stop all the connectors
+    */
    @Override
    public synchronized void stop() {
       if (!started)
@@ -120,9 +121,9 @@ public class BackupManager implements ActiveMQComponent {
       started = false;
    }
 
-   /*
-   * announce the fact that we are a backup server ready to fail over if required.
-   */
+   /**
+    * announce the fact that we are a backup server ready to fail over if required.
+    */
    public void announceBackup() {
       for (BackupConnector backupConnector : backupConnectors) {
          backupConnector.announceBackup();
@@ -220,7 +221,9 @@ public class BackupManager implements ActiveMQComponent {
       * */
       abstract ServerLocatorInternal createServerLocator(Topology topology);
 
-      /** This is for test assertions, please be careful, don't use outside of testing! */
+      /**
+       * This is for test assertions, please be careful, don't use outside of testing!
+       */
       public ServerLocator getBackupServerLocator() {
          return backupServerLocator;
       }
@@ -294,7 +297,9 @@ public class BackupManager implements ActiveMQComponent {
          });
       }
 
-      /** it will re-schedule the connection after a timeout, using a scheduled executor */
+      /**
+       * it will re-schedule the connection after a timeout, using a scheduled executor
+       */
       protected void retryConnection() {
          scheduledExecutor.schedule(this::announceBackup, config.getRetryInterval(), TimeUnit.MILLISECONDS);
       }

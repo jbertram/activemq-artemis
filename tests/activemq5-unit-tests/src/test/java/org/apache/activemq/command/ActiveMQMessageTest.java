@@ -52,11 +52,6 @@ public class ActiveMQMessageTest extends TestCase {
    private long jmsTimestamp;
    private long[] consumerIDs;
 
-   /**
-    * Constructor for ActiveMQMessageTest.
-    *
-    * @param name
-    */
    public ActiveMQMessageTest(String name) {
       super(name);
    }
@@ -64,9 +59,6 @@ public class ActiveMQMessageTest extends TestCase {
    public static void main(String[] args) {
    }
 
-   /*
-    * @see TestCase#setUp()
-    */
    @Override
    protected void setUp() throws Exception {
       super.setUp();
@@ -87,9 +79,6 @@ public class ActiveMQMessageTest extends TestCase {
       }
    }
 
-   /*
-    * @see TestCase#tearDown()
-    */
    @Override
    protected void tearDown() throws Exception {
       super.tearDown();

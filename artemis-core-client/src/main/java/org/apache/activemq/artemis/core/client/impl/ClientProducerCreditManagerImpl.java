@@ -49,7 +49,8 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
    }
 
 
-   /** This will determine the flow control as asynchronous,
+   /**
+    * This will determine the flow control as asynchronous,
     *  no actual block should happen instead a callback will be sent whenever blockages change  */
    @Override
    public void setCallback(ClientProducerFlowCallback callback) {

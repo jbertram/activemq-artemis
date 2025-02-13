@@ -68,8 +68,7 @@ public class ConnectionFactoryTest extends JMSTestCase {
    }
 
    /**
-    * Test that ConnectionFactory can be cast to QueueConnectionFactory and QueueConnection can be
-    * created.
+    * Test that ConnectionFactory can be cast to QueueConnectionFactory and QueueConnection can be created.
     */
    @Test
    public void testQueueConnectionFactory() throws Exception {
@@ -81,8 +80,7 @@ public class ConnectionFactoryTest extends JMSTestCase {
    }
 
    /**
-    * Test that ConnectionFactory can be cast to TopicConnectionFactory and TopicConnection can be
-    * created.
+    * Test that ConnectionFactory can be cast to TopicConnectionFactory and TopicConnection can be created.
     */
    @Test
    public void testTopicConnectionFactory() throws Exception {

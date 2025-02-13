@@ -289,9 +289,7 @@ public class MQTTSubscriptionManager {
    /**
     * As per MQTT Spec. Subscribes this client to a number of MQTT topics.
     *
-    * @param subscriptions
-    * @return An array of integers representing the list of accepted QoS for each topic.
-    * @throws Exception
+    * @return An array of integers representing the list of accepted QoS for each topic
     */
    int[] addSubscriptions(List<MqttTopicSubscription> subscriptions, Integer subscriptionIdentifier) throws Exception {
       MQTTSessionState state = session.getState();

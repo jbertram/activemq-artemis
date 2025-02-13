@@ -73,8 +73,8 @@ public class ProtonServerSenderContext extends ProtonInitializable implements Pr
    protected final AMQPSessionCallback sessionSPI;
 
    /**
-    * The model proton uses requires us to hold a lock in certain times
-    * to sync the credits we have versus the credits that are being held in proton
+    * The model proton uses requires us to hold a lock in certain times to sync the credits we have versus the credits
+    * that are being held in proton
     */
    private final Object creditsLock = new Object();
    private final boolean amqpTreatRejectAsUnmodifiedDeliveryFailed;

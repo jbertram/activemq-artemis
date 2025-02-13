@@ -23,7 +23,8 @@ import org.junit.jupiter.api.Test;
 
 public class TransportConstantTest {
 
-   /** We change the default on the main pom.xml
+   /**
+    * We change the default on the main pom.xml
     * This is just validating the pom still works */
    @Test
    public void testDefaultOnPom() {

@@ -54,11 +54,6 @@ public class MessageTest extends JMSTestBase {
 
    private static final String propName3 = "myprop3";
 
-
-
-   /**
-    * @see https://jira.jboss.org/jira/browse/HORNETQ-242
-    */
    @Test
    public void testStreamMessageReadsNull() throws Exception {
       Connection conn = cf.createConnection();

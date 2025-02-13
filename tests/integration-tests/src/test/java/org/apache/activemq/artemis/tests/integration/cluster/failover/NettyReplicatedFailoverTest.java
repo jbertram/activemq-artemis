@@ -499,8 +499,7 @@ public class NettyReplicatedFailoverTest extends NettyFailoverInVMTest {
    }
 
    /**
-    * This test would fail one in three or five times,
-    * where the commit would leave the session dirty after a timeout.
+    * This test would fail one in three or five times, where the commit would leave the session dirty after a timeout.
     */
    @Test
    @Timeout(120)
@@ -632,11 +631,6 @@ public class NettyReplicatedFailoverTest extends NettyFailoverInVMTest {
 
    }
 
-   /**
-    * see http://jira.jboss.org/browse/HORNETQ-522
-    *
-    * @throws Exception
-    */
    @Test
    @Timeout(120)
    public void testNonTransactedWithZeroConsumerWindowSize() throws Exception {
@@ -977,8 +971,7 @@ public class NettyReplicatedFailoverTest extends NettyFailoverInVMTest {
    }
 
    /**
-    * Test that once the transacted session has throw a TRANSACTION_ROLLED_BACK exception,
-    * it can be reused again
+    * Test that once the transacted session has throw a TRANSACTION_ROLLED_BACK exception, it can be reused again
     */
    @Test
    @Timeout(120)

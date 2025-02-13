@@ -35,9 +35,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- *
- */
 public class JmsSendReceiveTestSupport extends TestSupport implements MessageListener {
 
    private static final Logger LOG = LoggerFactory.getLogger(JmsSendReceiveTestSupport.class);
@@ -81,8 +78,6 @@ public class JmsSendReceiveTestSupport extends TestSupport implements MessageLis
 
    /**
     * Sends and consumes the messages.
-    *
-    * @throws Exception
     */
    public void testSendReceive() throws Exception {
       messages.clear();
@@ -107,11 +102,6 @@ public class JmsSendReceiveTestSupport extends TestSupport implements MessageLis
 
    /**
     * Sends a message to a destination using the supplied producer
-    *
-    * @param producer
-    * @param producerDestination
-    * @param message
-    * @throws JMSException
     */
    protected void sendToProducer(MessageProducer producer,
                                  Destination producerDestination,
@@ -121,8 +111,6 @@ public class JmsSendReceiveTestSupport extends TestSupport implements MessageLis
 
    /**
     * Asserts messages are received.
-    *
-    * @throws JMSException
     */
    protected void assertMessagesAreReceived() throws JMSException {
       waitForMessagesToBeDelivered();
@@ -133,7 +121,6 @@ public class JmsSendReceiveTestSupport extends TestSupport implements MessageLis
     * Tests if the messages received are valid.
     *
     * @param receivedMessages - list of received messages.
-    * @throws JMSException
     */
    protected void assertMessagesReceivedAreValid(List<Message> receivedMessages) throws JMSException {
       List<Object> copyOfMessages = Arrays.asList(receivedMessages.toArray());
@@ -202,8 +189,8 @@ public class JmsSendReceiveTestSupport extends TestSupport implements MessageLis
    /**
     * Consumes messages.
     *
-    * @param message     - message to be consumed.
-    * @param messageList -list of consumed messages.
+    * @param message     message to be consumed.
+    * @param messageList list of consumed messages.
     */
    protected void consumeMessage(Message message, List<Message> messageList) {
       if (verbose) {
@@ -222,9 +209,7 @@ public class JmsSendReceiveTestSupport extends TestSupport implements MessageLis
    }
 
    /**
-    * Returns the ArrayList as a synchronized list.
-    *
-    * @return List
+    * {@return the ArrayList as a synchronized list}
     */
    protected List<Message> createConcurrentList() {
       return Collections.synchronizedList(new ArrayList<>());
@@ -232,8 +217,6 @@ public class JmsSendReceiveTestSupport extends TestSupport implements MessageLis
 
    /**
     * Just a hook so can insert failure tests
-    *
-    * @throws Exception
     */
    protected void messageSent() throws Exception {
 

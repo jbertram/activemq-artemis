@@ -69,9 +69,6 @@ public class ReplicationLargeMessageEndMessage extends PacketImpl {
       }
    }
 
-   /**
-    * @return the messageId
-    */
    public long getMessageId() {
       return messageId;
    }
@@ -111,9 +108,6 @@ public class ReplicationLargeMessageEndMessage extends PacketImpl {
       return pendingRecordId;
    }
 
-   /**
-    * @return the isDelete
-    */
    public boolean isDelete() {
       return isDelete;
    }

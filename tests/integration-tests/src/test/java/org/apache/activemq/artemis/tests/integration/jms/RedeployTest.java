@@ -722,7 +722,8 @@ public class RedeployTest extends ActiveMQTestBase {
 
    /**
     * This one is here just to make sure it's possible to change queue parameters one by one without setting the others
-    * to <code>null</code>.
+    * to {@code null}.
+    *
     * @throws Exception An exception.
     */
    @Test
@@ -1341,8 +1342,8 @@ public class RedeployTest extends ActiveMQTestBase {
    }
 
    /**
-    * Simulates Stop and Start that occurs when network health checker stops the server when network is detected unhealthy
-    * and re-starts the broker once detected that it is healthy again.
+    * Simulates Stop and Start that occurs when network health checker stops the server when network is detected
+    * unhealthy and re-starts the broker once detected that it is healthy again.
     *
     * @throws Exception for anything un-expected, test will fail.
     */

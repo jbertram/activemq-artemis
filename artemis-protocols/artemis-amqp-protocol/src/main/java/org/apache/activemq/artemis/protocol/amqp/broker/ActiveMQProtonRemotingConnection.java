@@ -195,9 +195,7 @@ public class ActiveMQProtonRemotingConnection extends AbstractRemotingConnection
    }
 
    /**
-    * Returns the name of the protocol for this Remoting Connection
-    *
-    * @return
+    * {@return the name of the protocol for this Remoting Connection}
     */
    @Override
    public String getProtocolName() {

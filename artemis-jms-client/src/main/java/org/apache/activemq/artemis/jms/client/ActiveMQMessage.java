@@ -60,9 +60,8 @@ import static org.apache.activemq.artemis.utils.Preconditions.checkNotNull;
 
 /**
  * ActiveMQ Artemis implementation of a JMS Message.
- * <br>
- * JMS Messages only live on the client side - the server only deals with MessageImpl
- * instances
+ * <p>
+ * JMS Messages only live on the client side - the server only deals with MessageImpl instances
  */
 public class ActiveMQMessage implements javax.jms.Message {
 
@@ -751,21 +750,21 @@ public class ActiveMQMessage implements javax.jms.Message {
       }
    }
 
+   /**
+    * From the specs:
+    * <p>
+    * If the message is a {@code Message} (but not one of its subtypes) then this method will return {@code true}
+    * irrespective of the value of this parameter.
+    */
    @Override
    public boolean isBodyAssignableTo(Class c) {
-      /**
-       * From the specs:
-       * <p>
-       * If the message is a {@code Message} (but not one of its subtypes) then this method will
-       * return true irrespective of the value of this parameter.
-       */
       return true;
    }
 
    /**
     * Helper method for {@link #isBodyAssignableTo(Class)}.
     *
-    * @return true if the message has no body.
+    * @return {@code true} if the message has no body
     */
    protected boolean hasNoBody() {
       return message.getBodySize() == 0;

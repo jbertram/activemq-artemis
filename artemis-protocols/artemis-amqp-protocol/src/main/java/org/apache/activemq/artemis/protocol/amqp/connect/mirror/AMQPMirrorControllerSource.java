@@ -467,7 +467,9 @@ public class AMQPMirrorControllerSource extends BasicMirrorController<Sender> im
       }
    }
 
-   /** This method will return the brokerID used by the message */
+   /**
+    * This method will return the brokerID used by the message
+    */
    private static String setProtocolData(ReferenceIDSupplier referenceIDSupplier, MessageReference ref) {
       String brokerID = referenceIDSupplier.getServerID(ref);
       long id = referenceIDSupplier.getID(ref);
@@ -651,9 +653,9 @@ public class AMQPMirrorControllerSource extends BasicMirrorController<Sender> im
       }
 
       /**
-       *
-       * @param message the message with the instruction to ack on the target node. Notice this is not the message owned by the reference.
-       * @param ref the reference being acked
+       * @param message the message with the instruction to ack on the target node. Notice this is not the message owned
+       *                by the reference.
+       * @param ref     the reference being acked
        */
       public void addMessage(Message message, MessageReference ref) {
          acks.put(message, ref);

@@ -502,7 +502,6 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
 
                break;
             }
-            /**** added by meddy, 27 april 2011, handle header parser for reply to websocket protocol ****/
             case E: {
                if (!tryIncrement(offset + COMMAND_ERROR_LENGTH + eolLen)) {
                   return false;
@@ -523,7 +522,6 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
 
                break;
             }
-            /**** end ****/
             case S: {
                if (workingBuffer[offset + 1] == E) {
                   if (!tryIncrement(offset + COMMAND_SEND_LENGTH + eolLen)) {

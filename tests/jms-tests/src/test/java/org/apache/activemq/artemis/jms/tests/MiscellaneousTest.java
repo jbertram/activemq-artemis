@@ -78,9 +78,6 @@ public class MiscellaneousTest extends JMSTestCase {
       }
    }
 
-   /**
-    * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-542
-    */
    @Test
    public void testClosingConsumerFromMessageListenerAutoAck() throws Exception {
       Connection c = null;
@@ -127,9 +124,6 @@ public class MiscellaneousTest extends JMSTestCase {
 
    }
 
-   /**
-    * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-542
-    */
    @Test
    public void testClosingConsumerFromMessageListenerTransacted() throws Exception {
       Connection c = null;

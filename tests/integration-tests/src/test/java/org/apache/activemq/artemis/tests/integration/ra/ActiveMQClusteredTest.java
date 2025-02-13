@@ -82,8 +82,6 @@ public class ActiveMQClusteredTest extends ActiveMQRAClusteredTestBase {
    /**
     * https://bugzilla.redhat.com/show_bug.cgi?id=1029076
     * Look at the logs for this test, if you see exceptions it's an issue.
-    *
-    * @throws Exception
     */
    @Test
    public void testNonDurableInCluster() throws Exception {

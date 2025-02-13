@@ -508,11 +508,8 @@ public class XaTimeoutTest extends ActiveMQTestBase {
    }
 
    /**
-    * In case a timeout happens the server's object may still have the previous XID.
-    * for that reason a new start call is supposed to clean it up with a log.warn
-    * but it should still succeed
-    *
-    * @throws Exception
+    * In case a timeout happens the server's object may still have the previous XID. for that reason a new start call is
+    * supposed to clean it up with a log.warn but it should still succeed
     */
    @TestTemplate
    public void testChangeXID() throws Exception {

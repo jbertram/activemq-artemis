@@ -1360,10 +1360,6 @@ public class LargeMessageTest extends LargeMessageTestBase {
       }
    }
 
-   /**
-    * @param messageSize
-    * @param msg
-    */
    private void compareString(final long messageSize, ClientMessage msg) {
       assertNotNull(msg);
       for (long i = 0; i < messageSize; i++) {

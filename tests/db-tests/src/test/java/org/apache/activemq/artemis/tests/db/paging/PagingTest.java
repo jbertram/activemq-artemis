@@ -1559,10 +1559,6 @@ public class PagingTest extends ParameterDBTestBase {
       }
    }
 
-   /**
-    * @param queue
-    * @throws InterruptedException
-    */
    private void forcePage(Queue queue) throws InterruptedException {
       for (long timeout = System.currentTimeMillis() + 5000; timeout > System.currentTimeMillis() && !queue.getPageSubscription().getPagingStore().isPaging(); ) {
          Thread.sleep(10);
@@ -3062,13 +3058,13 @@ public class PagingTest extends ParameterDBTestBase {
       session.close();
    }
 
-   /**
+   /*
     * - Make a destination in page mode
     * - Add stuff to a transaction
     * - Consume the entire destination (not in page mode any more)
     * - Add stuff to a transaction again
     * - Check order
-    * <br>
+    *
     * Test under discussion at : http://community.jboss.org/thread/154061?tstart=0
     */
    @TestTemplate
@@ -5084,10 +5080,11 @@ public class PagingTest extends ParameterDBTestBase {
    }
 
    /**
-    * When running this test from an IDE add this to the test command line so that the AssertionLoggerHandler works properly:
-    * <p>
-    * -Dlog4j2.configurationFile=file:<path_to_source>/tests/config/log4j2-tests-config.properties
-    * <p>
+    * When running this test from an IDE add this to the test command line so that the {@link AssertionLoggerHandler} works
+    * properly:
+    * <pre>
+    * -Dlog4j2.configurationFile=file:${path-to-source}/tests/config/log4j2-tests-config.properties
+    * </pre>
     * Note: Idea should get these from the pom and you shouldn't need to do this.
     */
    @TestTemplate
@@ -6046,9 +6043,8 @@ public class PagingTest extends ParameterDBTestBase {
          }
 
          /**
-          * Normal stopping will cleanup non tx page subscription counter which will not trigger the bug.
-          * Here we override stop to simulate server crash.
-          * @throws Exception
+          * Normal stopping will cleanup non tx page subscription counter which will not trigger the bug. Here we
+          * override stop to simulate server crash.
           */
          @Override
          public synchronized void stop() throws Exception {
@@ -6346,7 +6342,7 @@ public class PagingTest extends ParameterDBTestBase {
          bb.put(getSamplebyte(j));
       }
 
-      /**
+      /*
        * Here we first send messages and consume them to move every subscription to the next bookmarked page.
        * Then we send messages and consume them again, expecting paging is stopped normally.
        */

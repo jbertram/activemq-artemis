@@ -26,8 +26,9 @@ import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
 import org.w3c.dom.Element;
 
 /**
- * A Deployable is an object that can be configured via an xml configuration element in the main configuration file "broker.xml"
- * It holds all the information needed by the FileDeploymentManager to parse the configuration and build the component
+ * A Deployable is an object that can be configured via an xml configuration element in the main configuration file
+ * "broker.xml" It holds all the information needed by the FileDeploymentManager to parse the configuration and build
+ * the component
  */
 public interface Deployable {
 

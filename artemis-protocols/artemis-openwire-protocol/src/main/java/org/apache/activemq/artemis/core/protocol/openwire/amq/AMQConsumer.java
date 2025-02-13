@@ -322,10 +322,9 @@ public class AMQConsumer {
    }
 
    /**
-    * The acknowledgement in openwire is done based on intervals.
-    * We will iterate through the list of delivering messages at {@link ServerConsumer#scanDeliveringReferences(boolean, Function, Function)}
-    * and add those to the Transaction.
-    * Notice that we will start a new transaction on the cases where there is no transaction.
+    * The acknowledgement in openwire is done based on intervals. We will iterate through the list of delivering
+    * messages at {@link ServerConsumer#scanDeliveringReferences(boolean, Function, Function)} and add those to the
+    * Transaction. Notice that we will start a new transaction on the cases where there is no transaction.
     */
    public void acknowledge(MessageAck ack) throws Exception {
 

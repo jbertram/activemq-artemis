@@ -65,7 +65,8 @@ public interface AuditLogger {
    }
 
    /**
-    * @return a String representing the "caller" in the format "user(role)@remoteAddress" using ThreadLocal values (if set)
+    * {@return a String representing the "caller" in the format "user(role)@remoteAddress" using ThreadLocal values (if
+    * set)}
     */
    static String getCaller() {
       Subject subject = Subject.getSubject(AccessController.getContext());
@@ -76,9 +77,10 @@ public interface AuditLogger {
    }
 
    /**
-    * @param  subject       the Subject to be used instead of the corresponding ThreadLocal Subject
-    * @param  remoteAddress the remote address to use; if null use the corresponding ThreadLocal remote address (if set)
-    * @return               a String representing the "caller" in the format "user(role)@remoteAddress"
+    * {@return a {@code String} representing the "caller" in the format "user(role)@remoteAddress"}
+    *
+    * @param subject       the Subject to be used instead of the corresponding ThreadLocal Subject
+    * @param remoteAddress the remote address to use; if null use the corresponding ThreadLocal remote address (if set)
     */
    static String getCaller(Subject subject, String remoteAddress) {
       String user = "anonymous";

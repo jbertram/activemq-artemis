@@ -94,8 +94,8 @@ public class NIOSequentialFile extends AbstractSequentialFile {
    }
 
    /**
-    * this.maxIO represents the default maxIO.
-    * Some operations while initializing files on the journal may require a different maxIO
+    * this.maxIO represents the default maxIO. Some operations while initializing files on the journal may require a
+    * different maxIO
     */
    @Override
    public synchronized void open() throws IOException {
@@ -420,13 +420,6 @@ public class NIOSequentialFile extends AbstractSequentialFile {
       }
    }
 
-   /**
-    * @param bytes
-    * @param sync
-    * @param callback
-    * @throws IOException
-    * @throws Exception
-    */
    private void doInternalWrite(final ByteBuffer bytes,
                                 final boolean sync,
                                 final IOCallback callback,

@@ -435,9 +435,9 @@ public class ScaleDownHandler {
    }
 
    /**
-    * Get the ID of the queues involved so the message can be routed properly.  This is done because we cannot
-    * send directly to a queue, we have to send to an address instead but not all the queues related to the
-    * address may need the message
+    * Get the ID of the queues involved so the message can be routed properly.  This is done because we cannot send
+    * directly to a queue, we have to send to an address instead but not all the queues related to the address may need
+    * the message
     */
    private long createQueueWithRoutingTypeIfNecessaryAndGetID(ClientSession session,
                                                               Queue queue,
@@ -516,8 +516,7 @@ public class ScaleDownHandler {
    }
 
    /**
-    * this class will control iterations while
-    * looking over for messages relations
+    * this class will control iterations while looking over for messages relations
     */
    private class QueuesXRefInnerManager {
 

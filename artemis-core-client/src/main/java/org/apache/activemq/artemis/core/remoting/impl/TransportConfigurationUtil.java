@@ -40,7 +40,7 @@ public class TransportConfigurationUtil {
 
    public static Map<String, Object> getDefaults(String className) {
       if (className == null) {
-         /* Returns a new map.  This allows any parent objects to update the map key/values
+         /* Returns a new map. This allows any parent objects to update the map key/values
             without polluting the EMPTY_HELPER map. */
          return new HashMap<>();
       }

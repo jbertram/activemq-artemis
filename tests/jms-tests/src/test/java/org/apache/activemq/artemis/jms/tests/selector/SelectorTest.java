@@ -47,12 +47,9 @@ public class SelectorTest extends ActiveMQServerTestCase {
    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
    /**
-    * Test case for http://jira.jboss.org/jira/browse/JBMESSAGING-105
-    * <br>
-    * Two Messages are sent to a queue. There is one receiver on the queue. The receiver only
-    * receives one of the messages due to a message selector only matching one of them. The receiver
-    * is then closed. A new receiver is now attached to the queue. Redelivery of the remaining
-    * message is now attempted. The message should be redelivered.
+    * Two Messages are sent to a queue. There is one receiver on the queue. The receiver only receives one of the
+    * messages due to a message selector only matching one of them. The receiver is then closed. A new receiver is now
+    * attached to the queue. Redelivery of the remaining message is now attempted. The message should be redelivered.
     */
    @Test
    public void testSelectiveClosingConsumer() throws Exception {

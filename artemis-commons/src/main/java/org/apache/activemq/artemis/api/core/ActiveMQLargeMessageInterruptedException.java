@@ -16,8 +16,6 @@
  */
 package org.apache.activemq.artemis.api.core;
 
-/**
- */
 // XXX
 public class ActiveMQLargeMessageInterruptedException extends ActiveMQException {
 

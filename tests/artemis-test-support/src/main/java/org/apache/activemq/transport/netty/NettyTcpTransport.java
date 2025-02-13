@@ -78,10 +78,8 @@ public class NettyTcpTransport implements NettyTransport {
    /**
     * Create a new transport instance
     *
-    * @param remoteLocation
-    *        the URI that defines the remote resource to connect to.
-    * @param options
-    *        the transport options used to configure the socket connection.
+    * @param remoteLocation the URI that defines the remote resource to connect to.
+    * @param options        the transport options used to configure the socket connection.
     */
    public NettyTcpTransport(URI remoteLocation, NettyTransportOptions options) {
       this(null, remoteLocation, options);
@@ -90,12 +88,9 @@ public class NettyTcpTransport implements NettyTransport {
    /**
     * Create a new transport instance
     *
-    * @param listener
-    *        the TransportListener that will receive events from this Transport.
-    * @param remoteLocation
-    *        the URI that defines the remote resource to connect to.
-    * @param options
-    *        the transport options used to configure the socket connection.
+    * @param listener       the TransportListener that will receive events from this Transport.
+    * @param remoteLocation the URI that defines the remote resource to connect to.
+    * @param options        the transport options used to configure the socket connection.
     */
    public NettyTcpTransport(NettyTransportListener listener, URI remoteLocation, NettyTransportOptions options) {
       if (options == null) {

@@ -488,9 +488,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
    }
 
-   /**
-    * @param close
-    */
    private void closeCleanSessions(boolean close) {
       Set<ClientSessionInternal> sessionsToClose;
       synchronized (sessions) {
@@ -581,9 +578,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    /**
     * TODO: Maybe this belongs to ActiveMQClientProtocolManager
-    *
-    * @param connectionID
-    * @param me
     */
    private void failoverOrReconnect(final Object connectionID,
                                     final ActiveMQException me,
@@ -1226,10 +1220,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    }
 
    /**
-    * It will connect to either primary or backup accordingly to the current configurations
-    * it will also switch to backup case it can't connect to primary and there's a backup configured
-    *
-    * @return
+    * It will connect to either primary or backup accordingly to the current configurations it will also switch to
+    * backup case it can't connect to primary and there's a backup configured
     */
    protected Connection createTransportConnection() {
       Connection transportConnection = null;
@@ -1443,11 +1435,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          send();
       }
 
-      /**
-       *
-       */
       public void send() {
-
          clientProtocolManager.ping(connectionTTL);
       }
 

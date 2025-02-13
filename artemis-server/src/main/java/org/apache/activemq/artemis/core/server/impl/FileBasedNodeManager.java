@@ -57,9 +57,10 @@ public abstract class FileBasedNodeManager extends NodeManager {
    }
 
    /**
-    * If {@code createIfNotExists} and activation sequence file doesn't exist yet, it returns {@code null},
-    * otherwise it opens it.<br>
-    * if {@code !createIfNotExists} it just open to create it.
+    * If {@code createIfNotExists} and activation sequence file doesn't exist yet, it returns {@code null}, otherwise it
+    * opens it.
+    * <p>
+    * If {@code !createIfNotExists} it just open to create it.
     */
    private FileChannel useActivationSequenceChannel(final boolean createIfNotExists) throws IOException {
       FileChannel channel = this.activationSequenceChannel;

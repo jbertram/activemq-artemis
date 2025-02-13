@@ -66,14 +66,16 @@ public interface PageTransactionInfo extends EncodingSupport {
    int getNumberOfMessages();
 
    /**
-    * This method will hold the position to be delivered later in case this transaction is pending.
-    * If the tx is not pending, it will return false, so the caller can deliver it right away
+    * This method will hold the position to be delivered later in case this transaction is pending. If the tx is not
+    * pending, it will return false, so the caller can deliver it right away
     *
     * @return true if the message will be delivered later, false if it should be delivered right away
     */
    boolean deliverAfterCommit(PageIterator pageIterator, PageSubscription cursor, PagedReference pagedMessage);
 
-   /** Used on PageRebuildManager to cleanup orphaned Page Transactions */
+   /**
+    * Used on PageRebuildManager to cleanup orphaned Page Transactions
+    */
    boolean isOrphaned();
 
    PageTransactionInfo setOrphaned(boolean orphaned);

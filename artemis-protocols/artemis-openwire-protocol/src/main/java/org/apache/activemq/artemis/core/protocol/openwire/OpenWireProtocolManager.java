@@ -146,9 +146,10 @@ public class OpenWireProtocolManager  extends AbstractProtocolManager<Command, O
 
    private int openWireDestinationCacheSize = 16;
 
-   /** if defined, LargeMessages will be sent in chunks to the network.
-    * Notice that the system will still load the entire file in memory before sending on the stream.
-    * This should avoid just a big buffer allocated. */
+   /**
+    * If defined, LargeMessages will be sent in chunks to the network. Notice that the system will still load the entire
+    * file in memory before sending on the stream. This should avoid just a big buffer allocated.
+    */
    public int getOpenwireMaxPacketChunkSize() {
       return openwireMaxPacketChunkSize;
    }
@@ -220,12 +221,16 @@ public class OpenWireProtocolManager  extends AbstractProtocolManager<Command, O
       routingHandler = new OpenWireRoutingHandler(server, this);
    }
 
-   /** Is Duplicate detection enabled when used with failover clients. */
+   /**
+    * Is Duplicate detection enabled when used with failover clients.
+    */
    public boolean isOpenwireUseDuplicateDetectionOnFailover() {
       return openwireUseDuplicateDetectionOnFailover;
    }
 
-   /** should it use duplicate detection on failover clients. */
+   /**
+    * should it use duplicate detection on failover clients.
+    */
    public OpenWireProtocolManager setOpenwireUseDuplicateDetectionOnFailover(boolean openwireUseDuplicateDetectionOnFailover) {
       this.openwireUseDuplicateDetectionOnFailover = openwireUseDuplicateDetectionOnFailover;
       return this;
@@ -257,8 +262,10 @@ public class OpenWireProtocolManager  extends AbstractProtocolManager<Command, O
       connections.remove(connection);
    }
 
-   /*** if set, the OpenWire connection will bypass the tcpReadBuferSize and use this value instead.
-    *   This is by default -1, and it should not be used unless in extreme situations like on a slow storage. */
+   /**
+    * If set, the OpenWire connection will bypass the tcpReadBuferSize and use this value instead.
+    * This is by default -1, and it should not be used unless in extreme situations like on a slow storage.
+    */
    public int getActorThresholdBytes() {
       return actorThresholdBytes;
    }

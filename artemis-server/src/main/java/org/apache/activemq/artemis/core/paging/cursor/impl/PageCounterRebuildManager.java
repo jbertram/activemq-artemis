@@ -42,7 +42,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 
-/** this class will copy current data from the Subscriptions, count messages while the server is already active
+/**
+ * this class will copy current data from the Subscriptions, count messages while the server is already active
  * performing other activity */
 public class PageCounterRebuildManager implements Runnable {
 
@@ -68,7 +69,8 @@ public class PageCounterRebuildManager implements Runnable {
       this.transactions = transactions;
       this.storedLargeMessages = storedLargeMessages;
    }
-   /** this method will perform the copy from Acked recorded from the subscription into a separate data structure.
+   /**
+    * this method will perform the copy from Acked recorded from the subscription into a separate data structure.
     * So we can count data while we consolidate at the end */
    private void initialize(PagingStore store) {
       store.lock(-1);

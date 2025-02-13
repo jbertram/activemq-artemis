@@ -146,8 +146,6 @@ public class JDBCJournalImpl extends AbstractJDBCDriver implements Journal {
 
    /**
     * The max size record that can be stored in the journal
-    *
-    * @return
     */
    @Override
    public long getMaxRecordSize() {
@@ -279,7 +277,9 @@ public class JDBCJournalImpl extends AbstractJDBCDriver implements Journal {
       }
    }
 
-   /** public for tests only, not through API */
+   /**
+    * public for tests only, not through API
+    */
    public void handleException(List<JDBCJournalRecord> recordRef, Throwable e) {
       logger.warn(e.getMessage(), e);
       failed.set(true);

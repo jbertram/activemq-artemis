@@ -70,9 +70,6 @@ public class ActiveMQMapMessage extends ActiveMQMessage implements MapMessage {
 
    /**
     * Constructor for a foreign MapMessage
-    *
-    * @param foreign
-    * @throws JMSException
     */
    public ActiveMQMapMessage(final MapMessage foreign, final ClientSession session) throws JMSException {
       super(foreign, ActiveMQMapMessage.TYPE, session);
@@ -327,14 +324,6 @@ public class ActiveMQMapMessage extends ActiveMQMessage implements MapMessage {
       readBodyMap(message.getBodyBuffer(), map);
    }
 
-
-
-
-   /**
-    * Check the name
-    *
-    * @param name the name
-    */
    private void checkName(final String name) throws JMSException {
       checkWrite();
 

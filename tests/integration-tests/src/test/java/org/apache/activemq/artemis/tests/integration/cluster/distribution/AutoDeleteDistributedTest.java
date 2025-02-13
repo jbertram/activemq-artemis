@@ -52,11 +52,6 @@ public class AutoDeleteDistributedTest extends ClusterTestBase {
       start();
    }
 
-   /**
-    * @param serverID
-    * @return
-    * @throws Exception
-    */
    @Override
    protected ConfigurationImpl createBasicConfig(final int serverID) {
       ConfigurationImpl configuration = super.createBasicConfig(serverID);

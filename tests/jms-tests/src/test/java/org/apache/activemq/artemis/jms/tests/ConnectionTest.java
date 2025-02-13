@@ -267,8 +267,6 @@ public class ConnectionTest extends JMSTestCase {
    /**
     * This test is similar to a JORAM Test...
     * (UnifiedTest::testCreateDurableConnectionConsumerOnQueueConnection)
-    *
-    * @throws Exception
     */
    @Test
    public void testDurableSubscriberOnQueueConnection() throws Exception {

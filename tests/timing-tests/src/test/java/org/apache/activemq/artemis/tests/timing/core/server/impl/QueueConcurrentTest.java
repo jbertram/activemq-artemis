@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A concurrent QueueTest
- *
+ * <p>
  * All the concurrent queue tests go in here
  */
 public class QueueConcurrentTest extends ActiveMQTestBase {

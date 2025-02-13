@@ -132,9 +132,6 @@ public class ConnectionFactoryProperties implements ConnectionFactoryOptions {
 
    private Boolean enableSharedClientID;
 
-   /**
-    * @return the transportType
-    */
    public List<String> getParsedConnectorClassNames() {
       return connectorClassName;
    }

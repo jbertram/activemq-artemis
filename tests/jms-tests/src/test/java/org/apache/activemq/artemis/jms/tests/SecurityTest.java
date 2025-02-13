@@ -49,7 +49,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Test JMS Security.
- * <br>
+ * <p>
  * This test must be run with the Test security config. on the server
  */
 public class SecurityTest extends JMSTestCase {

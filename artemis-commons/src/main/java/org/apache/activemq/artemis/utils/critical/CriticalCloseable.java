@@ -21,7 +21,8 @@ import org.apache.activemq.artemis.utils.ArtemisCloseable;
 public interface CriticalCloseable extends ArtemisCloseable {
 
 
-   /** This will set something to be called right before closing.
+   /**
+    * This will set something to be called right before closing.
     *
     * The use case that drove this call was a ReadWriteLock on the journal.
     * Imagine that you need to call enterCritical, readWrite.lock() and then unlock and leaveCritical.

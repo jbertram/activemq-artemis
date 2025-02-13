@@ -187,7 +187,7 @@ public class MQTTConnectionManager {
       } finally {
          if (session.getState() != null) {
             String clientId = session.getState().getClientId();
-            /**
+            /*
              *  ensure that the connection for the client ID matches *this* connection otherwise we could remove the
              *  entry for the client who "stole" this client ID via [MQTT-3.1.4-2]
              */

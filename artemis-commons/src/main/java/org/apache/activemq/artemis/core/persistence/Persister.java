@@ -21,7 +21,8 @@ import org.apache.activemq.artemis.api.core.ActiveMQBuffer;
 public interface Persister<T extends Object> {
 
 
-   /** This is to be used to store the protocol-id on Messages.
+   /**
+    * This is to be used to store the protocol-id on Messages.
     *  Messages are stored on their bare format.
     *  The protocol manager will be responsible to code or decode messages.
     *  The caveat here is that the first short-sized bytes need to be this constant. */

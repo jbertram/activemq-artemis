@@ -1312,9 +1312,6 @@ public class PagingStoreImplTest extends ActiveMQTestBase {
       }
    }
 
-   /**
-    * @return
-    */
    protected PagingManager createMockManager() {
       return new FakePagingManager();
    }

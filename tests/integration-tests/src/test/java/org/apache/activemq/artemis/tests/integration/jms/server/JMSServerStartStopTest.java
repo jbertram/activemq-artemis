@@ -152,9 +152,6 @@ public class JMSServerStartStopTest extends ActiveMQTestBase {
       conn.close();
    }
 
-   /**
-    * @return
-    */
    private ActiveMQConnectionFactory createConnectionFactory() {
       ActiveMQConnectionFactory cf = ActiveMQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(NETTY_CONNECTOR_FACTORY));
 

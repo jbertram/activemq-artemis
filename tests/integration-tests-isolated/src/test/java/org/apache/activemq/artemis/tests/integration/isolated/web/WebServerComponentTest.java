@@ -63,8 +63,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * This test leaks a thread named org.eclipse.jetty.util.RolloverFileOutputStream which is why it is isolated now.
- * In the future Jetty might fix this.
+ * This test leaks a thread named org.eclipse.jetty.util.RolloverFileOutputStream which is why it is isolated now. In
+ * the future Jetty might fix this.
  */
 public class WebServerComponentTest {
 

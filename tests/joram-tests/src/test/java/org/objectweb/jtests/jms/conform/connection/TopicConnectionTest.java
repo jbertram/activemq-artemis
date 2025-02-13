@@ -25,16 +25,14 @@ import org.objectweb.jtests.jms.framework.PubSubTestCase;
 
 /**
  * Test topic-specific connection features.
- *
+ * <p>
  * Test setting of client ID which is relevant only for Durable Subscription
  */
-
 public class TopicConnectionTest extends PubSubTestCase {
 
    /**
-    * Test that a call to <code>setClientID</code> will throw an
-    * <code>IllegalStateException</code> if a client ID has already been set
-    * see JMS javadoc
+    * Test that a call to {@code setClientID} will throw an {@code IllegalStateException} if a client ID has already
+    * been set see JMS javadoc
     * http://java.sun.com/j2ee/sdk_1.3/techdocs/api/javax/jms/Connection.html#setClientID(java.lang.String)
     */
    @Test
@@ -65,8 +63,8 @@ public class TopicConnectionTest extends PubSubTestCase {
    }
 
    /**
-    * Test that a call to <code>setClientID</code> can occur only after connection creation
-    * and before any other action on the connection.
+    * Test that a call to {@code setClientID} can occur only after connection creation and before any other action on
+    * the connection.
     * <em>This test is relevant only if the ID is set by the JMS client</em>
     * see JMS javadoc
     * http://java.sun.com/j2ee/sdk_1.3/techdocs/api/javax/jms/Connection.html#setClientID(java.lang.String)
@@ -100,8 +98,8 @@ public class TopicConnectionTest extends PubSubTestCase {
 
    /**
     * Test that if another connection with the same clientID is already running when
-    * <code>setClientID</code> is called, the JMS provider should detect the duplicate
-    * ID and throw an <code>InvalidClientIDException</code>
+    * Test that a call to {@code setClientID} will throw an
+    * {@code IllegalStateException} if a client ID has already been set
     * <em>This test is relevant only if the ID is set by the JMS client</em>
     * see JMS javadoc
     * http://java.sun.com/j2ee/sdk_1.3/techdocs/api/javax/jms/Connection.html#setClientID(java.lang.String)

@@ -111,8 +111,8 @@ import java.lang.invoke.MethodHandles;
 import static org.apache.activemq.artemis.utils.collections.IterableStream.iterableOf;
 
 /**
- * This is the class that will make the routing to Queues and decide which consumer will get the messages
- * It's the queue component on distributing the messages * *
+ * This is the class that will make the routing to Queues and decide which consumer will get the messages It's the queue
+ * component on distributing the messages * *
  */
 public class PostOfficeImpl implements PostOffice, NotificationListener, BindingsFactory {
 
@@ -1145,11 +1145,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       return route(message, context, direct, rejectDuplicates, bindingMove, false);
    }
 
-
    /**
-    * The route can call itelf sending to DLA.
-    * if a DLA still not found, it should then use previous semantics.
-    * */
+    * The route can call itelf sending to DLA. if a DLA still not found, it should then use previous semantics.
+    */
    private RoutingStatus route(final Message message,
                                final RoutingContext context,
                                final boolean direct,
@@ -1802,9 +1800,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    /**
     * This will kick a delivery async on the queue, so the queue may have a chance to depage messages
-    *
-    * @param tx
-    * @param entry
     */
    private void schedulePageDelivery(Transaction tx, Map.Entry<SimpleString, RouteContextList> entry) {
       if (tx != null) {
@@ -2028,7 +2023,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       return queue.getMessagesExpired() > 0 || queue.getMessagesAcknowledged() > 0 || queue.getMessagesKilled() > 0 || queue.getConsumerRemovedTimestamp() != -1 || settings.getAutoDeleteQueuesSkipUsageCheck();
    }
 
-   /** To be used by the AddressQueueReaper.
+   /**
+    * To be used by the AddressQueueReaper.
     * It is also exposed for tests through PostOfficeTestAccessor */
    void reapAddresses(boolean initialCheck) {
       getLocalQueues().forEach(queue -> {

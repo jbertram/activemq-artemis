@@ -100,7 +100,6 @@ import static org.apache.activemq.artemis.utils.ByteUtil.intFromBytes;
  *     href="http://www.space.net/~gert/RIPE/ipv6-filters.html"
  *     >http://www.space.net/~gert/RIPE/ipv6-filters.html</a>
  * </ul>
- *
  */
 public final class InetAddresses {
    private static final int IPV4_PART_COUNT = 4;
@@ -110,10 +109,9 @@ public final class InetAddresses {
    }
 
    /**
-    * Returns an {@link Inet4Address}, given a byte array representation of the IPv4 address.
+    * {@return an {@link Inet4Address}, given a byte array representation of the IPv4 address}
     *
     * @param bytes byte array representing an IPv4 address (should be of length 4)
-    * @return {@link Inet4Address} corresponding to the supplied byte array
     * @throws IllegalArgumentException if a valid {@link Inet4Address} can not be created
     */
    private static Inet4Address getInet4Address(byte[] bytes) {
@@ -127,11 +125,11 @@ public final class InetAddresses {
 
    /**
     * Returns the {@link InetAddress} having the given string representation.
+    * <p>
+    * This deliberately avoids all nameservice lookups (e.g. no DNS).
     *
-    * <p>This deliberately avoids all nameservice lookups (e.g. no DNS).
-    *
-    * @param ipString {@code String} containing an IPv4 or IPv6 string literal, e.g.
-    *   {@code "192.168.0.1"} or {@code "2001:db8::1"}
+    * @param ipString {@code String} containing an IPv4 or IPv6 string literal, e.g. {@code "192.168.0.1"} or
+    *                 {@code "2001:db8::1"}
     * @return {@link InetAddress} representing the argument
     * @throws IllegalArgumentException if the argument is not a valid IP string literal
     */
@@ -147,11 +145,9 @@ public final class InetAddresses {
    }
 
    /**
-    * Returns {@code true} if the supplied string is a valid IP string
-    * literal, {@code false} otherwise.
+    * {@return {@code true} if the supplied string is a valid IP string literal, {@code false} otherwise}
     *
     * @param ipString {@code String} to evaluated as an IP string literal
-    * @return {@code true} if the argument is a valid IP string literal
     */
    public static boolean isInetAddress(String ipString) {
       return ipStringToBytes(ipString) != null;
@@ -306,11 +302,10 @@ public final class InetAddresses {
 
    /**
     * Convert a byte array into an InetAddress.
-    *
-    * {@link InetAddress#getByAddress} is documented as throwing a checked
-    * exception "if IP address is of illegal length."  We replace it with
-    * an unchecked exception, for use by callers who already know that addr
-    * is an array of length 4 or 16.
+    * <p>
+    * {@link InetAddress#getByAddress} is documented as throwing a checked exception "if IP address is of illegal
+    * length."  We replace it with an unchecked exception, for use by callers who already know that addr is an array of
+    * length 4 or 16.
     *
     * @param addr the raw 4-byte or 16-byte IP address in big-endian order
     * @return an InetAddress object created from the raw IP address
@@ -325,16 +320,13 @@ public final class InetAddresses {
 
    /**
     * Returns the string representation of an {@link InetAddress}.
-    *
-    * <p>For IPv4 addresses, this is identical to
-    * {@link InetAddress#getHostAddress()}, but for IPv6 addresses, the output
-    * follows <a href="http://tools.ietf.org/html/rfc5952">RFC 5952</a>
-    * section 4.  The main difference is that this method uses "::" for zero
-    * compression, while Java's version uses the uncompressed form.
-    *
-    * <p>This method uses hexadecimal for all IPv6 addresses, including
-    * IPv4-mapped IPv6 addresses such as "::c000:201".  The output does not
-    * include a Scope ID.
+    * <p>
+    * For IPv4 addresses, this is identical to {@link InetAddress#getHostAddress()}, but for IPv6 addresses, the output
+    * follows <a href="http://tools.ietf.org/html/rfc5952">RFC 5952</a> section 4.  The main difference is that this
+    * method uses "::" for zero compression, while Java's version uses the uncompressed form.
+    * <p>
+    * This method uses hexadecimal for all IPv6 addresses, including IPv4-mapped IPv6 addresses such as "::c000:201".
+    * The output does not include a Scope ID.
     *
     * @param ip {@link InetAddress} to be converted to an address string
     * @return {@code String} containing the text-formatted IP address
@@ -360,8 +352,7 @@ public final class InetAddresses {
     * Identify and mark the longest run of zeroes in an IPv6 address.
     *
     * <p>Only runs of two or more hextets are considered.  In case of a tie, the
-    * leftmost run wins.  If a qualifying run is found, its hextets are replaced
-    * by the sentinel value -1.
+    * leftmost run wins.  If a qualifying run is found, its hextets are replaced by the sentinel value -1.
     *
     * @param hextets {@code int[]} mutable array of eight 16-bit hextets
     */
@@ -423,26 +414,18 @@ public final class InetAddresses {
    }
 
    /**
-    * Returns the string representation of an {@link InetAddress} suitable
-    * for inclusion in a URI.
-    *
-    * <p>For IPv4 addresses, this is identical to
-    * {@link InetAddress#getHostAddress()}, but for IPv6 addresses it
-    * compresses zeroes and surrounds the text with square brackets; for example
-    * {@code "[2001:db8::1]"}.
-    *
-    * <p>Per section 3.2.2 of
-    * <a target="_parent"
-    *   href="http://tools.ietf.org/html/rfc3986#section-3.2.2"
-    *  >http://tools.ietf.org/html/rfc3986</a>,
-    * a URI containing an IPv6 string literal is of the form
+    * Returns the string representation of an {@link InetAddress} suitable for inclusion in a URI.
+    * <p>
+    * For IPv4 addresses, this is identical to {@link InetAddress#getHostAddress()}, but for IPv6 addresses it
+    * compresses zeroes and surrounds the text with square brackets; for example {@code "[2001:db8::1]"}.
+    * <p>
+    * Per section 3.2.2 of <a target="_parent" href="http://tools.ietf.org/html/rfc3986#section-3.2.2"
+    * >http://tools.ietf.org/html/rfc3986</a>, a URI containing an IPv6 string literal is of the form
     * {@code "http://[2001:db8::1]:8888/index.html"}.
-    *
-    * <p>Use of either {@link InetAddresses#toAddrString},
-    * {@link InetAddress#getHostAddress()}, or this method is recommended over
-    * {@link InetAddress#toString()} when an IP address string literal is
-    * desired.  This is because {@link InetAddress#toString()} prints the
-    * hostname and the IP address string joined by a "/".
+    * <p>
+    * Use of either {@link InetAddresses#toAddrString}, {@link InetAddress#getHostAddress()}, or this method is
+    * recommended over {@link InetAddress#toString()} when an IP address string literal is desired.  This is because
+    * {@link InetAddress#toString()} prints the hostname and the IP address string joined by a "/".
     *
     * @param ip {@link InetAddress} to be converted to URI string literal
     * @return {@code String} containing URI-safe string literal
@@ -455,19 +438,18 @@ public final class InetAddresses {
    }
 
    /**
-    * Returns an InetAddress representing the literal IPv4 or IPv6 host
-    * portion of a URL, encoded in the format specified by RFC 3986 section 3.2.2.
-    *
-    * <p>This function is similar to {@link InetAddresses#forString(String)},
-    * however, it requires that IPv6 addresses are surrounded by square brackets.
-    *
-    * <p>This function is the inverse of
-    * {@link InetAddresses#toUriString(java.net.InetAddress)}.
+    * Returns an InetAddress representing the literal IPv4 or IPv6 host portion of a URL, encoded in the format
+    * specified by RFC 3986 section 3.2.2.
+    * <p>
+    * This function is similar to {@link InetAddresses#forString(String)}, however, it requires that IPv6 addresses are
+    * surrounded by square brackets.
+    * <p>
+    * This function is the inverse of {@link InetAddresses#toUriString(java.net.InetAddress)}.
     *
     * @param hostAddr A RFC 3986 section 3.2.2 encoded IPv4 or IPv6 address
     * @return an InetAddress representing the address in {@code hostAddr}
-    * @throws IllegalArgumentException if {@code hostAddr} is not a valid
-    *   IPv4 address, or IPv6 address surrounded by square brackets
+    * @throws IllegalArgumentException if {@code hostAddr} is not a valid IPv4 address, or IPv6 address surrounded by
+    *                                  square brackets
     */
    public static InetAddress forUriString(String hostAddr) {
       Preconditions.checkNotNull(hostAddr);
@@ -493,11 +475,9 @@ public final class InetAddresses {
    }
 
    /**
-    * Returns {@code true} if the supplied string is a valid URI IP string
-    * literal, {@code false} otherwise.
+    * {@return {@code true} if the supplied string is a valid URI IP string literal, {@code false} otherwise}
     *
     * @param ipString {@code String} to evaluated as an IP URI host string literal
-    * @return {@code true} if the argument is a valid IP URI host
     */
    public static boolean isUriInetAddress(String ipString) {
       try {
@@ -510,24 +490,18 @@ public final class InetAddresses {
 
    /**
     * Evaluates whether the argument is an IPv6 "compat" address.
-    *
-    * <p>An "IPv4 compatible", or "compat", address is one with 96 leading
-    * bits of zero, with the remaining 32 bits interpreted as an
-    * IPv4 address.  These are conventionally represented in string
-    * literals as {@code "::192.168.0.1"}, though {@code "::c0a8:1"} is
-    * also considered an IPv4 compatible address (and equivalent to
-    * {@code "::192.168.0.1"}).
-    *
-    * <p>For more on IPv4 compatible addresses see section 2.5.5.1 of
-    * <a target="_parent"
-    *   href="http://tools.ietf.org/html/rfc4291#section-2.5.5.1"
-    *   >http://tools.ietf.org/html/rfc4291</a>
-    *
-    * <p>NOTE: This method is different from
-    * {@link Inet6Address#isIPv4CompatibleAddress} in that it more
-    * correctly classifies {@code "::"} and {@code "::1"} as
-    * proper IPv6 addresses (which they are), NOT IPv4 compatible
-    * addresses (which they are generally NOT considered to be).
+    * <p>
+    * An "IPv4 compatible", or "compat", address is one with 96 leading bits of zero, with the remaining 32 bits
+    * interpreted as an IPv4 address.  These are conventionally represented in string literals as
+    * {@code "::192.168.0.1"}, though {@code "::c0a8:1"} is also considered an IPv4 compatible address (and equivalent
+    * to {@code "::192.168.0.1"}).
+    * <p>
+    * For more on IPv4 compatible addresses see section 2.5.5.1 of <a target="_parent"
+    * href="http://tools.ietf.org/html/rfc4291#section-2.5.5.1" >http://tools.ietf.org/html/rfc4291</a>
+    * <p>
+    * NOTE: This method is different from {@link Inet6Address#isIPv4CompatibleAddress} in that it more correctly
+    * classifies {@code "::"} and {@code "::1"} as proper IPv6 addresses (which they are), NOT IPv4 compatible addresses
+    * (which they are generally NOT considered to be).
     *
     * @param ip {@link Inet6Address} to be examined for embedded IPv4 compatible address format
     * @return {@code true} if the argument is a valid "compat" address
@@ -547,10 +521,9 @@ public final class InetAddresses {
    }
 
    /**
-    * Returns the IPv4 address embedded in an IPv4 compatible address.
+    * {@return {@link Inet4Address} of the embedded IPv4 address}
     *
     * @param ip {@link Inet6Address} to be examined for an embedded IPv4 address
-    * @return {@link Inet4Address} of the embedded IPv4 address
     * @throws IllegalArgumentException if the argument is not a valid IPv4 compatible address
     */
    public static Inet4Address getCompatIPv4Address(Inet6Address ip) {

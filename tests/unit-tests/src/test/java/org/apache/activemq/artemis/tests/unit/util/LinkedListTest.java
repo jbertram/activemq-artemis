@@ -380,7 +380,7 @@ public class LinkedListTest extends ActiveMQTestBase {
 
          assertEquals(1000, nodeStore.size());
 
-         /** remove all even items */
+         // remove all even items
          for (int i = 1; i <= 1000; i += 2) {
             objs.removeWithID(serverID, i);
          }
@@ -769,9 +769,6 @@ public class LinkedListTest extends ActiveMQTestBase {
       assertNoSuchElementIsThrown(iter);
    }
 
-   /**
-    * @param iter
-    */
    private void assertNoSuchElementIsThrown(LinkedListIterator<Integer> iter) {
       try {
          iter.next();

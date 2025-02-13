@@ -17,15 +17,13 @@
 package org.apache.activemq.artemis.protocol.amqp.proton;
 
 /**
- * Message constants used for handling the "tunneling" of other protocol messages
- * in an AMQP delivery sent from one broker to another without conversion.
- *
- * A tunneled Core message is sent with a custom message format indicating either
- * a standard or large core message is carried within. The message is encoded using
- * the standard (message format zero) AMQP message structure. The core message is
- * encoded in the body section as two or more Data sections. The first being the
- * message headers and properties encoding. Any remaining Data sections comprise
- * the body of the Core message.
+ * Message constants used for handling the "tunneling" of other protocol messages in an AMQP delivery sent from one
+ * broker to another without conversion.
+ * <p>
+ * A tunneled Core message is sent with a custom message format indicating either a standard or large core message is
+ * carried within. The message is encoded using the standard (message format zero) AMQP message structure. The core
+ * message is encoded in the body section as two or more Data sections. The first being the message headers and
+ * properties encoding. Any remaining Data sections comprise the body of the Core message.
  */
 public class AMQPTunneledMessageConstants {
 

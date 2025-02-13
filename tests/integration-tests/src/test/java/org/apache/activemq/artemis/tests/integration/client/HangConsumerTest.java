@@ -85,9 +85,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This test will simulate a consumer hanging on the delivery packet due to unbehaved clients
- * and it will make sure we can still perform certain operations on the queue such as produce
- * and verify the counters
+ * This test will simulate a consumer hanging on the delivery packet due to unbehaved clients and it will make sure we
+ * can still perform certain operations on the queue such as produce and verify the counters
  */
 public class HangConsumerTest extends ActiveMQTestBase {
 
@@ -182,31 +181,20 @@ public class HangConsumerTest extends ActiveMQTestBase {
       }
    }
 
-   /**
-    *
-    */
    protected void releaseConsumers() {
       callbackSemaphore.release();
    }
 
-   /**
-    * @throws InterruptedException
-    */
    protected void awaitBlocking() throws InterruptedException {
       assertTrue(this.inCall.await(5000));
    }
 
-   /**
-    * @throws InterruptedException
-    */
    protected void blockConsumers() throws InterruptedException {
       this.callbackSemaphore.acquire();
    }
 
    /**
     * This would recreate the scenario where a queue was duplicated
-    *
-    * @throws Exception
     */
    @Test
    public void testHangDuplicateQueues() throws Exception {
@@ -214,15 +202,6 @@ public class HangConsumerTest extends ActiveMQTestBase {
       final CountDownLatch latchDelete = new CountDownLatch(1);
       class MyQueueWithBlocking extends QueueImpl {
 
-         /**
-          * @param queueConfiguration
-          * @param pageSubscription
-          * @param scheduledExecutor
-          * @param postOffice
-          * @param storageManager
-          * @param addressSettingsRepository
-          * @param executor
-          */
          MyQueueWithBlocking(final QueueConfiguration queueConfiguration,
                              final Filter filter,
                              final PagingStore pagingStore,
@@ -334,10 +313,8 @@ public class HangConsumerTest extends ActiveMQTestBase {
    }
 
    /**
-    * This would force a journal duplication on bindings even with the scenario that generated fixed,
-    * the server shouldn't hold of from starting
-    *
-    * @throws Exception
+    * This would force a journal duplication on bindings even with the scenario that generated fixed, the server
+    * shouldn't hold of from starting
     */
    @Test
    public void testForceDuplicationOnBindings() throws Exception {
@@ -419,9 +396,8 @@ public class HangConsumerTest extends ActiveMQTestBase {
    }
 
    /**
-    * This will simulate what would happen with topic creationg where a single record is supposed to be created on the journal
-    *
-    * @throws Exception
+    * This will simulate what would happen with topic creationg where a single record is supposed to be created on the
+    * journal
     */
    @Test
    public void testDuplicateDestinationsOnTopic() throws Exception {

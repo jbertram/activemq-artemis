@@ -23,9 +23,6 @@ import javax.jms.MessageNotWriteableException;
 
 import junit.framework.TestCase;
 
-/**
- *
- */
 public class ActiveMQBytesMessageTest extends TestCase {
 
    public ActiveMQBytesMessageTest(String name) {

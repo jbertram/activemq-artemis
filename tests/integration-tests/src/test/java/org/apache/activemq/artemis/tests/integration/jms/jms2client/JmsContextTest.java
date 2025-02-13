@@ -332,11 +332,11 @@ public class JmsContextTest extends JMSTestBase {
          if (idx == pass) {
             localContext.close();
          }
-         /**
-          * From {@code JMSContext.close()}'s javadoc:<br/>
-          * Invoking the {@code acknowledge} method of a received message from a closed connection's
-          * session must throw an {@code IllegalStateRuntimeException}. Closing a closed connection
-          * must NOT throw an exception.
+         /*
+          * From JMSContext.close() javadoc:
+          *
+          * Invoking the acknowledge method of a received message from a closed connection's session must throw an
+          * IllegalStateRuntimeException. Closing a closed connection must NOT throw an exception.
           */
          try {
             msg.acknowledge();

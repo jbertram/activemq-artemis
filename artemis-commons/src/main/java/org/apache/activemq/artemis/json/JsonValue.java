@@ -35,7 +35,6 @@ public interface JsonValue {
     */
    JsonArray EMPTY_JSON_ARRAY = new JsonArrayImpl(javax.json.JsonValue.EMPTY_JSON_ARRAY);
 
-
    /**
     * A constant JsonValue for null values
     */
@@ -57,10 +56,7 @@ public interface JsonValue {
    String toString();
 
    enum ValueType {
-      ARRAY,
-      OBJECT, STRING, NUMBER,
-      TRUE, FALSE,
-      NULL
+      ARRAY, OBJECT, STRING, NUMBER, TRUE, FALSE, NULL
    }
 
    default JsonObject asJsonObject() {

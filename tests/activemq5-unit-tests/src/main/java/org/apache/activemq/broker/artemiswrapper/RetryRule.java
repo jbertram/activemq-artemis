@@ -27,8 +27,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 
 /**
- * Please use this only if you have to.
- * Try to fix the test first.
+ * Please use this only if you have to. Try to fix the test first.
  */
 public class RetryRule implements MethodRule {
 
@@ -49,9 +48,8 @@ public class RetryRule implements MethodRule {
    }
 
    /**
-    *
-    * @param defaultNumberOfRetries
-    * @param retrySuccess if true, it will keep retrying until it failed or the number of retries have reached an end, opposite rule.
+    * @param retrySuccess if true, it will keep retrying until it failed or the number of retries have reached an end,
+    *                     opposite rule.
     */
    public RetryRule(int defaultNumberOfRetries, boolean retrySuccess) {
       this.defaultNumberOfRetries = defaultNumberOfRetries;

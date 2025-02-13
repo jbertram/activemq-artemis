@@ -1176,76 +1176,46 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
       return this;
    }
 
-   /**
-    * @return the defaultConsumerWindowSize
-    */
    public int getDefaultConsumerWindowSize() {
       return defaultConsumerWindowSize != null ? defaultConsumerWindowSize : ActiveMQClient.DEFAULT_CONSUMER_WINDOW_SIZE;
    }
 
-   /**
-    * @param defaultConsumerWindowSize the defaultConsumerWindowSize to set
-    */
    public AddressSettings setDefaultConsumerWindowSize(int defaultConsumerWindowSize) {
       this.defaultConsumerWindowSize = defaultConsumerWindowSize;
       return this;
    }
 
-   /**
-    * @return the defaultGroupBuckets
-    */
    public boolean isDefaultGroupRebalance() {
       return defaultGroupRebalance != null ? defaultGroupRebalance : ActiveMQDefaultConfiguration.getDefaultGroupRebalance();
    }
 
-   /**
-    * @param defaultGroupRebalance the defaultGroupBuckets to set
-    */
    public AddressSettings setDefaultGroupRebalance(boolean defaultGroupRebalance) {
       this.defaultGroupRebalance = defaultGroupRebalance;
       return this;
    }
 
-   /**
-    * @return the defaultGroupRebalancePauseDispatch
-    */
    public boolean isDefaultGroupRebalancePauseDispatch() {
       return defaultGroupRebalancePauseDispatch != null ? defaultGroupRebalancePauseDispatch : ActiveMQDefaultConfiguration.getDefaultGroupRebalancePauseDispatch();
    }
 
-   /**
-    * @param defaultGroupRebalancePauseDispatch the defaultGroupBuckets to set
-    */
    public AddressSettings setDefaultGroupRebalancePauseDispatch(boolean defaultGroupRebalancePauseDispatch) {
       this.defaultGroupRebalancePauseDispatch = defaultGroupRebalancePauseDispatch;
       return this;
    }
 
-   /**
-    * @return the defaultGroupBuckets
-    */
    public int getDefaultGroupBuckets() {
       return defaultGroupBuckets != null ? defaultGroupBuckets : ActiveMQDefaultConfiguration.getDefaultGroupBuckets();
    }
 
-   /**
-    * @return the defaultGroupFirstKey
-    */
    public SimpleString getDefaultGroupFirstKey() {
       return defaultGroupFirstKey != null ? defaultGroupFirstKey : ActiveMQDefaultConfiguration.getDefaultGroupFirstKey();
    }
 
-   /**
-    * @param defaultGroupFirstKey the defaultGroupFirstKey to set
-    */
    public AddressSettings setDefaultGroupFirstKey(SimpleString defaultGroupFirstKey) {
       this.defaultGroupFirstKey = defaultGroupFirstKey;
       return this;
    }
 
-   /**
-    * @param defaultGroupBuckets the defaultGroupBuckets to set
-    */
    public AddressSettings setDefaultGroupBuckets(int defaultGroupBuckets) {
       this.defaultGroupBuckets = defaultGroupBuckets;
       return this;
@@ -1316,8 +1286,6 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
 
    /**
     * Merge two AddressSettings instances in one instance
-    *
-    * @param merged
     */
    @Override
    public void merge(final AddressSettings merged) {
@@ -1330,8 +1298,6 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
 
    /**
     * Merge two AddressSettings instances in a new instance
-    *
-    * @param merged
     */
    @Override
    public AddressSettings mergeCopy(final AddressSettings merged) {

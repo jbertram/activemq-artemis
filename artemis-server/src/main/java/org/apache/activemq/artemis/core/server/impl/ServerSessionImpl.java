@@ -149,8 +149,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener {
 
    protected volatile Transaction tx;
 
-   /** This will store the Transaction between xaEnd and xaPrepare or xaCommit.
-    *  in a failure scenario (client is gone), this will be held between xaEnd and xaCommit. */
+   /**
+    * This will store the Transaction between xaEnd and xaPrepare or xaCommit. In a failure scenario (client is gone),
+    * this will be held between xaEnd and xaCommit.
+    */
    protected volatile Transaction pendingTX;
 
    protected boolean xa;
@@ -337,9 +339,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener {
       return closed;
    }
 
-   /**
-    * @return the sessionContext
-    */
    @Override
    public OperationContext getSessionContext() {
       return context;
@@ -649,9 +648,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener {
    }
 
    /**
-    * Some protocols may chose to hold their transactions outside of the ServerSession.
-    * This can be used to replace the transaction.
-    * Notice that we set autoCommitACK and autoCommitSends to true if tx == null
+    * Some protocols may chose to hold their transactions outside of the ServerSession. This can be used to replace the
+    * transaction. Notice that we set autoCommitACK and autoCommitSends to true if tx == null
     */
    @Override
    public synchronized void resetTX(Transaction transaction) {
@@ -1360,9 +1358,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener {
    }
 
    /**
-    * @param clientFailed                   If the client has failed, we can't decrease the delivery-counts, and the close may issue a rollback
-    * @param considerLastMessageAsDelivered
-    * @throws Exception
+    * @param clientFailed If the client has failed, we can't decrease the delivery-counts, and the close may issue a
+    *                     rollback
     */
    private synchronized void rollback(final boolean clientFailed,
                                       final boolean considerLastMessageAsDelivered) throws Exception {
@@ -1381,18 +1378,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener {
       }
    }
 
-   /**
-    * @return
-    */
    @Override
    public Transaction newTransaction() {
       return new TransactionImpl(null, storageManager, timeoutSeconds);
    }
 
-   /**
-    * @param xid
-    * @return
-    */
    private Transaction newTransaction(final Xid xid) {
       return new TransactionImpl(xid, storageManager, timeoutSeconds);
    }

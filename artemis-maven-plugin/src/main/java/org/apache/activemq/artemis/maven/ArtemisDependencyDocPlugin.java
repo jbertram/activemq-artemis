@@ -35,7 +35,8 @@ import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactResult;
 
-/** The following substitutions are made for each line
+/**
+ * The following substitutions are made for each line
  * X{group} with the groupID
  * X{artifact} with the artifactID
  * X{version} with the version
