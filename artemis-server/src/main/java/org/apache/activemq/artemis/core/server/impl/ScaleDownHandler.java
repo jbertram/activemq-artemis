@@ -219,6 +219,7 @@ public class ScaleDownHandler {
                   messageCount++;
                   if (commitInterval > 0 && messageCount % commitInterval == 0) {
                      tx.commit();
+                     tx = new TransactionImpl(storageManager);
                   }
 
                   messagesIterator.remove();
