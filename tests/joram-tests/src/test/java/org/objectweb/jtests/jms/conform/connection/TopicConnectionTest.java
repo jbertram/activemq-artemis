@@ -95,48 +95,4 @@ public class TopicConnectionTest extends PubSubTestCase {
          Assert.fail("Should raise a javax.jms.IllegalStateException, not a java.lang.IllegalStateException");
       }
    }
-
-   /**
-    * Test that if another connection with the same clientID is already running when
-    * Test that a call to {@code setClientID} will throw an
-    * {@code IllegalStateException} if a client ID has already been set
-    * <em>This test is relevant only if the ID is set by the JMS client</em>
-    * see JMS javadoc
-    * http://java.sun.com/j2ee/sdk_1.3/techdocs/api/javax/jms/Connection.html#setClientID(java.lang.String)
-    *
-    *... This test is not valid... as getClientID is caleld before setClientID
-    */
-   /*public void testSetClientID_3()
-   {
-      try
-      {
-         // we start from a clean state for the first connection
-         subscriberConnection.close();
-         subscriberConnection = null;
-
-         subscriberConnection = subscriberTCF.createTopicConnection();
-         // if the JMS provider has set a client ID, this test is not relevant
-         if (subscriberConnection.getClientID() != null)
-         {
-            return;
-         }
-         // the JMS provider has not set a client ID, so we do
-         subscriberConnection.setClientID("testSetClientID_3");
-         assertEquals("testSetClientID_3", subscriberConnection.getClientID());
-
-         // we create a new connection and try to set the same ID than for subscriberConnection
-         TopicConnection connection_2 = subscriberTCF.createTopicConnection();
-         assertTrue(connection_2.getClientID() == null);
-         connection_2.setClientID("testSetClientID_3");
-         fail("Should throw a javax.jms.InvalidClientIDException");
-      }
-      catch (InvalidClientIDException e)
-      {
-      }
-      catch (JMSException e)
-      {
-         fail(e);
-      }
-   }*/
-
 }
