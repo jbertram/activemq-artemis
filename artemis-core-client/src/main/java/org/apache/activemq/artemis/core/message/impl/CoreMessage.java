@@ -376,6 +376,7 @@ public class CoreMessage extends RefCountMessage implements ICoreMessage {
 
    protected synchronized void checkEncode() {
       if (!validBuffer) {
+         logger.info("invalid buffer so encoding...");
          encode();
       }
       internalWritableBuffer();
@@ -447,6 +448,7 @@ public class CoreMessage extends RefCountMessage implements ICoreMessage {
    public synchronized void messageChanged() {
       //a volatile store is a costly operation: better to check if is necessary
       if (validBuffer) {
+         logger.info("Message changed!", new Exception("trace"));
          validBuffer = false;
       }
    }
@@ -760,6 +762,24 @@ public class CoreMessage extends RefCountMessage implements ICoreMessage {
 
       getProperties();
 
+      calculateEndOfBodyPosition();
+
+      buffer.setInt(0, endOfBodyPosition);
+      // The end of body position
+      buffer.setIndex(0, calculateInitialWriterIndex());
+
+      encodeHeadersAndProperties(buffer);
+
+      validBuffer = true;
+
+      return this;
+   }
+
+   private int calculateInitialWriterIndex() {
+      return endOfBodyPosition - BUFFER_HEADER_SPACE + DataConstants.SIZE_INT;
+   }
+
+   private void calculateEndOfBodyPosition() {
       if (writableBuffer != null) {
          // The message encode takes into consideration the PacketImpl which is not part of this encoding
          // so we always need to take the BUFFER_HEADER_SPACE from packet impl into consideration
@@ -767,16 +787,6 @@ public class CoreMessage extends RefCountMessage implements ICoreMessage {
       } else if (endOfBodyPosition <= 0) {
          endOfBodyPosition = BUFFER_HEADER_SPACE + DataConstants.SIZE_INT;
       }
-
-      buffer.setInt(0, endOfBodyPosition);
-      // The end of body position
-      buffer.setIndex(0, endOfBodyPosition - BUFFER_HEADER_SPACE + DataConstants.SIZE_INT);
-
-      encodeHeadersAndProperties(buffer);
-
-      validBuffer = true;
-
-      return this;
    }
 
    public void encodeHeadersAndProperties(final ByteBuf buffer) {
@@ -856,8 +866,12 @@ public class CoreMessage extends RefCountMessage implements ICoreMessage {
       if (buffer == null) {
          return -1;
       }
-      checkEncode();
-      return buffer.writerIndex();
+
+      calculateEndOfBodyPosition();
+      return calculateInitialWriterIndex() + getHeadersAndPropertiesEncodeSize();
+
+//      checkEncode();
+//      return buffer.writerIndex();
    }
 
    @Override

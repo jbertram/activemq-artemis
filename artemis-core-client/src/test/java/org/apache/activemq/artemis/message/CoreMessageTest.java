@@ -398,7 +398,7 @@ public class CoreMessageTest {
       copy.setBrokerProperty(Message.HDR_ORIGINAL_QUEUE, "a");
       copy.setBrokerProperty(Message.HDR_ORIGINAL_ADDRESS, msg.getAddressSimpleString());
       copy.setBrokerProperty(Message.HDR_ORIG_MESSAGE_ID, msg.getMessageID());
-      assertEquals(copy.getEncodeSize(), copy.getBuffer().capacity());
+      assertEquals(copy.getEncodeSize(), copy.encode().getBuffer().capacity());
    }
 
    private void printVariable(String body, String encode) {
