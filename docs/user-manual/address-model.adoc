@@ -291,13 +291,13 @@ Open the file `etc/broker.xml` for editing.
 Disabling all the queues on an address means that any message sent to that address will be silently dropped.
 ====
 
-=== Temporary Queues
+=== Temporary UUID Queues
 
 For some protocols and APIs which only support monolithic "destinations" without the address/queue separation (e.g. AMQP, JMS, etc.) temporary queues are created by the broker using a UUID (i.e universally unique identifier) as the name for both the address and the queue.
-Because the name is a UUID it is impossible to create an `address-setting` for it whose `match` is anything but `#`.
+Because the name is a UUID it is impossible to create an `address-setting` or `security-setting` for it whose `match` is anything but `#`.
 
 To solve this problem one can specify the `temporary-queue-namespace` in `broker.xml` and then create an `address-setting` whose `match` value corresponds to the configured `temporary-queue-namespace`.
-When the `temporary-queue-namespace` is set and a temporary queue is created then the broker will prepend the `temporary-queue-namespace` value along with the `delimiter` value configured in `wildcard-addresses` (defaults to `.`) to the address name and use that to lookup the associated `address-setting` values.
+When the `temporary-queue-namespace` is set and a temporary queue is created with a UUID name then the broker will prepend the `temporary-queue-namespace` value along with the `delimiter` value configured in `wildcard-addresses` (defaults to `.`) to both the address and queue name.
 
 Here's a simple example configuration:
 
@@ -312,10 +312,18 @@ Here's a simple example configuration:
 </address-settings>
 ----
 
-Using this configuration any temporary queue will have metrics disabled.
+Using this configuration any temporary UUID queue will have metrics disabled.
 
-NOTE: This setting does _not_ change the actual name of the temporary queue.
-It only changes the name used to _lookup_ the address-settings.
+[NOTE]
+====
+A UUID is a 36-character string that follows the pattern `XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX` where:
+
+* The first group consists of 8 hex characters.
+* The second, third, and fourth groups consist of 4 hex characters each.
+* The fifth group consists of 12 hex characters.
+* A hyphen separates each group of hex characters.
+* A "hex character" is one of the following: `abcdef0123456789`.
+====
 
 === Other Advanced Configurations
 

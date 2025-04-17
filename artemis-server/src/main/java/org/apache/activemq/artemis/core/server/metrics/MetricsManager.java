@@ -67,19 +67,14 @@ public class MetricsManager {
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
-   // a function used to calculate the name of the queue when looking up address settings
-   private final Function<Boolean, String> queueNameFunction;
-
    public MetricsManager(String brokerName,
                          MetricsConfiguration metricsConfiguration,
                          HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                         SecurityStore securityStore,
-                         Function<Boolean, String> queueNameFunction) {
+                         SecurityStore securityStore) {
       this.brokerName = brokerName;
       this.meterRegistry = metricsConfiguration.getPlugin().getRegistry();
       this.addressSettingsRepository = addressSettingsRepository;
       this.commonTags = Tags.of(BROKER_TAG_NAME, brokerName);
-      this.queueNameFunction = queueNameFunction;
       if (meterRegistry != null) {
          Metrics.globalRegistry.add(meterRegistry);
          if (metricsConfiguration.isJvmMemory()) {
@@ -123,8 +118,8 @@ public class MetricsManager {
       void build(String metricName, Object state, ToDoubleFunction<Object> f, String description, List<Tag> tags);
    }
 
-   public void registerQueueGauge(String address, String queue, boolean temporary, Consumer<MetricGaugeBuilder> builder) {
-      if (this.meterRegistry == null || !addressSettingsRepository.getMatch(queueNameFunction.apply(temporary) + queue).isEnableMetrics()) {
+   public void registerQueueGauge(String address, String queue, Consumer<MetricGaugeBuilder> builder) {
+      if (this.meterRegistry == null || !addressSettingsRepository.getMatch(address).isEnableMetrics()) {
          return;
       }
       final List<Builder<Object>> gaugeBuilders = new ArrayList<>();

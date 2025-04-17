@@ -95,7 +95,7 @@ public class ProtonServerReceiverContext extends ProtonAbstractReceiver {
             defRoutingType = getRoutingType(target.getCapabilities(), address);
 
             try {
-               sessionSPI.createTemporaryQueue(address, defRoutingType);
+               address = sessionSPI.createTemporaryQueue(address, defRoutingType).getAddress();
             } catch (ActiveMQAMQPSecurityException e) {
                throw e;
             } catch (ActiveMQSecurityException e) {

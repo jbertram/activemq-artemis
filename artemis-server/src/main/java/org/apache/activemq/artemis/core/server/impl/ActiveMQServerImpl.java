@@ -216,6 +216,7 @@ import org.apache.activemq.artemis.utils.ReusableLatch;
 import org.apache.activemq.artemis.utils.SecurityFormatter;
 import org.apache.activemq.artemis.utils.ThreadDumpUtil;
 import org.apache.activemq.artemis.utils.TimeUtils;
+import org.apache.activemq.artemis.utils.UUID;
 import org.apache.activemq.artemis.utils.VersionLoader;
 import org.apache.activemq.artemis.utils.actors.OrderedExecutorFactory;
 import org.apache.activemq.artemis.utils.collections.ConcurrentHashSet;
@@ -3314,7 +3315,7 @@ public class ActiveMQServerImpl implements ActiveMQServer {
        * are not required to be included in the OSGi bundle and the Micrometer jars apparently don't support OSGi.
        */
       if (configuration.getMetricsConfiguration() != null && configuration.getMetricsConfiguration().getPlugin() != null) {
-         metricsManager = new MetricsManager(configuration.getName(), configuration.getMetricsConfiguration(), addressSettingsRepository, securityStore, temp -> getRuntimeTempQueueNamespace(temp));
+         metricsManager = new MetricsManager(configuration.getName(), configuration.getMetricsConfiguration(), addressSettingsRepository, securityStore);
       }
 
       postOffice = new PostOfficeImpl(this, storageManager, pagingManager, queueFactory, managementService, configuration.getMessageExpiryScanPeriod(), configuration.getAddressQueueScanPeriod(), configuration.getWildcardConfiguration(), configuration.getIDCacheSize(), configuration.isPersistIDCache(), addressSettingsRepository);
@@ -4108,6 +4109,12 @@ public class ActiveMQServerImpl implements ActiveMQServer {
             throw ActiveMQMessageBundle.BUNDLE.invalidQueueName(queueConfiguration.getName());
          }
 
+         if (queueConfiguration.isTemporary() && UUID.isUUID(queueConfiguration.getName()) && queueConfiguration.getName().equals(queueConfiguration.getAddress()) && configuration.getTemporaryQueueNamespace() != null && !configuration.getTemporaryQueueNamespace().isEmpty()) {
+            String newName = new StringBuilder().append(configuration.getTemporaryQueueNamespace()).append(configuration.getWildcardConfiguration().getDelimiterString()).append(queueConfiguration.getName()).toString();
+            queueConfiguration.setName(newName);
+            queueConfiguration.setAddress(newName);
+         }
+
          final Binding rawBinding = postOfficeInUse.getBinding(queueConfiguration.getName());
          if (rawBinding != null) {
             if (rawBinding.getType() != BindingType.LOCAL_QUEUE) {
@@ -4124,7 +4131,7 @@ public class ActiveMQServerImpl implements ActiveMQServer {
             }
          }
 
-         QueueConfigurationUtils.applyDynamicDefaults(queueConfiguration, addressSettingsRepository.getMatch(getRuntimeTempQueueNamespace(queueConfiguration.isTemporary()) + queueConfiguration.getAddress().toString()));
+         QueueConfigurationUtils.applyDynamicDefaults(queueConfiguration, addressSettingsRepository.getMatch(queueConfiguration.getAddress().toString()));
 
          AddressInfo info = postOfficeInUse.getAddressInfo(queueConfiguration.getAddress());
          if (queueConfiguration.isAutoCreateAddress() || queueConfiguration.isTemporary()) {
@@ -4199,14 +4206,6 @@ public class ActiveMQServerImpl implements ActiveMQServer {
 
          return queue;
       }
-   }
-
-   public String getRuntimeTempQueueNamespace(boolean temporary) {
-      StringBuilder runtimeTempQueueNamespace = new StringBuilder();
-      if (temporary && configuration.getTemporaryQueueNamespace() != null && !configuration.getTemporaryQueueNamespace().isEmpty()) {
-         runtimeTempQueueNamespace.append(configuration.getTemporaryQueueNamespace()).append(configuration.getWildcardConfiguration().getDelimiterString());
-      }
-      return runtimeTempQueueNamespace.toString();
    }
 
    private void copyRetroactiveMessages(Queue targetQueue) throws Exception {

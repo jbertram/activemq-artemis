@@ -43,6 +43,7 @@ import org.apache.activemq.artemis.core.security.SecurityAuth;
 import org.apache.activemq.artemis.core.server.AddressQueryResult;
 import org.apache.activemq.artemis.core.server.LargeServerMessage;
 import org.apache.activemq.artemis.core.server.MessageReference;
+import org.apache.activemq.artemis.core.server.Queue;
 import org.apache.activemq.artemis.core.server.QueueQueryResult;
 import org.apache.activemq.artemis.core.server.RoutingContext;
 import org.apache.activemq.artemis.core.server.ServerConsumer;
@@ -285,41 +286,41 @@ public class AMQPSessionCallback implements SessionCallback {
       serverConsumer.receiveCredits(-1);
    }
 
-   public void createTemporaryQueue(SimpleString queueName, RoutingType routingType) throws Exception {
-      createTemporaryQueue(queueName, queueName, routingType, null, null);
+   public Queue createTemporaryQueue(SimpleString queueName, RoutingType routingType) throws Exception {
+      return createTemporaryQueue(queueName, queueName, routingType, null, null);
    }
 
-   public void createTemporaryQueue(SimpleString queueName, RoutingType routingType, Integer maxConsumers) throws Exception {
-      createTemporaryQueue(queueName, queueName, routingType, null, maxConsumers);
+   public Queue createTemporaryQueue(SimpleString queueName, RoutingType routingType, Integer maxConsumers) throws Exception {
+      return createTemporaryQueue(queueName, queueName, routingType, null, maxConsumers);
    }
 
-   public void createTemporaryQueue(SimpleString queueName, RoutingType routingType, Integer maxConsumers, Boolean internal) throws Exception {
-      createTemporaryQueue(queueName, queueName, routingType, null, maxConsumers, internal);
+   public Queue createTemporaryQueue(SimpleString queueName, RoutingType routingType, Integer maxConsumers, Boolean internal) throws Exception {
+      return createTemporaryQueue(queueName, queueName, routingType, null, maxConsumers, internal);
    }
 
-   public void createTemporaryQueue(SimpleString address,
+   public Queue createTemporaryQueue(SimpleString address,
                                     SimpleString queueName,
                                     RoutingType routingType,
                                     SimpleString filter) throws Exception {
-      createTemporaryQueue(address, queueName, routingType, filter, null, null);
+      return createTemporaryQueue(address, queueName, routingType, filter, null, null);
    }
 
-   public void createTemporaryQueue(SimpleString address,
+   public Queue createTemporaryQueue(SimpleString address,
                                     SimpleString queueName,
                                     RoutingType routingType,
                                     SimpleString filter,
                                     Integer maxConsumers) throws Exception {
-      createTemporaryQueue(address, queueName, routingType, filter, null, null);
+      return createTemporaryQueue(address, queueName, routingType, filter, null, null);
    }
 
-   public void createTemporaryQueue(SimpleString address,
-                                    SimpleString queueName,
-                                    RoutingType routingType,
-                                    SimpleString filter,
-                                    Integer maxConsumers,
-                                    Boolean internal) throws Exception {
+   public Queue createTemporaryQueue(SimpleString address,
+                                     SimpleString queueName,
+                                     RoutingType routingType,
+                                     SimpleString filter,
+                                     Integer maxConsumers,
+                                     Boolean internal) throws Exception {
       try {
-         serverSession.createQueue(QueueConfiguration.of(queueName).setAddress(address)
+         return serverSession.createQueue(QueueConfiguration.of(queueName).setAddress(address)
                                                                    .setRoutingType(routingType)
                                                                    .setFilterString(filter)
                                                                    .setTemporary(true)
