@@ -265,9 +265,18 @@ public class StompTest extends StompTestBase {
 
       MessageConsumer consumer = session.createConsumer(queue);
 
+      assertNotNull(server.locateQueue(getQueuePrefix() + getQueueName()));
+      assertEquals(1, server.locateQueue(getQueuePrefix() + getQueueName()).getConsumerCount());
+      assertEquals(RoutingType.ANYCAST, server.locateQueue(getQueuePrefix() + getQueueName()).getRoutingType());
+
       conn.connect(defUser, defPass);
 
       send(conn, getQueuePrefix() + getQueueName(), null, "Hello World");
+
+      assertNotNull(server.locateQueue(getQueuePrefix() + getQueueName()));
+      Wait.assertEquals(1L, () -> server.getAddressInfo(SimpleString.of(getQueuePrefix() + getQueueName())).getRoutedMessageCount(), 2000, 10);
+      Wait.assertEquals(0L, () -> server.getAddressInfo(SimpleString.of(getQueuePrefix() + getQueueName())).getUnRoutedMessageCount(), 2000, 10);
+      Wait.assertEquals(1L, () -> server.locateQueue(getQueuePrefix() + getQueueName()).getMessagesAdded(), 2000, 10);
 
       TextMessage message = (TextMessage) consumer.receive(1000);
       assertNotNull(message);

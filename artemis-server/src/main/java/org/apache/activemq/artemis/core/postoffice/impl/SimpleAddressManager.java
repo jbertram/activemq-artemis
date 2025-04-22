@@ -310,6 +310,7 @@ public class SimpleAddressManager implements AddressManager {
 
    @Override
    public boolean reloadAddressInfo(AddressInfo addressInfo) {
+
       return addressInfoMap.putIfAbsent(addressInfo.getName(), addressInfo) == null;
    }
 
