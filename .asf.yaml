@@ -35,6 +35,7 @@ github:
     - java
     - jms
   enabled_merge_buttons:
+
     # enable squash button:
     squash: true
     # default commit message when merging with a squash commit
