@@ -579,7 +579,7 @@ public class MQTTSessionState {
       }
 
       public Integer getMatchingId(String topic) {
-         if (id != null && new AddressImpl(SimpleString.of(topic), MQTTUtil.MQTT_WILDCARD).matches(address)) {
+         if (id != null && AddressImpl.matches(SimpleString.of(topic).split(MQTTUtil.MQTT_WILDCARD.getDelimiter()), address.getAddressParts(), MQTTUtil.MQTT_WILDCARD)) {
             return id;
          } else {
             return null;

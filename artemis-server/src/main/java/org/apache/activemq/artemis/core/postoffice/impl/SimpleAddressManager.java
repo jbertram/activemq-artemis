@@ -161,12 +161,11 @@ public class SimpleAddressManager implements AddressManager {
    @Override
    public Collection<Binding> getMatchingBindings(final SimpleString address) throws Exception {
       SimpleString realAddress = CompositeAddress.extractAddressName(address);
-      Address add = new AddressImpl(realAddress, wildcardConfiguration);
 
       Collection<Binding> bindings = new ArrayList<>();
       nameMap.forEach((bindingUniqueName, bindingAddressPair) -> {
          final Address addCheck = bindingAddressPair.getB();
-         if (addCheck.matches(add)) {
+         if (AddressImpl.matches(addCheck.getAddressParts(), realAddress.split(wildcardConfiguration.getDelimiter()), wildcardConfiguration)) {
             bindings.add(bindingAddressPair.getA());
          }
       });

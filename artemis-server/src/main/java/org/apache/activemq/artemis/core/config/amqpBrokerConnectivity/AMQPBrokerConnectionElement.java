@@ -67,9 +67,7 @@ public class AMQPBrokerConnectionElement implements Serializable {
    }
 
    public static boolean match(SimpleString matchAddressString, SimpleString checkAddressString, WildcardConfiguration wildcardConfig) {
-      AddressImpl matchAddress = new AddressImpl(matchAddressString, wildcardConfig);
-      AddressImpl checkAddress = new AddressImpl(checkAddressString, wildcardConfig);
-      return checkAddress.matches(matchAddress);
+      return AddressImpl.matches(checkAddressString.split(wildcardConfig.getDelimiter()), matchAddressString.split(wildcardConfig.getDelimiter()), wildcardConfig);
    }
 
    public AMQPBrokerConnectionElement setMatchAddress(String matchAddress) {

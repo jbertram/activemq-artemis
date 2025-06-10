@@ -74,13 +74,16 @@ public class AddressImpl implements Address {
       if (address.equals(otherAddr.getAddress()))
          return true;
 
+      return matches(this.addressParts, otherAddr.getAddressParts(), wildcardConfiguration);
+   }
+
+   public static boolean matches(final SimpleString[] addressParts, final SimpleString[] otherAddrParts, final WildcardConfiguration wildcardConfiguration) {
       final char sepAnyWords = wildcardConfiguration.getAnyWords();
       final char sepSingleWord = wildcardConfiguration.getSingleWord();
 
       final int thisAddrPartsLen = addressParts.length;
       final int thisAddrPartsLastIdx = thisAddrPartsLen - 1;
 
-      final SimpleString[] otherAddrParts = otherAddr.getAddressParts();
       final int otherAddrPartsLen = otherAddrParts.length;
       final int otherAddrPartsLastIdx = otherAddrPartsLen - 1;
 
